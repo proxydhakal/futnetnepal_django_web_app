@@ -1,0 +1,37 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section id="logout">
+    <div class="container">
+    <div class="row">
+      <div class="col-lg-2 col-md-2 col-sm-2">
+
+      </div>
+      <div class="col-lg-8 col-md-8 col-sm-8 mt-5 mb-5">
+            <h2 class="text-center">You are already a Register User!</h2>
+            <div class="mt-5 mb-5">
+                <small class="text-muted">
+                    <a class="btn btn-outline-primary" href="{% url 'profile' %}">Visit Profile</a>
+                </small>
+            </div>
+      </div>
+      <div class="col-lg-2 col-md-4 col-sm-2">
+        
+      </div>
+    </div>
+    </div>
+  </section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

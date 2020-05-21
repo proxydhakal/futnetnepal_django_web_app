@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Login | Futnet Nepal</title>
+<link rel="icon" href="{% static 'images/logo1.png' %}" type="image/x-icon">
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div id="wrapper" class="login-page">
+    <div class="login-wrapper">
+        <div class="login-module">
+            <div class="login-module-header">
+            <a href="{% url 'index' %}"><img src="{% static 'images/logo1.png' %}" alt="logo"></a>
+            </div>
+            <div class="login-module-body">
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" id="username" name="username" class="form-control rounded-pill" required autofocus placeholder="User Name" value="">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="password" name="password" class="form-control rounded-pill" required placeholder="Password">
+                    </div>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="remember-me" name="remember">
+                    <label class="custom-control-label" for="remember-me">Remember me</label>
+                    </div>
+                        <button type="submit" class="btn btn-primary btn-md rounded-pill">Login</button>
+                </form>
+            </div>
+            <div class="login-module-footer">
+                <a class="btn btn-link" href="#">
+                Forgot Your Password?
+                </a></br>
+                <span>New To Futnet Nepal</span></br>
+                <a class="btn btn-danger rounded-pill pt-2 pb-2 mt-3" href="{% url 'signup' %}">Register Now?</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

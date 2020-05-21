@@ -1,0 +1,119 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section class="profile">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card card-body h-100" id="profile-wrapper">
+                    <img id="profile-pic" src="{{user.profiles.profile_image.url}}" class="rounded-circle">
+                    <hr>
+                    <h4>Hi I'm {{user.username}}!</h4>
+                    <p>I love coding, doing research and collaborating</p>
+                    <a href="#" class="btn btn-outline-primary mt-1"><i class="fa fa-inbox"></i> Messages</a>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <!-- <div class="card card-body h-100  border-info">
+                    <h4>My First Web Application</h4>
+                    <hr>
+                    <p>3 months after writing my first Hello World program on September 8th 2017 (While working in the marketing department) I had convinced my boss to let me take a stab at building a better version of the outdated laboratory management system my company was running on.</p>
+
+                    <p>Before I knew it we transitioned from the old system and we're on to mine. My newbie self was now in charge of hosting hundreds of thousands of lab samples and supporting thousands of clients.</p>
+
+                    <p>From this you’ll see that I’m someone that jumps before I can talk myself out of doing something scary.</p>
+
+                    <ul class="social-links">
+                        <li><img class="social" src="{% static 'images/facebook.png"></li>
+                        <li><img class="social" src="{% static 'images/linkedin.png"></li>
+                        <li><img class="social" src="{% static 'images/twitter.png"></li>
+                        <li><img class="social" src="{% static 'images/youtube.png"></li>
+                    </ul>
+
+                </div> -->
+                <div class="card">
+                    <img src="{{user.profiles.cover_image.url}}" class="card-img-top" alt="...">
+                    <div class="card-body cover-details">
+                        <div class="row align-items-center">
+                            <div class="col-sm-5"><p><i class="fa fa-envelope"></i> Email: {{user.email}}</p></div>
+                            <div class="col-sm-3"><p><i class="fa fa-phone"></i> Phone: {{user.profiles.phone}}</p></div>
+                            <div class="col-sm-4"><p><i class="fa fa-map-marker"></i> Address: {{user.profiles.address}}</p></div>
+                        </div>
+                    </div>
+                  </div>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card card-body">
+                    <h5>My Records</h5>
+                    <hr>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-info" role="progressbar" style="width:100%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">Match Played-50</div>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">Win-25</div>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">Draw-10</div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">Loss-15</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header p-3">
+                        <div class="media position-relative">
+                            <img src="{% static 'images/opponent.jpg' %}" class="mr-3 rounded-circle" alt="..." height="60" width="60">
+                            <div class="media-body">
+                                <h5 class="mt-0">Shekhar Dhakal</h5>
+                                <span><small class="text-muted">Upload 3 mins ago</small></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                        <img src="{% static 'images/opponent.jpg' %}" class="w-100">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card card-body">
+                    <h3>Catgories by:</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                          Cras justo odio
+                          <span class="badge badge-primary badge-pill">14</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                          Dapibus ac facilisis in
+                          <span class="badge badge-primary badge-pill">2</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                          Morbi leo risus
+                          <span class="badge badge-primary badge-pill">1</span>
+                        </li>
+                      </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

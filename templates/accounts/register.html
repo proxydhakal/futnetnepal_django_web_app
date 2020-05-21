@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Register :: Futnet Nepal</title>
+	<link rel="icon" href="{% static 'images/logo1.png' %}" type="image/x-icon">
+	<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/style1.css' %}">
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+</head>
+<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-10 offset=md-1">
+					<div class="row">
+						<div class="col-md-5 register-left">
+							<img src="{% static 'images/logo1.png' %}" class="img-fluid">
+							<h3>Join US</h3>
+							<p>Follow Futnet Nepal for more exceting News and Offers!</p>
+							<a class="btn btn-primary" href="{% url 'login' %}"> Login</a>
+						</div>
+
+						<div class="col-md-7 register-right">
+							<h2>Register Here</h2>
+							<form class="register-form" method="POST" action="{% url 'signup' %}">
+							{% csrf_token %}
+								{% for field in form %}
+								<div class="form-group">
+									{{field.label_tag}} {{field}}
+								</div>
+								
+								{% endfor %}
+								{% comment %} <div class="form-group">
+									<input type="text" class="form-control" name="first_name" placeholder="First Name">
+								</div>
+								<div class="form-group">
+									<input type="text" class="form-control" name="last_name" placeholder="Last Name">
+								</div>
+								<div class="form-group">
+									<input type="text" class="form-control" name="username" placeholder="Username">
+								</div>
+							
+								<div class="form-group">
+									<input type="email" class="form-control" name="email" placeholder="Email">
+								</div>
+							
+								<div class="form-group">
+									<input type="paswsord" class="form-control" name="password" placeholder="Password">
+								</div>
+								<div class="form-group">
+									<input type="password" class="form-control" name="password1" placeholder="Repeat Password">
+								</div> {% endcomment %}
+								<button type="submit" class="btn btn-primary"> Register</button>
+							</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+</body>
+</html>

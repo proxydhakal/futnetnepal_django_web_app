@@ -1,0 +1,68 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section class="about-us">
+    <div class="container">
+        <div class="about-title">
+            <h2>ABOUT US</h2>
+            <div class="row">
+                <div class="col-lg-8">
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Temporibus odio doloremque, minima, inventore sit, ipsa illo sunt aperiam rem nisi ullam suscipit dolor possimus quaerat eveniet est tempora molestiae excepturi?
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere, sapiente impedit ipsum rerum unde laboriosam. Nisi ratione officiis libero. Veritatis deserunt aut eaque eius at quaerat possimus voluptas explicabo adipisci?
+                    </p>
+                </div>
+                <div class="col-lg-4">
+                    <img class="about-img" src="{% static 'images/about-us-bg.png' %}" >
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="about-story">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="story-header">
+                    <h3>Our <span>Story</span></h3>
+                    <img src="{% static 'images/about-us-04.svg' %}" class="story-icon">
+                    <img src="{% static 'images/ourstory-image-bg.png' %}" class="img-fluid story-bg">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                <p>This fairytale, like all fairytales, started with a few dudes in distress. One was lamenting his dear departed tennis partner, the second grieving for the badminton racquet left behind, the third desolate after another football weekend that never happened, the fourth broke and gymless from another membership waylaid, and the fifth just #tag bored to death. Alas, unlike in other fairytales, no fair damsel came to their rescue and they wallowed for a while in their sorrow. And so they finally did what all forsaken souls do...start building their very own Neverland, a place for all restless adrenaline junkies like themselves...and thus a thought, nay a belief called Playo was sown.
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <img src="{% static 'images/story1.png' %}" class="stry-1" alt="Story Img">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4">
+                <img src="{% static 'images/story2.png' %}" class="stry-2 img-fluid" alt="Story Img">
+            </div>
+            <div class="col-lg-8">
+                <p>This fairytale, like all fairytales, started with a few dudes in distress. One was lamenting his dear departed tennis partner, the second grieving for the badminton racquet left behind, the third desolate after another football weekend that never happened, the fourth broke and gymless from another membership waylaid, and the fifth just #tag bored to death. Alas, unlike in other fairytales, no fair damsel came to their rescue and they wallowed for a while in their sorrow. And so they finally did what all forsaken souls do...start building their very own Neverland, a place for all restless adrenaline junkies like themselves...and thus a thought, nay a belief called Playo was sown.
+                </p>
+                
+            </div>
+        </div>
+        <p>We warmly welcome you to Playo, your singular destination for sports, fitness, fun and all things recreational. Come, relive those cherished childhood moments when you exchanged high fives or wept as one for a loss. Time to get your lovable varsity jersey out and give your neighbour a shout or go challenge your colleague...better still make a new friend. Get Addicted to Play...and create your own happily ever after!
+        </p>
+    </div>
+</section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

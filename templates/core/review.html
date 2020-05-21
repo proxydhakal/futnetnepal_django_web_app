@@ -1,0 +1,115 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section class="review">
+    <div class="container">
+        <div class="col-lg-12">
+        <div class="main-title p-3">
+        <h1>Write a Review</h1>
+        </div>
+        <div class="standard-form common-module bg-white shadow p-5">
+        <form action="#" data-toggle="validator" enctype="multipart/form-data" method="POST">
+        <div class="form-group">
+        <label>Select Package<span>*</span></label>
+        <div class="custom_select"><select class="form-control " name="package_id" id="package_id" required="">
+        <option value="">Select Match</option>
+        <option value="30">11 Days Annapurna Circuit Trek</option>
+        <option value="1">11 Days Everest Base Camp Trekking</option>
+        </select></div>
+        </div>
+        <div class="row">
+        <div class="col-md-6">
+        <div class="form-group">
+        <label>First Name<span>*</span></label>
+        <input type="text" class="form-control " name="fname" value="" required="">
+        </div>
+        </div>
+        <div class="col-md-6">
+        <div class="form-group">
+        <label>Last Name<span>*</span></label>
+        <input type="text" class="form-control " name="lname" id="lname" value="" required="">
+        </div>
+        </div>
+        </div>
+        <div class="form-group">
+        <label>Email Address<span>*</span></label>
+        <input type="email" name="email" id="email " class="form-control" value="" required="">
+        </div>
+        <div class="row">
+        <div class="col-md-6">
+        <div class="form-group">
+        <label>Title of your review<span>*</span></label>
+        <input type="text" class="form-control " name="review_title" id="review_title" value="" required="">
+        </div>
+        </div>
+        <div class="col-md-6">
+        <div class="form-group">
+        <label>Review Date<span>*</span></label>
+        <div class="calendar"><input type="text" class="form-control " name="review_date" id="review_date" value="" autocomplete="off" required="" data-type="date"></div>
+        </div>
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-6">
+        <div class="form-group">
+        <fieldset class="rating">
+        <h5>Rating<span>*</span></h5>
+        <input type="radio" id="star5" name="rating" value="5" required="">
+        <label for="star5" title="5 stars"></label>
+        <input type="radio" id="star4" name="rating" value="4">
+        <label for="star4" title="4 stars"></label>
+        <input type="radio" id="star3" name="rating" value="3">
+        <label for="star3" title="3 stars"></label>
+        <input type="radio" id="star2" name="rating" value="2">
+        <label for="star2" title="2 stars"></label>
+        <input type="radio" id="star1" name="rating" value="1">
+        <label for="star1" title="1 star"></label>
+        </fieldset>
+        <div class="clearfix"></div>
+        </div>
+        </div>
+        <div class="col-md-6">
+        <div class="form-group custom-file">
+        <h5>Upload Image</h5>
+        <div class="file-upload btn btn-primary">
+        Browse Image
+        <input type="file" name="review_image" id="FileAttachment" class="upload">
+        </div>
+        <input type="text" id="fileuploadurl" readonly="" placeholder="No image chosen">
+        <div class="clearfix"></div>
+        </div>
+        </div>
+        </div>
+        <div class="form-group">
+        <label>Select Your District<span>*</span></label>
+        <div class="custom_select"><select class="form-control " name="district" id="country" required="">
+        <option value="">Select Your Country</option>
+        <option value="1">Kathmandu</option>
+        <option value="2">Lalitpur</option>
+        <option value="3">Bhaktapur</option>
+        </select></div>
+        </div>
+        <div class="form-group has-error">
+        <label>Your Review Details<span>*</span></label>
+        <lt-mirror style="display: none;"><lt-highlighter contenteditable="false" style="display: none;"><lt-div spellcheck="false" class="lt-highlighter__wrapper" style="width: 818px !important; height: 204px !important; transform: none !important; transform-origin: 410px 103px !important; zoom: 1 !important; margin-top: 35px !important; margin-left: 1px !important;"><canvas class="lt-highlighter__canvas" width="0" height="0" style="display: none; margin-top: 0px !important; margin-left: 0px !important;"></canvas></lt-div></lt-highlighter><lt-div spellcheck="false" class="lt-mirror__wrapper" data-lt-scroll-top="0" data-lt-scroll-left="0" data-lt-scroll-top-scaled="0" data-lt-scroll-left-scaled="0" data-lt-scroll-top-scaled-and-zoomed="0" data-lt-scroll-left-scaled-and-zoomed="0" style="border: 1px solid rgb(209, 213, 216) !important; border-radius: 4px !important; direction: ltr !important; font: 400 14px / 24.5px Poppins, sans-serif !important; font-feature-settings: normal !important; font-kerning: auto !important; hyphens: manual !important; letter-spacing: normal !important; line-break: auto !important; margin: 34px 0px 0px !important; padding: 6px 12px !important; text-align: start !important; text-decoration: none solid rgb(73, 80, 87) !important; text-indent: 0px !important; text-transform: none !important; transform: none !important; transform-origin: 410px 103px !important; word-spacing: 0px !important; overflow-wrap: break-word !important; zoom: 1 !important; width: 794px !important; height: 192px !important;"><lt-div class="lt-mirror__canvas" style="margin-top: 0px !important; margin-left: 0px !important; width: 794px !important; height: 192px !important;"></lt-div></lt-div></lt-mirror><textarea class="form-control " name="comments" id="comments" required="" rows="8" spellcheck="false" data-gramm="false"></textarea>
+        </div>
+        <button type="submit" name="submit" value="submit" class="btn btn-primary btn-lg" disabled="disabled">SUBMIT</button>
+        </form>
+        </div>
+        </div>
+        </div>
+</section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

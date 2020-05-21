@@ -1,0 +1,94 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section class="single-blog">
+    <div class="banner inner">
+        <div class="bg-stretch">
+            <img src="{% static 'images/cover1.jpg' %}" class="image-responsive">
+        </div>
+        <div class="banner-caption"><h1>Futnet Nepal Blogs</h1></div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="blog-title mt-3">
+                    <h2>{{single_blogs.title}}</h2>
+                    <div class="blog-meta mb-8">
+                        <p class="lead">Date: {{single_blogs.created_at| date:"F,j Y" }}&nbsp;&nbsp;|&nbsp;&nbsp; By {{single_blogs.author}} &nbsp;&nbsp;|&nbsp;&nbsp; {{single_blogs.count}} people viewed </p>
+                    </div>
+                </div>
+                <div class="blog-body">
+                    <img src="{{single_blogs.cover_image.url}}" class="image-responsive mt-1" alt="Images Blog">
+                    <p class="mt-2 text-justify">{{single_blogs.content}}</p>
+                </div>
+                <hr>
+                <div class="common-module">
+                    <h2>Tags:</h2>
+                    <div class="taging blog">
+                        <ul>
+                            {% for tag in single_blogs.tags.all %}
+                            <li><a class="item" href="#" target="_blank" rel="nofollow">{{ tag }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <hr>
+                <div id="fb-root"></div>
+                <div class="fb-comments" data-href="https://developers.facebook.com/docs/plugins/comments#configurator" data-numposts="2" data-width=""></div>
+                <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v7.0&appId=313147659488148&autoLogAppEvents=1"></script>
+            </div>
+            <div class="col-lg-4">
+                <div class="blog-items-wrap p-4">
+                    <div class="sidebar-box">
+                        <form action="#" class="search-form">
+                        <div class="form-group">
+                            <span class="icon fa fa-search"></span>
+                            <input type="text" class="form-control" placeholder="Type a keyword and hit enter">
+                        </div>
+                        </form>
+                    </div>
+                    <div class="common-module">
+                        <h3 class="module-title ">Recent Post</h3>
+                        {% for blog in blogs %}
+                        <div class="blog-list">
+                            <div class="item-wrap">
+                                <div class="intro-img">
+                                    <a href="{{blog.get_absolute_url}}" class="img-wrap"><img src="{{blog.cover_image.url}}" alt="" class="fill"></a>
+                                    <span class="date">{{single_blogs.created_at| date:"F,j Y" }}</span>
+                                </div>
+                                <div class="caption">
+                                    <h4><a href="{{blog.get_absolute_url}}">{{blog.title}}</a></h4>
+                                    <p>{{blog.content|safe|truncatewords_html:10}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="side-nav mb-4">
+                        <div class="list-group">
+                            <button type="button" class="list-group-item list-group-item-action disabled" style="background-color: #dfe2e4;">
+                            <h4>Categories</h4>
+                            </button>
+                            {% for category in categories %}
+                            <a href="{% url 'blog-cat' category.id %}" class="list-group-item list-group-item-action">{{category.title}}</a>
+                            {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

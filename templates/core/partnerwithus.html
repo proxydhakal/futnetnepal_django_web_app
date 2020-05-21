@@ -1,0 +1,75 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section class="partner-with-us">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="title-main-partner">
+                    <h2>Partner With Us</h2>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda corrupti deserunt consectetur! Id accusamus provident maiores illo iusto natus minima? Dolorum quos a ea quod blanditiis expedita nulla sit distinctio.</p>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse dolore alias nam, provident eos quod perspiciatis incidunt animi amet voluptates quam similique ducimus autem, magnam culpa earum reiciendis, aspernatur tempora!</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <img class="partner-img w-100" src="{% static 'images/partner-with-us-coverimage.png' %}" alt="Partner With US">
+            </div>
+        </div>
+    </div>
+
+</section>
+<section class="body-partner">
+    <div class="container">
+        <div class="content-links">
+            <div class="data mt-3 mb-3">
+                <h2 class="heading">Bussiness we are Include: </h2>
+            </div>
+            <div class="div-links d-flex justify-content-between mt-3 mb-3">
+                <a class="div-link border shadow p-4">
+                    <div>
+                        <div class="link-text">
+                            Venues <br> and Clubs
+                        </div>
+                        <div class="link-img">
+                            <img src="https://playo-website.imgix.net/icons/venues-and-club.svg">
+                        </div>
+                    </div>
+                </a>
+                <a class="div-link border shadow p-4">
+                    <div>
+                        <div class="link-text">
+                            Activites <br> Organizers
+                        </div>
+                        <div class="link-img">
+                            <img src="https://playo-website.imgix.net/icons/activity.svg">
+                        </div>
+                    </div>
+                </a>
+                <a class="div-link border shadow p-4">
+                    <div>
+                        <div class="link-text">
+                            Trainers <br> and Academies
+                        </div>
+                        <div class="link-img">
+                            <img src="https://playo-website.imgix.net/icons/trainer.svg">
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}
