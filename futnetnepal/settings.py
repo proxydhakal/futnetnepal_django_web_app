@@ -93,12 +93,12 @@ WSGI_APPLICATION = 'futnetnepal.wsgi.application'
 # }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'futnetnepal.com',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'futnetnepal',
+        'USER': 'futnetnepal',
+        'PASSWORD': 'futnet123',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
