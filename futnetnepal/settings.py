@@ -145,5 +145,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
     
 ]
-STATIC_ROOT='/home/proxydhakal/Desktop/futnetnepal.com/static/ckeditor'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/ckeditor/')
+#STATIC_ROOT='/home/proxydhakal/Desktop/futnetnepal.com/static/ckeditor'
 CKEDITOR_UPLOAD_PATH = "uploads/"
