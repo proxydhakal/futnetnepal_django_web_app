@@ -23,9 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'ur^khr2u!kph7dxrgz((@of_i1_=td!2)wgnw$91q@e=oa$te*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
 
-ALLOWED_HOSTS = ['139.59.146.183']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -97,8 +98,8 @@ DATABASES = {
         'NAME': 'futnetnepal',
         'USER': 'futnetnepal',
         'PASSWORD': 'futnet123',
-        'HOST': 'localhost',
-        'PORT': '',
+        'HOST': 'futnet_db',
+        'PORT': '5432',
     }
 }
 

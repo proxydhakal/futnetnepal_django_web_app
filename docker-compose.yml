@@ -1,0 +1,32 @@
+version: '3.1'
+
+services:
+  futnet_app:
+    container_name: futnet_web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - futnet_db
+    restart: always
+
+  futnet_db:
+    image: postgres
+    container_name:  futnet_db
+    environment:
+      - POSTGRES_USER=futnetnepal
+      - POSTGRES_PASSWORD=futnet123
+      - POSTGRES_DB=futnetnepal
+      - POSTGRES_PORT=5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
+
+
+volumes:
+  postgres_data:
