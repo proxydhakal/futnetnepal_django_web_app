@@ -1,6 +1,6 @@
 {% extends "partials/base.html" %} 
 {% load static %}
-
+{% load socialaccount %}
 {% block navsocial %}
 {% include "partials/navsocial.html" %}
 {% endblock navsocial %}
@@ -30,8 +30,8 @@
                 {% endif %}
 			<p class="text-center">Please enter your login username and password!</p>
 			<p>
-				<a href="" class="btn btn-block btn-twitter"> <i class="fab fa-twitter"></i>   Login via Twitter</a>
-				<a href="" class="btn btn-block btn-facebook"> <i class="fab fa-facebook-f"></i>   Login via facebook</a>
+				<a href="{% provider_login_url 'twitter' %}" class="btn btn-block btn-twitter"> <i class="fab fa-twitter"></i>   Login via Twitter</a>
+				<a href="{% provider_login_url 'google' %}" class="btn btn-block btn-facebook"> <i class="fab fa-google"></i>   Login via Google</a>
 			</p>
 			<p class="divider-text">
 				<span class="bg-light">OR</span>
