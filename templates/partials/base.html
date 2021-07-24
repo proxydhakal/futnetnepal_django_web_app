@@ -8,16 +8,28 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Roboto+Slab&family=Shadows+Into+Light&family=Zilla+Slab&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
     <title>Futnet Nepal :: One Stop Web Apps for Futsal Enthusiast</title>
 </head>
 <body>
     <div id="contain">
-        {% block message %}
-        {% endblock message %}
         {% block navsocial %}
         {% endblock navsocial %}
         {% block navbar %}
         {% endblock navbar %}
+        {% block message %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }} alert-dismissible m-0" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endblock message %}
         {% block main %}
         {% endblock main %}
         {% block newsletter %}

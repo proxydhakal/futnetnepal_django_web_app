@@ -1,0 +1,65 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<link rel="stylesheet" href="{% static 'css/style1.css' %}">
+
+	<div class="container">
+		<div class="card bg-light mx-auto mt-5 mb-5">
+		<article class="card-body mx-auto" style="max-width: 400px;">
+			<h4 class="card-title mt-3 text-center">Login Account</h4>
+            {% if form.errors %}
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <div class="alert alert-error">
+                                <strong>{{ error|escape }}</strong>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <div class="alert alert-error">
+                            <strong>{{ error|escape }}</strong>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+			<p class="text-center">Please enter your login username and password!</p>
+			<p>
+				<a href="" class="btn btn-block btn-twitter"> <i class="fab fa-twitter"></i>   Login via Twitter</a>
+				<a href="" class="btn btn-block btn-facebook"> <i class="fab fa-facebook-f"></i>   Login via facebook</a>
+			</p>
+			<p class="divider-text">
+				<span class="bg-light">OR</span>
+			</p>
+			<form method="POST" action="{% url 'account_login' %}">
+                {% csrf_token %}
+			<div class="form-group input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text"> <i class="fa fa-user"></i> </span>
+				 </div>
+				<input class="form-control" name="login" placeholder="Username" autocomplete="username" maxlength="150" type="text" id="id_login" required>
+			</div> <!-- form-group// -->
+			<div class="form-group input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+				</div>
+				<input class="form-control" type="password" name="password" placeholder="Password" autocomplete="current-password" id="id_password" required>
+			</div> <!-- form-group// -->                                      
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-block"> Login  </button>
+			</div> <!-- form-group// -->
+            <p class="text-center"><a href="{% url 'account_reset_password' %}">Forget Password?</a></p>      
+			<p class="text-center">Dont't have an account? <a href="{% url 'account_signup' %}">Register</a> </p>                                                                 
+		</form>
+		</article>
+		</div> 
+	</div>
+{% endblock main %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

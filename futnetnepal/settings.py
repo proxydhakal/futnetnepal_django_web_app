@@ -10,10 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-import os
+from pathlib import Path
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -31,12 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     #Custom Apps
     'apps.accounts',
@@ -46,11 +48,29 @@ INSTALLED_APPS = [
 
     #third_party Apps
     'crispy_forms',
+    'phone_field',
     'ckeditor',
     'ckeditor_uploader',
-    'phone_field',
+    'solo',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    
 ]
-
+AUTHENTICATION_BACKENDS = [ 
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+SITE_ID = 1
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': '123',
+            'secret': '456',
+            'key': ''
+        }
+    }
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -62,11 +82,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'futnetnepal.urls'
-templates_dir =os.path.join(BASE_DIR,'templates')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [templates_dir],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,23 +104,32 @@ WSGI_APPLICATION = 'futnetnepal.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'futnetnepal.com',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql', 
+#         'NAME': 'futnetnepal.com',
+#         'USER': 'root',
+#         'PASSWORD': '',
+#         'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
+#         'PORT': '3306',
+#     }
+# }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': 'admin',
+#         'HOST':'127.0.0.1',
+#         'POST':'5432',
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -138,12 +166,127 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-MEDIA_ROOT=os.path.join(BASE_DIR,'media')
-MEDIA_URL='/media/'
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-    
-]
-STATIC_ROOT='/home/proxydhakal/Desktop/futnetnepal.com/static/ckeditor'
 CKEDITOR_UPLOAD_PATH = "uploads/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_ROOT = BASE_DIR / 'static/files'
+MEDIA_URL = '/media/'
+LOGIN_REDIRECT_URL= 'profile'
+LOGIN_URL ='/accounts/login'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+JAZZMIN_SETTINGS = {
+    # title of the window (Will default to current_admin_site.site_title if absent or None)
+    "site_title": "FutnetNepal Admin",
+
+    # Title on the brand, and login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_header": "FutnetNepal",
+
+    # Logo to use for your site, must be present in static files, used for brand on top left
+    "site_logo": "images/logo1.png",
+
+    # CSS classes that are applied to the logo above
+    "site_logo_classes": "img-responisve",
+
+    # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
+    "site_icon": None,
+
+    # Welcome text on the login screen
+    "welcome_sign": "Welcome to the Futnet Nepal",
+
+    # Copyright on the footer
+    "copyright": "Futnet Nepal Pvt. Ltd.",
+
+    # The model admin to search from the search bar, search bar omitted if excluded
+    "search_model": "auth.User",
+
+    # Field name on user model that contains avatar image
+    "user_avatar": None,
+
+    "topmenu_links": [
+
+        # Url that gets reversed (Permissions can be added)
+        {"name": "Home",  "url": "index", "new_window":True},
+
+        # external url that opens in a new window (Permissions can be added)
+        {"name": "Contact", "url": "contact", "new_window": True},
+        {"name": "Blog", "url": "blog", "new_window": True},
+        {"name": "About", "url": "about", "new_window": True},
+        {"name": "Partner WithUS", "url": "partnerwithus", "new_window": True},
+
+        # model admin to link to (Permissions checked against model)
+        {"model": "auth.User"},
+
+    ],
+}
+
+#CKEDITOR CONFIG
+CKEDITOR_CONFIGS = {
+    'default': {
+        'skin': 'moono',
+        # 'skin': 'office2013',
+        'toolbar_Basic': [
+            ['Source', '-', 'Bold', 'Italic']
+        ],
+        'toolbar_YourCustomToolbarConfig': [
+            {'name': 'document', 'items': ['Source', '-', 'Save', 'NewPage', 'Preview', 'Print', '-', 'Templates']},
+            {'name': 'clipboard', 'items': ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+            {'name': 'editing', 'items': ['Find', 'Replace', '-', 'SelectAll']},
+            {'name': 'forms',
+             'items': ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton',
+                       'HiddenField']},
+            '/',
+            {'name': 'basicstyles',
+             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'paragraph',
+             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
+                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl',
+                       'Language']},
+            {'name': 'links', 'items': ['Link', 'Unlink', 'Anchor']},
+            {'name': 'insert',
+             'items': ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe']},
+            '/',
+            {'name': 'styles', 'items': ['Styles', 'Format', 'Font', 'FontSize']},
+            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
+            {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
+            {'name': 'about', 'items': ['About']},
+            '/',  # put this to force next toolbar on new line
+            {'name': 'yourcustomtools', 'items': [
+                # put the name of your editor.ui.addButton here
+                'Preview',
+                'Maximize',
+
+            ]},
+        ],
+        'toolbar': 'YourCustomToolbarConfig',  
+        'tabSpaces': 4,
+        'extraPlugins': ','.join([
+            'uploadimage', # the upload image feature
+            # your extra plugins here
+            'div',
+            'autolink',
+            'autoembed',
+            'embedsemantic',
+            'autogrow',
+            # 'devtools',
+            'widget',
+            'lineutils',
+            'clipboard',
+            'dialog',
+            'dialogui',
+            'elementspath'
+        ]),
+    }
+}
+
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}

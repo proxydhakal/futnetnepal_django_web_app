@@ -22,7 +22,7 @@ from phone_field import PhoneField
 class Profile(models.Model):
     user= models.OneToOneField(User, on_delete=models.CASCADE, related_name="profiles")
     profile_image=models.ImageField(default='default.jpg',upload_to='media/profile_pics')
-    cover_image=models.ImageField(default='cover1.jpg',upload_to='media/cover_pics')
+    cover_image=models.ImageField(default='cover.jpg',upload_to='media/cover_pics')
     phone = PhoneField(blank=True, help_text='Contact phone number')
     address= models.CharField(max_length=50, blank=True)
     dob= models.DateField(blank=True)

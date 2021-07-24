@@ -8,40 +8,45 @@
 <title>Login | Futnet Nepal</title>
 <link rel="icon" href="{% static 'images/logo1.png' %}" type="image/x-icon">
 <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/style1.css' %}">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
 </head>
 <body>
-<div id="wrapper" class="login-page">
-    <div class="login-wrapper">
-        <div class="login-module">
-            <div class="login-module-header">
-            <a href="{% url 'index' %}"><img src="{% static 'images/logo1.png' %}" alt="logo"></a>
-            </div>
-            <div class="login-module-body">
-                <form method="POST" action="{% url 'login' %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <input type="text" id="username" name="username" class="form-control rounded-pill" required autofocus placeholder="User Name" value="">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="password" name="password" class="form-control rounded-pill" required placeholder="Password">
-                    </div>
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="remember-me" name="remember">
-                    <label class="custom-control-label" for="remember-me">Remember me</label>
-                    </div>
-                        <button type="submit" class="btn btn-primary btn-md rounded-pill">Login</button>
-                </form>
-            </div>
-            <div class="login-module-footer">
-                <a class="btn btn-link" href="#">
-                Forgot Your Password?
-                </a></br>
-                <span>New To Futnet Nepal</span></br>
-                <a class="btn btn-danger rounded-pill pt-2 pb-2 mt-3" href="{% url 'signup' %}">Register Now?</a>
-            </div>
-        </div>
-    </div>
-</div>
+	<div class="container">
+
+		<div class="card bg-light">
+		<article class="card-body mx-auto" style="max-width: 400px;">
+			<h4 class="card-title mt-3 text-center">Login Account</h4>
+			<p class="text-center">Get started with your free account</p>
+			<p>
+				<a href="" class="btn btn-block btn-twitter"> <i class="fab fa-twitter"></i>   Login via Twitter</a>
+				<a href="" class="btn btn-block btn-facebook"> <i class="fab fa-facebook-f"></i>   Login via facebook</a>
+			</p>
+			<p class="divider-text">
+				<span class="bg-light">OR</span>
+			</p>
+			<form method="POST" action="{% url 'account_login' %}">
+                {% csrf_token %}
+			<div class="form-group input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text"> <i class="fa fa-user"></i> </span>
+				 </div>
+				<input name="username" class="form-control" placeholder="Username" type="text" required>
+			</div> <!-- form-group// -->
+			<div class="form-group input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+				</div>
+				<input class="form-control" placeholder="Password" type="password" required>
+			</div> <!-- form-group// -->                                      
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-block"> Login  </button>
+			</div> <!-- form-group// -->      
+			<p class="text-center">Dont't have an account? <a href="{% url 'account_signup' %}">Register</a> </p>                                                                 
+		</form>
+		</article>
+		</div> <!-- card.// -->
+		
+	</div>
 </body>
 </html>

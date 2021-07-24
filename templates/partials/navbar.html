@@ -1,5 +1,5 @@
 {% load static %}
-<section id="navbar" class="shadow-sm">
+<section id="navbar" >
     <div class="container">
     <nav class="navbar navbar-expand-lg bg-white p-3">
     <a class="navbar-brand" href="{% url 'index' %}">
@@ -14,31 +14,28 @@
         <li class="nav-item active">
           <a class="nav-link" href="{% url 'index' %}">HOME <span class="sr-only">(current)</span></a>
         </li>
-        {% if request.user.is_authenticated %}
-        <li class="nav-item active">
-            <a class="nav-link" href="{% url 'blog' %}">BLOG</a>
-        </li>
-        <li class="nav-item active">
-            <a class="nav-link " href="{% url 'profile' %}">PROFILE</a>
-        </li>
-        <li class="nav-item active">
-            <a class="nav-link btn btn-outline-danger rounded-pill ml-3 p-2" href="{% url 'logout' %}">LOGOUT</a>
-        </li>
-        {% else %}
         <li class="nav-item active">
           <a class="nav-link" href="{% url 'about' %}">ABOUT US</a>
         </li>
         <li class="nav-item active">
-            <a class="nav-link" href="{% url 'blog' %}">BLOG</a>
+          <a class="nav-link" href="{% url 'partnerwithus' %}">PARTNER WITH US</a>
         </li>
         <li class="nav-item active">
-            <a class="nav-link" href="{% url 'partnerwithus' %}">PARTNER WITH US</a>
+          <a class="nav-link" href="{% url 'blog' %}">BLOG</a>
         </li>
         <li class="nav-item active">
-            <a class="nav-link btn btn-outline-warning" href="{% url 'contact' %}">CONTACT US</a>
+          <a class="nav-link" href="{% url 'contact' %}">CONTACT US</a>
+       </li>
+        {% if request.user.is_authenticated %}
+        <li class="nav-item active">
+            <a class="nav-link " href="{% url 'profile' %}">PROFILE</a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link btn btn-outline-primary rounded-pill ml-3 p-2" href="{% url 'login' %}">LOGIN</a>
+            <a class="nav-link btn btn-outline-danger rounded-pill ml-3 p-2" href="{% url 'account_logout' %}">LOGOUT</a>
+        </li>
+        {% else %}
+        <li class="nav-item active">
+          <a class="nav-link btn btn-outline-primary rounded-pill ml-3 p-2" href="{% url 'account_login' %}">LOGIN</a>
         </li>
         {% endif %}
       </ul>

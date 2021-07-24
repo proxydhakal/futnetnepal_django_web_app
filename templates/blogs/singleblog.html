@@ -26,7 +26,7 @@
                 </div>
                 <div class="blog-body">
                     <img src="{{single_blogs.cover_image.url}}" class="image-responsive mt-1" alt="Images Blog">
-                    <p class="mt-2 text-justify">{{single_blogs.content}}</p>
+                    <p class="mt-2 text-justify">{{single_blogs.content|safe}}</p>
                 </div>
                 <hr>
                 <div class="common-module">

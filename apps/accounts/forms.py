@@ -24,3 +24,19 @@ class UserRegisterForm(ModelForm):
             'email':TextInput(attrs={'class':'form-control'}),
             'password':PasswordInput(attrs={'class':'form-control'}),
         }
+
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        qs = User.objects.filter(username__iexact=username)
+        if qs.exists():
+            raise forms.ValidationError(f"{username} is taken. Try another!")
+        return username
+
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        qs = User.objects.filter(username__iexact=email)
+        if qs.exists():
+            raise forms.ValidationError(f"{email} is taken. Try another!")
+        return email
