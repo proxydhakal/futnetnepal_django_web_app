@@ -169,7 +169,21 @@ STATIC_ROOT = BASE_DIR / 'static/files/'
 MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL= 'profile'
 LOGIN_URL ='/accounts/login'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER = 'proxydhakal@gmail.com'
+EMAIL_HOST= 'smtp.gmail.com'
+EMAIL_PORT = '587'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = 'Nepal@shok55'
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_USERNAME_REQUIRED = False
+
+
+
+#JAZZMIN ADMIN SECTION
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
     "site_title": "FutnetNepal Admin",

@@ -18,6 +18,7 @@
                     <h4>Hi I'm {{user.username}}!</h4>
                     <p>I love coding, doing research and collaborating</p>
                     <a href="#" class="btn btn-outline-primary mt-1"><i class="fa fa-inbox"></i> Messages</a>
+                    <a href="{% url 'account_email' %}" class="btn btn-outline-secondary mt-1"><i class="fa fa-envelope"></i> Add/Change Email</a>
                     <a href="{% url 'account_change_password' %}" class="btn btn-outline-danger mt-1"><i class="fa fa-key"></i> Change Password</a>
                 </div>
             </div>
