@@ -5,6 +5,15 @@
     border-radius: 0 !important;
 
 }
+#navbar{
+    border-bottom: 2px;
+    box-shadow:0 0 5px #255ba3;
+    z-index: 100;
+    transition: 1s all;
+    opacity: 1;
+}
+
+
 .navbar-toggler-icon{
     color: #0b3559;
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23373737' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
@@ -27,11 +36,17 @@
     align-items: center;
 
 }
+@media only screen and (max-width: 768px) {
+    /* For mobile phones: */
+    .header-top{
+        display: none;
+    }
+}
 
 .header-top a{
     color: #fff;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 5px;
+    padding-right: 10px;
     text-decoration: none;
     font-size: 1.0rem;
 }
@@ -47,6 +62,7 @@
     margin-left: auto;
     float: right;
 }
+
 .nav-link{
     font-family: 'Roboto Slab', serif;
     padding-left: 10px;
@@ -167,7 +183,9 @@ samp{
     height: 200px;
 
 }
-
+article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
+    display: block;
+}
 #featured-review .review-title{
     color: #0b3559;
     text-align: center;
@@ -199,6 +217,13 @@ samp{
     color: #fff;
     font-size: 0.95rem;
 }
+.newsletter form {
+    text-align: center;
+}
+form {
+    display: block;
+    margin-top: 0em;
+}
 .newsletter form{
     display: flex;
     -webkit-box-align: center;
@@ -224,6 +249,18 @@ samp{
     padding-right: 20px;
     outline: 0;
     font-size: 0.875rem;
+}
+@media only screen and (max-width: 768px) {
+.newsletter form .form-group .form-control {
+    height: 44px;
+    border-color: #dfe2e4;
+    width: 100%;
+    display:table-column;
+    box-shadow: none;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: .875rem;
+}
 }
 aside{
     display: block;

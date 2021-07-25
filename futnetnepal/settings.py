@@ -165,7 +165,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 MEDIA_ROOT = BASE_DIR / 'media'
-STATIC_ROOT = BASE_DIR / 'static/files'
+STATIC_ROOT = BASE_DIR / 'static/files/'
 MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL= 'profile'
 LOGIN_URL ='/accounts/login'
