@@ -1,0 +1,73 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section id="blog">
+    <div class="container">
+        <div class="title-with-sorting">
+            <div class="main-title">
+                <h2>Blog</h2>
+            </div>
+            <form action="#" class="form-inline sorting">
+                <label for="duration"> Blog Sort By:</label>
+                    <div class="form-group">
+                        <div class="custom_select">
+                            <div class="custom_select">
+                                <select id="getSortDate" class="form-control">
+                                    <option value="">Date</option>
+                                    {% for date in dates %}
+                                    <option value="2020">2020</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom_select">
+                            <div class="custom_select">
+                                <select id="getSortCategory" class="form-control">
+                                    <option value="">Category</option>
+                                    {% for category in categories %}
+                                    <option value="{% url 'blog-cat' category.id %}"><a href="">{{category.title}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+            </form>
+        </div>
+        <div class="blog-list">
+            <div class="row">
+                {% for list_blog  in list_blogs %}
+                <div class="col-md-3">
+                    <div class="item-wrap">
+                        <div class="intro-img">
+                            <a href="#" class="img-wrap">
+                            <img src="{{list_blog.cover_image.url}}" alt="Goalkeeper at Best" class="fill">
+                            </a>
+                        <span class="date">{{list_blog.created_at| date:"F,j Y" }}</span>
+                        </div>
+                        <div class="caption">
+                            <h4><a href="{{list_blog.get_absolute_url}}" class="text-decoration-none">{{list_blog.title}}</a></h4>
+                            <p>{{list_blog.content|safe|truncatewords_html:10}}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}
