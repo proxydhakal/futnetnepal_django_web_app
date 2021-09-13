@@ -18,7 +18,7 @@ from django.urls import path,include,reverse
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('iamadmin/', admin.site.urls),
     path('blog/', include('apps.blogs.urls')),
     path('', include('apps.core.urls')),
     # path('account/', include('apps.accounts.urls')),
