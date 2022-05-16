@@ -9,6 +9,11 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
+#to connect app via mySQL
+# import pymysql
+# pymysql.version_info = (2, 1, 0, 'final', 0)
+# pymysql.install_as_MySQLdb()
+
 
 from pathlib import Path
 
@@ -106,7 +111,7 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql', 
-#         'NAME': 'futnetnepal.com',
+#         'NAME': 'futnetnepal',
 #         'USER': 'root',
 #         'PASSWORD': '',
 #         'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
@@ -116,11 +121,11 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'PASSWORD': 'admin',
-#         'HOST':'127.0.0.1',
-#         'POST':'5432',
+#         'NAME': 'defaultdb',
+#         'USER': 'doadmin',
+#         'PASSWORD': 'wL7TXzsOzToGf7ue',
+#         'HOST':'db-postgresql-nyc3-49114-do-user-10820474-0.b.db.ondigitalocean.com',
+#         'POST':'25060',
 #     }
 # }
 # Password validation
@@ -175,7 +180,7 @@ EMAIL_HOST= 'smtp.gmail.com'
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = 'Nuwakot@2020'
+EMAIL_HOST_PASSWORD = 'Nuwakot@2022'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -198,7 +203,7 @@ JAZZMIN_SETTINGS = {
     "site_logo_classes": "img-responisve",
 
     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
-    "site_icon": None,
+    "site_icon": "images/logo.png",
 
     # Welcome text on the login screen
     "welcome_sign": "Welcome to the Futnet Nepal",
