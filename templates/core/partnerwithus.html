@@ -1,0 +1,229 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section class="partner-with-us">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="title-main-partner">
+                    <h2>Partner With Us</h2>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda corrupti deserunt consectetur! Id accusamus provident maiores illo iusto natus minima? Dolorum quos a ea quod blanditiis expedita nulla sit distinctio.</p>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse dolore alias nam, provident eos quod perspiciatis incidunt animi amet voluptates quam similique ducimus autem, magnam culpa earum reiciendis, aspernatur tempora!</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <img class="partner-img w-100" src="{% static 'images/partner-with-us-coverimage.png' %}" alt="Partner With US">
+            </div>
+        </div>
+    </div>
+
+</section>
+<section class="body-partner">
+    <div class="container">
+        <div class="content-links">
+            <div class="data mt-3 mb-3">
+                <h2 class="heading text-center">Bussiness we are Include: </h2>
+            </div>
+            <div class="div-links mt-3 mb-3">
+                <a class="div-link border text-center shadow p-4" href="#venues">
+                    <div class="">
+                        <div class="link-text text-center">
+                            Venues and Clubs
+                        </div>
+                        <div class="link-img">
+                            <img class="img-fluid" src="{% static 'images/location.svg' %}" height="100" width="100">
+                        </div>
+                    </div>
+                </a>
+                <a class="div-link  border text-center shadow p-4" href="#activity">
+                    <div class="">
+                        <div class="link-text text-center">
+                            Activites & Organizers
+                        </div>
+                        <div class="link-img">
+                            <img class="img-fluid" src="{% static 'images/football.svg' %}" height="100" width="100">
+                        </div>
+                    </div>
+                </a>
+                <a class="div-link border text-center shadow p-4" href="#trainer">
+                    <div class="">
+                        <div class="link-text text-center">
+                            Trainers and Academies
+                        </div>
+                        <div class="link-img">
+                            <img class="img-fluid" src="{% static 'images/avatar.svg' %}" height="100" width="100">
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="features-div">
+            <div class="venusandclub">
+                <h3 class="partnerwithus_sub text-center" id="venues">Venues &amp; <span>Clubs</span></h3>
+                <p class="partner_sub_header text-center">Manage your venue and users while enabling online bookings</p>
+                <div class="all-features">
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                </div>
+                <hr class="feature-hr">
+            </div>
+            <div class="activityorganizers">
+                <h3 class="partnerwithus_sub text-center" id="activity">Activity &amp; <span>Organizers</span></h3>
+                <p class="partner_sub_header">Drive increased registrations and promote to relevant audience</p>
+                <div class="all-features">
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                </div>
+                <hr class="feature-hr">
+            </div>
+            <div class="trainersacademies">
+                <h3 class="partnerwithus_sub text-center" id="trainer">TRAINERS &amp; <span>ACADEMIES</span></h3>
+                <p class="partner_sub_header text-center">Grow your business by reaching the right target audience</p>
+                <div class="all-features">
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                    <div class="single_feature_div margin_right">
+                        <div class="imag_div">
+                            <img class="img-fluid" src="{% static 'images/stock-market.svg' %}" alt="" height="50" width="50">
+                            <p class="feature_title">Increase sales and outreach</p>
+                        </div>
+                        <p class="feature_text">Get access to the largest active sports community to boost your sales and increase outreach</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}
+{% block extra_body %}
+<script src="{% static 'js/smooth-scroll.js' %}"></script>
+<script>
+    var scroll = new SmoothScroll('a[href*="#"]');
+</script>
+{% endblock extra_body %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

@@ -1,0 +1,32 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+{% load i18n %}
+{% block head_title %}{% trans "Verify Your E-mail Address" %}{% endblock %}
+{% load socialaccount %}
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<link rel="stylesheet" href="{% static 'css/style1.css' %}">
+<div class="container">
+	<div class="card bg-light mx-auto mt-5 mb-5">
+        <article class="card-body mx-auto" style="max-width: 400px;">
+            <h2 class="card-title mt-3 text-center">{% trans "Verify Your E-mail Address" %}</h2>
+            {% url 'account_email' as email_url %}
+            <p class="text-center">{% blocktrans %}This part of the site requires us to verify that
+                you are who you claim to be. For this purpose, we require that you
+                verify ownership of your e-mail address. {% endblocktrans %}</p>
+            <p class="text-center mt-1">{% blocktrans %}We have sent an e-mail to you for
+                verification. Please click on the link inside this e-mail. Please
+                contact us if you do not receive it within a few minutes.{% endblocktrans %}</p>
+            <p class="text-center mt-1">{% blocktrans %}<strong>Note:</strong> you can still <a href="{{ email_url }}">change your e-mail address</a>.{% endblocktrans %}</p>
+        </article>
+	</div>
+</div>
+{% endblock main %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

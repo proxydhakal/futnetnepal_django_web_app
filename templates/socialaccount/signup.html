@@ -1,0 +1,47 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+{% load i18n %}
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+{% load socialaccount %}
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<link rel="stylesheet" href="{% static 'css/style1.css' %}">
+<div class="container">
+	<div class="card bg-light mx-auto mt-5 mb-5">
+        <article class="card-body mx-auto" style="max-width: 400px;">
+            <h4 class="card-title mt-3 text-center">{% trans "Sign Up" %}</h4>
+            <p class="text-center">{% blocktrans with provider_name=account.get_provider.name site_name=site.name %}You are about to use your {{provider_name}} account to login to
+                {{site_name}}. As a final step, please complete the following form:{% endblocktrans %}</p>
+            <ul class="errorlist">
+                {% for key, value in form.errors.items %}
+                    <li>{{ value }}</li>
+                {% endfor %}
+            </ul>
+            <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+                {% csrf_token %}
+
+            <div class="form-group input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
+                </div>
+                <input name="email" class="form-control" placeholder="Email address" type="email" required>
+            </div> <!-- form-group// -->
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}                                 
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block"> {% trans "Sign Up" %} &raquo; </button>
+            </div> <!-- form-group// -->                                                                 
+        </form>
+        </article>
+	</div>
+</div>
+{% endblock main %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

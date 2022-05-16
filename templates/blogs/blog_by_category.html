@@ -1,0 +1,57 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section id="blog">
+    <div class="container">
+        <div class="title-with-sorting">
+            <div class="main-title">
+                <h2>Blog</h2>
+            </div>
+            <form action="#" class="form-inline sorting mr-5">
+            {% if view.kwargs.category == '1' %}
+                <label for="duration"> Blog Sort By:Futsal</label>
+            {% endif %}
+            {% if view.kwargs.category == '2' %}
+                <label for="duration"> Blog Sort By:News</label>
+            {% endif %}
+            {% if view.kwargs.category == '3' %}
+                <label for="duration"> Blog Sort By:Offer</label>
+            {% endif %}
+            </form>
+        </div>
+        <div class="blog-list">
+            <div class="row">
+                {% for list_blog  in categories %}
+                <div class="col-md-3">
+                    <div class="item-wrap">
+                        <div class="intro-img">
+                            <a href="#" class="img-wrap">
+                            <img src="{{list_blog.cover_image.url}}" alt="Goalkeeper at Best" class="fill">
+                            </a>
+                        <span class="date">{{list_blog.created_at| date:"F,j Y" }}</span>
+                        </div>
+                        <div class="caption">
+                            <h4><a href="{{list_blog.get_absolute_url}}" class="text-decoration-none">{{list_blog.title}}</a></h4>
+                            <p>{{list_blog.content|safe|truncatewords_html:10}}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}
