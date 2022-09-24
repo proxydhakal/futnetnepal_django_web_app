@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'ur^khr2u!kph7dxrgz((@of_i1_=td!2)wgnw$91q@e=oa$te*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*","futnetnp.com","www.futnetnp.com","futnetnepal.herokuapp.com"]
+ALLOWED_HOSTS = ["futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app"]
 
 # Application definition
 
@@ -174,16 +174,16 @@ MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL= 'profile'
 LOGIN_URL ='/accounts/login'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST_USER = 'proxydhakal@outlook.com'
+EMAIL_HOST_USER = 'futnetnepal@outlook.com'
 EMAIL_HOST= 'smtp-mail.outlook.com'
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = 'Nepal@shok55'
+EMAIL_HOST_PASSWORD = 'Nitrogen@55'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USERNAME_REQUIRED = True
 
 
 
@@ -196,7 +196,7 @@ JAZZMIN_SETTINGS = {
     "site_header": "FutnetNepal",
 
     # Logo to use for your site, must be present in static files, used for brand on top left
-    "site_logo": "images/logo1.png",
+    "site_logo": "images/logo.png",
 
     # CSS classes that are applied to the logo above
     "site_logo_classes": "img-responisve",
