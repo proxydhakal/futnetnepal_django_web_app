@@ -57,21 +57,41 @@
                 </div>
             </div>
             <div class="col-md-6 mb-3">
-                <div class="card">
-                    <div class="card-header p-3">
+                {% for post in posts %}
+                <div class="card mb-5">
+                    <div class="card-header">
                         <div class="media position-relative">
-                            <img src="{% static 'images/opponent.jpg' %}" class="mr-3 rounded-circle" alt="..." height="60" width="60">
-                            <div class="media-body">
-                                <h5 class="mt-0">Shekhar Dhakal</h5>
-                                <span><small class="text-muted">Upload 3 mins ago</small></span>
+                            <img src="{{user.profiles.profile_image.url}}" class="mr-3 rounded-circle" alt="..." height="60" width="60">
+                            <div class="media-body" style="line-height:0pt;">
+                                <h5 class="mt-2" style="line-height:0pt;">{{post.author.first_name}} {{post.author.last_name}}</h5>
+                                <div class="dropdown float-right">
+                                    <i class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    </i>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                      <a class="dropdown-item mb-3" href="#">Edit</a>
+                                      <a class="dropdown-item" href="#">Delete</a>
+                                    </div>
+                                  </div>
+                                <h5><span>{{post.author}}</span></h5>
+                                <span><small class="text-muted">{{ post.whenpublished }}</small></span>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                        <img src="{% static 'images/opponent.jpg' %}" class="w-100">
+                        <p>{{post.message}}</p>   
                     </div>
+                        <table class="table table-bordered text-center m-0">
+                            <thead>
+                              <tr>
+                                {% comment %} <th scope="col"><i class="fas fa-map-marker-alt"></i> {{post.location}}</th> {% endcomment %}
+                                <th scope="col"><i class="fas fa-map"></i> {{post.venue}}</th>
+                                <th scope="col"><i class="fas fa-calendar-alt"></i> {{ post.date|date:"j D, Y" }}</th>
+                                <th scope="col"><i class="fas fa-clock"></i> {{post.time}}</th>
+                              </tr>
+                            </thead>
+                          </table>
                 </div>
+                {% endfor %}
             </div>
             <div class="col-md-3 mb-3">
                 <div class="card card-body">

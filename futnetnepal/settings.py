@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'ur^khr2u!kph7dxrgz((@of_i1_=td!2)wgnw$91q@e=oa$te*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app"]
+ALLOWED_HOSTS = ["*","futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app"]
 
 # Application definition
 

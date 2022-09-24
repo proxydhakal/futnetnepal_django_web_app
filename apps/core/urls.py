@@ -1,6 +1,6 @@
 from django.urls import path
 from apps.core import views
-from apps.accounts.views import profile
+from apps.accounts.views import UserProfileView
 urlpatterns = [
     path('', views.index, name='index'),
     path('about', views.about, name='about'),
@@ -8,5 +8,5 @@ urlpatterns = [
     path('contact', views.contact, name='contact'),
     path('home/', views.HomeView.as_view(), name='home'),
     path('review', views.review, name='review'),
-    path('profile/', profile, name='profile'),
+    path('profile/', UserProfileView.as_view(), name='profile'),
 ]

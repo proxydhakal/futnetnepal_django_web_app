@@ -21,47 +21,49 @@
                     </button>
                     </div>
                     <div class="modal-body">
-                        <form class="needs-validation" novalidate>
+                        <form class="needs-validation" novalidate action="{% url 'home' %}" method="POST">
+                          {% csrf_token %}
                             <div class="form-row">
                                 <div class="col-md-6 mb-3">
                                     <label for="validationTooltip02">Location</label>
-                                    <select class="custom-select mr-sm-2" id="inlineFormCustomSelect">
-                                        <option selected>Select Location</option>
-                                        <option value="1">Kathmandu</option>
-                                        <option value="2">Lalitpur</option>
-                                        <option value="3">Bhaktapur</option>
+                                    <select class="custom-select mr-sm-2" id="inlineFormCustomSelect" name="location">
+                                        <option selected="selected" disabled>Select Location</option>
+                                        {% for location in locations %}
+                                        <option value="{{location.id}}">{{location.name}}</option>
+                                        {% endfor %}
                                       </select>
                                     </div>
                               <div class="col-md-6 mb-3">
                                 <label for="validationTooltip01">Select Venue</label>
-                                <select class="custom-select mr-sm-2" id="inlineFormCustomSelect">
-                                    <option selected>Choose Futsal</option>
-                                    <option value="1">G4 Futsal</option>
-                                    <option value="2">Kumari Futsal</option>
-                                    <option value="3">Kick Off Futsal</option>
+                                <select class="custom-select mr-sm-2" id="inlineFormCustomSelect" name="venue">
+                                    <option selected="selected" disabled>Choose Futsal</option>
+                                    {% for venue in venues %}
+                                    <option value="{{venue.id}}">{{venue.name}}</option>
+                                    {% endfor %}
+                                    
                                   </select>
                               </div>
                             </div>
                             <div class="form-row">
                               <div class="col-md-6 mb-3">
                                 <label for="validationTooltip03">Date</label>
-                                <input type="date" class="form-control" id="validationTooltip03" placeholder="Date" required>
+                                <input type="date" name="date" class="form-control" id="validationTooltip03" placeholder="Date" required>
                                 <div class="invalid-tooltip">
                                   Please provide a valid date.
                                 </div>
                               </div>
                               <div class="col-md-6 mb-3">
                                 <label for="validationTooltip04">Time</label>
-                                <select class="custom-select mr-sm-2" id="inlineFormCustomSelect">
-                                    <option selected>Select time</option>
-                                    <option value="1">Morning (5am to 9am)</option>
-                                    <option value="2">Day (9am to 4pm)</option>
-                                    <option value="3">Evening (4pm to 9pm)</option>
+                                <select class="custom-select mr-sm-2" id="inlineFormCustomSelect" name="time">
+                                    <option selected="selected" disabled>Select time</option>
+                                    {% for time in times %}
+                                    <option value="{{time.id}}">{{time.name}}</option>
+                                    {% endfor %}
                                   </select>
                               </div>
                               <div class="col-md-12 mb-3">
                                 <label for="exampleFormControlTextarea1">Message</label>
-                                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                                <textarea class="form-control" name="message" id="exampleFormControlTextarea1" rows="3"></textarea>
                               </div>
                             </div>
                             <button class="btn btn-primary" type="submit">Create</button>

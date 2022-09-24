@@ -1,9 +1,14 @@
-from django.shortcuts import render,redirect
+from multiprocessing import context
+from django.shortcuts import render,redirect,get_object_or_404
 from django.views import View
 from apps.accounts.forms import UserRegisterForm
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
+from django.contrib.auth.models import User
+from apps.core.models import Post
 from django.contrib.auth.decorators import login_required
+from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 def success(request):
     template_name='accounts/success.html'
     return render(request, template_name)
@@ -32,8 +37,13 @@ class SignUpView(View):
         else:
             return render(request, 'accounts/register.html', {'form':form})
 
-@login_required
-def profile(request):
-    template_name='account/profile.html'
-    return render(request, template_name)
+
+class UserProfileView(LoginRequiredMixin,ListView):
+    model =Post
+    template_name = 'account/profile.html'
+    context_object_name = 'posts'
+    ordering =['-created_at']
+
+    def get_queryset(self):
+        return Post.objects.filter(author=self.request.user).order_by('-created_at')
     
