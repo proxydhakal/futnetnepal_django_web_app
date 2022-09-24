@@ -32,7 +32,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*","futnetnp.com","www.futnetnp.com","futnetnepal.herokuapp.com"]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -175,12 +174,12 @@ MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL= 'profile'
 LOGIN_URL ='/accounts/login'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST_USER = 'futnetnepal@gmail.com'
-EMAIL_HOST= 'smtp.gmail.com'
+EMAIL_HOST_USER = 'proxydhakal@outlook.com'
+EMAIL_HOST= 'smtp-mail.outlook.com'
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = 'Nuwakot@2022'
+EMAIL_HOST_PASSWORD = 'Nepal@shok55'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'

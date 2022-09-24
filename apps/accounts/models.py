@@ -6,18 +6,6 @@ from django.conf import settings
 from PIL import Image
 from phone_field import PhoneField
 
-# Create your models here.
-
-
-
-# class User(AbstractUser):
-#     ROLES=(("0", "Admin"), ("1", "User"), ("2", "Guest"))
-#     role = models.CharField(max_length=1, choices=ROLES, default=2)
-#     email = models.EmailField(_('email address'), unique=True)
-
-
-#     USERNAME_FIELD = "email"
-#     REQUIRED_FIELDS= "username",
 
 class Profile(models.Model):
     user= models.OneToOneField(User, on_delete=models.CASCADE, related_name="profiles")
