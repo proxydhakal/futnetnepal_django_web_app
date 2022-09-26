@@ -1,10 +1,11 @@
 import array
 from multiprocessing import context
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponseRedirect
 from django.views import View
 from django.contrib import messages
-from django.views.generic import TemplateView,CreateView
+from django.db.models import Count
+from django.views.generic import TemplateView,CreateView,ListView
 from apps.core.models import Time,Location, Post, Venue
 from apps.core.forms import UserPostForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -38,21 +39,60 @@ class HomeView(LoginRequiredMixin,View):
     form_class = UserPostForm
 
     def get(self, request, *args, **kwargs):
+        form = UserPostForm()
         context = dict()
-        context["posts"] = Post.objects.filter().order_by('-created_at')       
+        context={'form':form}
+        context["posts"] = Post.objects.raw('''SELECT core_post.* ,accounts_profile.profile_image as pimage
+                                                FROM core_post        
+                                                JOIN accounts_profile        
+                                                ON core_post.author_id = accounts_profile.user_id
+                                                ORDER BY core_post.created_at DESC''')       
         context["times"] = Time.objects.all()
         context["venues"] = Venue.objects.all()
         context["locations"] = Location.objects.all()
+        context["times"] = Time.objects.raw('''SELECT core_time.id,core_time.name as Name,COUNT(core_post.time_id) as Total
+                                                     FROM core_time         
+                                                     JOIN core_post        
+                                                     ON core_time.id = core_post.time_id
+                                                     GROUP BY core_time.name''')
         return render(request, self.template_name,context)
 
     def post(self, request, *args, **kwargs):
-        form = UserPostForm(request.POST)
+        form = UserPostForm(request.POST or None)
         if form.is_valid():
+            location = form.cleaned_data.get("location")
+            venue = form.cleaned_data.get("venue")
+            date = form.cleaned_data.get("date")
+            time = form.cleaned_data.get("time")
+            message = form.cleaned_data.get("message")
+            data ={'location':location, 'venue':venue, 'date':date,'time':time,'message': message}
             data =form.save(commit=False)
             data.author =self.request.user
             data.save()
             messages.success(request, f'Event created successfully!')
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/home/')
         else:
+            messages.error(request, 'Error creating post!')
             form = UserPostForm()
-        return render(request, self.template_name,{'form':form})
+            return render(request, self.template_name,context={'form':form})
+
+class CategoryPostListView(ListView):
+    model =Post
+    template_name = 'core/post_by_category.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(CategoryPostListView, self).get_context_data(**kwargs)
+        query = self.kwargs.get('pk')
+        context["categories"] = Post.objects.raw('''SELECT core_post.* ,accounts_profile.profile_image as pimage
+                                                    FROM core_post        
+                                                    JOIN accounts_profile        
+                                                    ON core_post.author_id = accounts_profile.user_id
+                                                    Where time_id = %s
+                                                    ORDER BY core_post.created_at DESC
+                                                    ''' , [query])
+        context["times"] = Time.objects.raw('''SELECT core_time.id,core_time.name as Name,COUNT(core_post.time_id) as Total
+                                                FROM core_time         
+                                                JOIN core_post        
+                                                ON core_time.id = core_post.time_id
+                                                GROUP BY core_time.name''')
+        return context

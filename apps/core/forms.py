@@ -10,10 +10,10 @@ class UserPostForm(ModelForm):
         model = Post
         fields =['location','venue','date','time','message']
         widgets ={
-            'location':Select(attrs={'class':'form-control'}),
-            'venue':Select(attrs={'class':'form-control'}),
-            'date':DateInput(attrs={'class':'form-control'}),
-            'time':Select(attrs={'class':'form-control'}),
-            'message':Textarea(attrs={'class':'form-control'}),
+            'location':Select(attrs={'class':'form-control custom-select mr-sm-2', 'id':'inlineFormCustomSelect'}),
+            'venue':Select(attrs={'class':'form-control custom-select mr-sm-2', 'id':'inlineFormCustomSelect'}),
+            'date':DateInput(attrs={'class':'form-control', 'id':'validationTooltip03', 'type':'date','placeholder':'Date'}),
+            'time':Select(attrs={'class':'form-control custom-select mr-sm-2', 'id':'inlineFormCustomSelect'}),
+            'message':Textarea(attrs={'class':'form-control','id':'exampleFormControlTextarea1', 'rows':'3'}),
         }
 
