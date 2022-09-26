@@ -1,0 +1,50 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+
+{% block navsocial %}
+{% include "partials/navsocial.html" %}
+{% endblock navsocial %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+        <section id="venueList">
+            <div class="container">
+                <h3 class="text-center mt-3">List of Venue Partnership with Futnet Nepal</h3>
+                
+                    <table class="table table-responsive  table-hover mt-3">
+                        <thead class="thead-light">
+                          <tr>
+                            <th scope="col">S.N</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Phone</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Address</th>
+                            <th scope="col">Image</th>
+                            <th scope="col">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            {% for venue in venues %}
+                            <tr>
+                                <th scope="row">{{venue.id}}</th>
+                                <td>{{venue.name}}</td>
+                                <td>{{venue.phone}}</td>
+                                <td>{{venue.email}}</td>
+                                <td>{{venue.address}}</td>
+                                <td><img class="img-responsive" width="100" height="50" src="{{venue.picture.url}}"></td>
+                                <td><a href="#"><i class="fas fa-list-alt fa-lg" height="50"></i></a></td>
+                              </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                
+            </div>
+        </section>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}

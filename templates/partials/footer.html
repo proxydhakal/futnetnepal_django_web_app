@@ -9,13 +9,12 @@
                         <li><a href="index.html">Home</a></li>
                         <li><a href="#">News</a></li>
                         <li><a href="#">Offer</a></li>
-                        <li><a href="#">Venue List</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Partner With Us</a></li>
-                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="{% url 'venuelist' %}">Venue List</a></li>
+                        <li><a href="{% url 'blog' %}">Blog</a></li>
+                        <li><a href="{% url 'partnerwithus' %}">Partner With Us</a></li>
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
                         <li><a href="#">Activites</a></li>
                         <li><a href="#">FAQs</a></li>
-                        <li><a href="{% url 'home' %}">Place</a></li>
                     </ul>
                 </div>
             </div>

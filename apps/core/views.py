@@ -96,3 +96,13 @@ class CategoryPostListView(ListView):
                                                 ON core_time.id = core_post.time_id
                                                 GROUP BY core_time.name''')
         return context
+
+
+class VenueListView(ListView):
+    model =Venue
+    template_name = 'core/venuelist.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(VenueListView, self).get_context_data(**kwargs)
+        context['venues'] = Venue.objects.all()
+        return context
