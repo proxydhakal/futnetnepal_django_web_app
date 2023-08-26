@@ -50,11 +50,10 @@ class HomeView(LoginRequiredMixin,View):
         context["times"] = Time.objects.all()
         context["venues"] = Venue.objects.all()
         context["locations"] = Location.objects.all()
-        context["times"] = Time.objects.raw('''SELECT core_time.id,core_time.name as Name,COUNT(core_post.time_id) as Total
-                                                     FROM core_time         
-                                                     JOIN core_post        
-                                                     ON core_time.id = core_post.time_id
-                                                     GROUP BY core_time.name''')
+        context["times"] = Time.objects.raw('''SELECT core_time.id, core_time.name as Name, COUNT(core_post.time_id) as Total
+                                                FROM core_time
+                                                JOIN core_post ON core_time.id = core_post.time_id
+                                                GROUP BY core_time.id, core_time.name''')
         return render(request, self.template_name,context)
 
     def post(self, request, *args, **kwargs):

@@ -9,13 +9,9 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-#to connect app via mySQL
-import pymysql
-pymysql.version_info = (2, 1, 0, 'final', 0)
-pymysql.install_as_MySQLdb()
-
 
 from pathlib import Path
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ur^khr2u!kph7dxrgz((@of_i1_=td!2)wgnw$91q@e=oa$te*'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = ["*","futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app"]
+ALLOWED_HOSTS = ["*","futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app","128.199.25.221"]
 
 # Application definition
 
@@ -49,6 +45,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.blogs',
     'apps.posts',
+    
 
     #third_party Apps
     'crispy_forms',
@@ -101,33 +98,37 @@ WSGI_APPLICATION = 'futnetnepal.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql', 
-#         'NAME': 'futnetnepal',
-#         'USER': 'root',
-#         'PASSWORD': '',
-#         'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
-#         'PORT': '3306',
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': config("DB_NAME"),
+        'USER': config("DB_USER"),
+        'PASSWORD': config("DB_PASSWORD"),
+        'HOST': config("DB_HOST"),
+        'PORT': 5432,
+    }
+}
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'defaultdb',
-#         'USER': 'doadmin',
-#         'PASSWORD': 'wL7TXzsOzToGf7ue',
-#         'HOST':'db-postgresql-nyc3-49114-do-user-10820474-0.b.db.ondigitalocean.com',
-#         'POST':'25060',
+#         'NAME': 'futnetnepal',
+#         'USER': 'futnetnepal',
+#         'PASSWORD': 'AVNS_Bp-gKOQ4DDLnpgAUIYe',
+#         'HOST': 'private-dbaas-db-5973383-do-user-14555981-0.b.db.ondigitalocean.com',
+#         'PORT': '25060',
 #     }
 # }
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -174,13 +175,16 @@ STATIC_ROOT = BASE_DIR / 'static/files/'
 MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL= 'profile'
 LOGIN_URL ='/accounts/login'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST_USER = 'futnetnepal@outlook.com'
-EMAIL_HOST= 'smtp-mail.outlook.com'
-EMAIL_PORT = '587'
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = 'Nitrogen@55'
+
+#Email configuration 
+EMAIL_USE_TLS = config("EMAIL_USE_TLS")
+# EMAIL_USE_SSL = config("EMAIL_USE_SSL")
+EMAIL_BACKEND = config("EMAIL_BACKEND")
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_PORT =config("EMAIL_PORT")
+
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'

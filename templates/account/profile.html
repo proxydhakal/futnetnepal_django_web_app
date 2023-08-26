@@ -13,7 +13,7 @@
         <div class="row">
             <div class="col-md-3">
                 <div class="card card-body h-100" id="profile-wrapper">
-                    <img id="profile-pic" src="{{user.profiles.profile_image.url}}" class="rounded-circle">
+                    <img id="profile-pic" src="{{userprofiledata.profile_image.url}}" class="rounded-circle">
                     <hr>
                     <h4>Hi I'm {{user.username}}!</h4>
                     <p>I love coding, doing research and collaborating</p>
@@ -26,12 +26,12 @@
 
             <div class="col-md-9">
                 <div class="card">
-                    <img src="{{user.profiles.cover_image.url}}" class="card-img-top" alt="...">
+                    <img src="{{userprofiledata.cover_image.url}}" class="card-img-top" alt="...">
                     <div class="card-body cover-details">
                         <div class="row align-items-center">
                             <div class="col-sm-5"><p><i class="fa fa-envelope"></i> Email: {{user.email}}</p></div>
-                            <div class="col-sm-3"><p><i class="fa fa-phone"></i> Phone: {{user.profiles.phone}}</p></div>
-                            <div class="col-sm-4"><p><i class="fa fa-map-marker"></i> Address: {{user.profiles.address}}</p></div>
+                            <div class="col-sm-3"><p><i class="fa fa-phone"></i> Phone: {{userprofiledata.phone}}</p></div>
+                            <div class="col-sm-4"><p><i class="fa fa-map-marker"></i> Address: {{userprofiledata.address}}</p></div>
                         </div>
                     </div>
                   </div>
