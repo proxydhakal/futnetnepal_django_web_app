@@ -11,40 +11,14 @@
             <div class="card-body">
                 <form action="{% url 'accounts:updateprofile' user.username %}" data-toggle="validator" role="form" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="row">  
-                        <div class="col-lg-3">
-                            <div class="form-group">
-                                <label class="text-Golden-Form">First Name<b class="text-danger"> *</b></label>
-                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="first_name" name="first_name" placeholder="Enter First Name" value="{{ user.first_name }}" readonly>
-                                {% if form.fullname.errors %}
-                                <span class="text-danger">
-                                        {% for error in form.fullname.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div class="form-group">
-                                <label class="text-Golden-Form">Last Name<b class="text-danger"> *</b></label>
-                                <input type="text" class="form-control {% if form.lastname.errors %}is-invalid{% endif %}"  id="last_name" name="last_name" placeholder="Enter Last Name" value="{{ user.last_name }}" readonly>
-                                {% if form.lastname.errors %}
-                                <span class="text-danger">
-                                        {% for error in form.fullname.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </div>
+                    <div class="row">
                         <div class="col-lg-3">
                             <div class="form-group">
                                 <label class="text-Golden-Form">Email<b class="text-danger"> *</b></label>
-                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="email" name="email" placeholder="Enter Email" value="{{ user.email }}" readonly>
-                                {% if form.fullname.errors %}
+                                <input type="text" class="form-control {% if user_form.email.errors %}is-invalid{% endif %}"  id="email" name="email" placeholder="Enter Email" value="{{ user.email }}" readonly>
+                                {% if user_form.email.errors %}
                                 <span class="text-danger">
-                                        {% for error in form.fullname.errors %}
+                                        {% for error in user_form.email.errors %}
                                             {{ error }}
                                         {% endfor %}
                                     </span>
@@ -54,10 +28,36 @@
                         <div class="col-lg-3">
                             <div class="form-group">
                                 <label class="text-Golden-Form">Username<b class="text-danger"> *</b></label>
-                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="username" name="username" placeholder="Enter User Name" value="{{ user.username }}">
-                                {% if form.fullname.errors %}
+                                <input type="text" class="form-control {% if user_form.username.errors %}is-invalid{% endif %}"  id="username" name="username" placeholder="Enter User Name" value="{{ user.username }}" readonly>
+                                {% if user_form.username.errors %}
                                 <span class="text-danger">
-                                        {% for error in form.fullname.errors %}
+                                        {% for error in user_form.username.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>  
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">First Name<b class="text-danger"> *</b></label>
+                                <input type="text" class="form-control {% if user_form.first_name.errors %}is-invalid{% endif %}"  id="first_name" name="first_name" placeholder="Enter First Name" value="{{ user.first_name }}">
+                                {% if user_form.first_name.errors %}
+                                <span class="text-danger">
+                                        {% for error in user_form.first_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Last Name<b class="text-danger"> *</b></label>
+                                <input type="text" class="form-control {% if user_form.last_name.errors %}is-invalid{% endif %}"  id="last_name" name="last_name" placeholder="Enter Last Name" value="{{ user.last_name }}" >
+                                {% if user_form.last_name.errors %}
+                                <span class="text-danger">
+                                        {% for error in user_form.last_name.errors %}
                                             {{ error }}
                                         {% endfor %}
                                     </span>
@@ -95,7 +95,7 @@
                         <div class="col-lg-6">
                             <div class="form-group">
                                 <label class="text-Golden-Form">Date Of Birth<b class="text-danger"> *</b></label>
-                                <input type="date" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="dob" name="dob" placeholder="Enter DOB" value="{{ userprofiledata.dob }}">
+                                <input type="date" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="dob" name="dob" placeholder="Enter DOB" value="{{ userprofiledata.dob|date:'Y-m-d' }}">
                                 {% if form.fullname.errors %}
                                 <span class="text-danger">
                                         {% for error in form.fullname.errors %}
@@ -121,7 +121,7 @@
                         <div class="col-lg-6">
                             <div class="form-group">
                                 <label class="text-Golden-Form">Phone<b class="text-danger"> *</b></label>
-                                <input type="number" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="phone" name="phone" placeholder="Enter Phone" value="{{ userprofiledata.phone }}">
+                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="phone" name="phone" placeholder="Enter Phone" value="{{ userprofiledata.phone }}">
                                 {% if form.fullname.errors %}
                                 <span class="text-danger">
                                         {% for error in form.fullname.errors %}

@@ -1,7 +1,7 @@
 from multiprocessing import context
 from django.shortcuts import render,redirect,get_object_or_404,HttpResponse
 from django.views import View
-from apps.accounts.forms import UserRegisterForm, CombinedProfileUpdateForm,UserProfileUpdateForm
+from apps.accounts.forms import UserRegisterForm, UserUpdateForm, UserProfileUpdateForm
 from apps.accounts.models import Profile
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -71,27 +71,24 @@ class EditProfile(LoginRequiredMixin, View):
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,
         }
-        form = UserProfileUpdateForm(instance=user_profile, initial=user_data)
-        context = {'form': form,'userprofiledata':user_profile}
+        user_form = UserUpdateForm(instance=request.user, initial=user_data)
+        profile_form = UserProfileUpdateForm(instance=user_profile)
+        context = {'user_form': user_form, 'profile_form': profile_form, 'userprofiledata': user_profile}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         user_profile = Profile.objects.get(user=request.user)
-        form = UserProfileUpdateForm(request.POST, request.FILES, instance=user_profile)
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = UserProfileUpdateForm(request.POST, request.FILES, instance=user_profile)
 
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.username = form.cleaned_data['username']
-            user.email = form.cleaned_data['email']
-            user.first_name = form.cleaned_data['first_name']
-            user.last_name = form.cleaned_data['last_name']
-            user.save()
-            form.save()
-            messages.success(request, 'Profile Update Sucessfully!')
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Profile Update Successfully!')
             return redirect('/accounts/profile/')  # Replace with your profile detail view name
-
-        context = {'form': form,'userprofiledata':user_profile}
-        return render(request, self.template_name, context)
+        else:
+            context = {'user_form': user_form, 'profile_form': profile_form, 'userprofiledata': user_profile}
+            return render(request, self.template_name, context)
 
 
 
