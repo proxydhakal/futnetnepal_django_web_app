@@ -1,7 +1,8 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
 from django.forms import ModelForm, TextInput,PasswordInput
+from apps.accounts.models import Profile
 
 class EmailValidation(forms.EmailField):
     def validate(self, value):
@@ -40,3 +41,30 @@ class UserRegisterForm(ModelForm):
         if qs.exists():
             raise forms.ValidationError(f"{email} is taken. Try another!")
         return email
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['profile_image', 'cover_image', 'phone', 'address', 'dob']
+
+class CombinedProfileUpdateForm(UserChangeForm):
+    
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+
+    profile = ProfileUpdateForm()
+
+class UserProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+
+    profile_image = forms.ImageField(required=False)
+    cover_image = forms.ImageField(required=False)
+    phone = forms.CharField(max_length=15, required=False)
+    address = forms.CharField(max_length=50, required=False)
+    dob = forms.DateField(required=False)
+
+

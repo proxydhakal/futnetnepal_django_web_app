@@ -1,9 +1,9 @@
 {% extends "partials/base.html" %} 
 {% load static %}
 
-{% block navsocial %}
+{% comment %} {% block navsocial %}
 {% include "partials/navsocial.html" %}
-{% endblock navsocial %}
+{% endblock navsocial %} {% endcomment %}
 {% block navbar %}
 {% include "partials/navbar.html" %}
 {% endblock navbar %}
@@ -18,7 +18,7 @@
                     <h4>Hi I'm {{user.username}}!</h4>
                     <p>I love coding, doing research and collaborating</p>
                     <a href="#" class="btn btn-outline-primary mt-1"><i class="fa fa-inbox"></i> Messages <span class="badge badge-info">4</span></a>
-                    <a href="#" class="btn btn-outline-success mt-1"><i class="fa-solid fa-user-pen"></i> Edit Profile</a>
+                    <a href="{% url 'accounts:updateprofile' user.username %}" class="btn btn-outline-success mt-1"><i class="fa-solid fa-user-pen"></i> Edit Profile</a>
                     <a href="{% url 'account_email' %}" class="btn btn-outline-secondary mt-1"><i class="fa fa-envelope"></i> Add/Change Email</a>
                     <a href="{% url 'account_change_password' %}" class="btn btn-outline-danger mt-1"><i class="fa fa-key"></i> Change Password</a>
                 </div>
@@ -62,7 +62,7 @@
                 <div class="card mb-5">
                     <div class="card-header">
                         <div class="media position-relative">
-                            <img src="{{user.profiles.profile_image.url}}" class="mr-3 rounded-circle" alt="..." height="60" width="60">
+                            <img src="{{userprofiledata.cover_image.url}}" class="mr-3 rounded-circle" alt="..." height="60" width="60">
                             <div class="media-body" style="line-height:0pt;">
                                 <h5 class="mt-2" style="line-height:0pt;">{{post.author.first_name}} {{post.author.last_name}}</h5>
                                 <div class="dropdown float-right">

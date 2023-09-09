@@ -1,0 +1,192 @@
+{% extends "partials/base.html" %} 
+{% load static %}
+{% block navbar %}
+{% include "partials/navbar.html" %}
+{% endblock navbar %}
+{% block main %}
+<section class="profile">
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-left"><h2>Edit Profile: {{user.username}}</h2></div>
+            <div class="card-body">
+                <form action="{% url 'accounts:updateprofile' user.username %}" data-toggle="validator" role="form" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">  
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">First Name<b class="text-danger"> *</b></label>
+                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="first_name" name="first_name" placeholder="Enter First Name" value="{{ user.first_name }}" readonly>
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Last Name<b class="text-danger"> *</b></label>
+                                <input type="text" class="form-control {% if form.lastname.errors %}is-invalid{% endif %}"  id="last_name" name="last_name" placeholder="Enter Last Name" value="{{ user.last_name }}" readonly>
+                                {% if form.lastname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Email<b class="text-danger"> *</b></label>
+                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="email" name="email" placeholder="Enter Email" value="{{ user.email }}" readonly>
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Username<b class="text-danger"> *</b></label>
+                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="username" name="username" placeholder="Enter User Name" value="{{ user.username }}">
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Profile Image<b class="text-danger"> *</b></label><br>
+                                <img src="{{ userprofiledata.profile_image.url }}" alt="Your Image Description" class="img-responsive displayprofile mb-1" id="profileimage" height="100" width="100">
+                                <input type="file" class="form-control-file {% if form.fullname.errors %}is-invalid{% endif %}"  id="profile_image" name="profile_image" placeholder="Enter First Name" value="{{ userprofiledata.profile_image }}">
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Cover Image<b class="text-danger"> *</b></label><br>
+                                <img src="{{ userprofiledata.cover_image.url }}" alt="Your Image Description" id="coverimage" class="img-responsive displaycover mb-1" height="100" width="200">
+                                <input type="file" class="form-control-file {% if form.fullname.errors %}is-invalid{% endif %}"  id="cover_image" name="cover_image" placeholder="Enter First Name" value="{{ userprofiledata.cover_image }}">
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Date Of Birth<b class="text-danger"> *</b></label>
+                                <input type="date" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="dob" name="dob" placeholder="Enter DOB" value="{{ userprofiledata.dob }}">
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Full Address<b class="text-danger"> *</b></label>
+                                <input type="text" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="address" name="address" placeholder="Enter Address" value="{{ userprofiledata.address }}">
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="text-Golden-Form">Phone<b class="text-danger"> *</b></label>
+                                <input type="number" class="form-control {% if form.fullname.errors %}is-invalid{% endif %}"  id="phone" name="phone" placeholder="Enter Phone" value="{{ userprofiledata.phone }}">
+                                {% if form.fullname.errors %}
+                                <span class="text-danger">
+                                        {% for error in form.fullname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-md">UPDATE</button>
+                </form>
+            </div>
+        </div>
+        <br><br>
+    </div>
+</section>
+<script>
+$(document).ready(function() {
+    // Get the input field for the cover image
+    var coverImageInput = $('#cover_image');
+    var profileImageInput = $('#profile_image');
+    
+    // Get the img element to display the chosen image
+    var coverImagePreview = $('img.displaycover');
+    var profileImagePreview = $('img.displayprofile');
+    
+    // Listen for changes in the input field
+    coverImageInput.on('change', function() {
+        // Check if any file is selected
+        if (this.files && this.files[0]) {
+            var reader = new FileReader();
+            
+            // Set up a function to run when the image is loaded
+            reader.onload = function(e) {
+                // Update the src attribute of the img element
+                coverImagePreview.attr('src', e.target.result);
+            };
+            
+            // Read the selected image as a data URL
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+    profileImageInput.on('change', function() {
+        // Check if any file is selected
+        if (this.files && this.files[0]) {
+            var reader = new FileReader();
+            
+            // Set up a function to run when the image is loaded
+            reader.onload = function(e) {
+                // Update the src attribute of the img element
+                profileImagePreview.attr('src', e.target.result);
+            };
+            
+            // Read the selected image as a data URL
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+});
+</script>
+{% endblock main %}
+{% block newsletter %}
+{% include "partials/newsletter.html" %}
+{% endblock newsletter %}
+{% block footer %}
+{% include "partials/footer.html" %}
+{% endblock footer %}
+

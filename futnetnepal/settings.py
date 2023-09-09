@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ["*","futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app","128.199.25.221"]
 
@@ -64,7 +64,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-SITE_ID = 2
+SITE_ID = 3
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -109,7 +109,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': config("DB_NAME"),
         'USER': config("DB_USER"),
         'PASSWORD': config("DB_PASSWORD"),
@@ -173,7 +173,7 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_ROOT = BASE_DIR / 'static/files/'
 MEDIA_URL = '/media/'
-LOGIN_REDIRECT_URL= 'profile'
+LOGIN_REDIRECT_URL= '/home/'
 LOGIN_URL ='/accounts/login'
 
 #Email configuration 
@@ -202,6 +202,8 @@ JAZZMIN_SETTINGS = {
 
     # Logo to use for your site, must be present in static files, used for brand on top left
     "site_logo": "images/logo.png",
+
+    "site_brand": "Futnet Nepal",
 
     # CSS classes that are applied to the logo above
     "site_logo_classes": "img-responisve",

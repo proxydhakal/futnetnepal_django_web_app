@@ -12,6 +12,12 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.27/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.27/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" ></script>
+    <script src="{% static 'js/bootstrap.min.js' %}" ></script>
+
     <title>Futnet Nepal :: One Stop Web Apps for Futsal Enthusiast</title>
 </head>
 <body>
@@ -21,16 +27,51 @@
         {% block navbar %}
         {% endblock navbar %}
         {% block message %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {{ message.tags }} alert-dismissible m-0" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+            <script>
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'alert-success' %}
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: '{{ message }}'
+                            })
+                        {% elif message.tags == 'alert-error' %}
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: '{{ message }}'
+                            })
+                        {% elif message.tags == 'alert-info' %}
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Info',
+                                text: '{{ message }}'
+                            })
+                        {% elif message.tags == 'alert-warning' %}
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Warning',
+                                text: '{{ message }}'
+                            })
+                        {% else %}
+                            Swal.fire({
+                                title: '{{ message.tags }}',
+                                text: '{{ message }}'
+                            })
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </script>
+            <script>
+                {% if success_message %}
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'success',
+                        text: '{{ success_message }}'
+                    })
+                {% endif %}
+            </script>        
         {% endblock message %}
         {% block main %}
         {% endblock main %}
@@ -42,7 +83,4 @@
         {% endblock footer %}
     </div>   
 </body>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" ></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" ></script>
-<script src="{% static 'js/bootstrap.min.js' %}" ></script>
 </html>
