@@ -13,20 +13,20 @@ services:
       - futnet_db
     restart: always
 
-  # futnet_db:
-  #   image: postgres
-  #   container_name:  futnet_db
-  #   environment:
-  #     - POSTGRES_USER=futnetnepal
-  #     - POSTGRES_PASSWORD=futnet123
-  #     - POSTGRES_DB=futnetnepal
-  #     - POSTGRES_PORT=5432
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data/
-  #   restart: always
+  futnet_db:
+    image: postgres
+    container_name:  futnet_db
+    environment:
+      - POSTGRES_USER=futnetnepal
+      - POSTGRES_PASSWORD=FUTNETNEPAL
+      - POSTGRES_DB=futnetnepal
+      - POSTGRES_PORT=7074
+    ports:
+      - "7074:7074"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
 
 
-# volumes:
-#   postgres_data:
+volumes:
+  postgres_data:
