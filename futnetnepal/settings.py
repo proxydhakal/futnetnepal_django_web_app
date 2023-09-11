@@ -28,6 +28,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ["*","futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app","128.199.25.221"]
 
+CSRF_TRUSTED_ORIGINS = ['https://futnetnepal.com','https://www.futnetnepal.com']
+
 # Application definition
 
 INSTALLED_APPS = [
