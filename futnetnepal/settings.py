@@ -26,7 +26,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ["*","futnetnepal.com","www.futnetnepal.com","futnetnepal.up.railway.app","128.199.25.221"]
+ALLOWED_HOSTS = ["futnetnepal.com","www.futnetnepal.com","165.227.123.107"]
 
 # Application definition
 
@@ -171,7 +171,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 MEDIA_ROOT = BASE_DIR / 'media'
-STATIC_ROOT = BASE_DIR / 'static/files/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL= '/home/'
 LOGIN_URL ='/accounts/login'
