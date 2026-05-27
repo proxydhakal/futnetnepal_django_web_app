@@ -40,6 +40,28 @@ services:
       - './.env'
     environment:
       DEBUG: 'false'
+      REDIS_URL: redis://:mypassword@redis:6379/0
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: redis_cache
+    restart: always
+    command: redis-server --requirepass mypassword
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redis_ui
+    restart: always
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/data
 
   futnet_db:
     image: postgres
@@ -58,3 +80,5 @@ services:
 volumes:
   backend_static:
   backend_media:
+  redis_data:
+  redisinsight_data:

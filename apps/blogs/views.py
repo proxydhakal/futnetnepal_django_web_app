@@ -36,10 +36,18 @@ class BlogDetail(DetailView):
         return context
 
 class CategoryBlogListView(ListView):
-    model =Blog
+    model = Blog
     template_name = 'blogs/blog_by_category.html'
-    context_object_name = 'categories'
-    ordering =['-created_at']
+    context_object_name = 'list_blogs'
+    ordering = ['-created_at']
 
     def get_queryset(self):
-        return Blog.objects.filter(category=self.kwargs.get('category')).order_by('-created_at')
+        return Blog.objects.filter(
+            category__title=self.kwargs.get('category')
+        ).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category_name'] = self.kwargs.get('category')
+        context['categories'] = Category.objects.all()
+        return context

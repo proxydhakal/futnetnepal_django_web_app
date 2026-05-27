@@ -1,226 +1,171 @@
-{% extends "partials/base.html" %} 
+{% extends "partials/base.html" %}
 {% load static %}
-
-{% block navsocial %}
-{% include "partials/navsocial.html" %}
-{% endblock navsocial %}
-{% block navbar %}
-{% include "partials/navbar.html" %}
-{% endblock navbar %}
+{% block title %}Home{% endblock %}
 {% block main %}
-        <section id="imageSlider">
-            <div id="carouselExampleFade" class="carousel slide carousel-fade" data-ride="carousel">
-                <div class="carousel-inner">
-                  <div class="carousel-item active">
-                    <img src="{% static 'images/cover1.jpg'%}" class="d-block w-100" alt="...">
-                    <div class="banner-caption">
-                        <div class="container">
-                            <h2 class="brand-heading">MEET NEW FRIENDS OVER SPORT</h2>
-                            <a class="btn btn-primary text-center rounded-pill p-2" href="{% url 'account_signup' %}">Register Now!</a>
-                        </div>
-                    </div>
-                  </div>
-                  <div class="carousel-item">
-                    <img src="{% static 'images/cover2.jpg'%}" class="d-block w-100" alt="...">
-                    <div class="banner-caption">
-                        <div class="container">
-                            <h2 class="brand-heading">ENGAGE MANAGE GROUPS & SHARE EXPERIENCE</h2>
-                            <a class="btn btn-primary text-center rounded-pill p-2" href="{% url 'account_signup' %}">Register Now!</a>
-                        </div>
-                    </div>
-                  </div>
-                  <div class="carousel-item">
-                    <img src="{% static 'images/cover3.jpg'%}" class="d-block w-100" alt="...">
-                    <div class="banner-caption">
-                        <div class="container">
-                            <h2 class="brand-heading">DISCOVER, EVENTS, DEALS & MORE</h2>
-                            <a class="btn btn-primary text-center rounded-pill p-2" href="{% url 'account_signup' %}">Register Now!</a>
-                        </div>
-                    </div>
-                  </div>
-                </div>
-                <a class="carousel-control-prev" href="#carouselExampleFade" role="button" data-slide="prev">
-                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                  <span class="sr-only">Previous</span>
-                </a>
-                <a class="carousel-control-next" href="#carouselExampleFade" role="button" data-slide="next">
-                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                  <span class="sr-only">Next</span>
-                </a>
-              </div>
 
-        </section>
-        <section class="service">
-            <div class="container">
-                <div class="title">
-                    <samp>Things to do </samp>
-                    <h2>Great Sporting Experience</h2>
-                </div>
-                <div class="row">
-                    <div class="col-lg-3 col-md-6">
-                        <div class="item">
-                            <div class="svg-wrap">
-                                <img src="{% static 'images/svg1.png'  %}">
-                            </div>
-                            <div class="caption">
-                                <h4><a href="#">Play a Match</a></h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="item">
-                            <div class="svg-wrap">
-                                <img src="{% static 'images/svg2.png'  %}">
-                            </div>
-                            <div class="caption">
-                                <h4><a href="#">Make Friends</a></h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="item">
-                            <div class="svg-wrap">
-                                <img src="{% static 'images/svg3.png'  %}">
-                            </div>
-                            <div class="caption">
-                                <h4><a href="#">Stay Healthy</a></h4>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="item">
-                            <div class="svg-wrap">
-                                <img src="{% static 'images/svg4.png'  %}">
-                            </div>
-                            <div class="caption">
-                                <h4><a href="#">Train Yourself</a></h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <section id="features" class="p-3">
-            <div class="container">
-                <div class="title">
-                    <span>Top Attraction</span>
-                    <h2>Top things to do in Futnet Nepal</h2>
-                </div>
-                <div class="feature-list">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="card text-center mb-5 bg-white rounded">
-                                <img src="{% static 'images/venue.jpg'  %}" class="card-img-top" alt="...">
-                                <div class="card-body">
-                                    <h5 class="card-title">Book Venue</h5>
-                                    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                                    <a href="#" class="btn btn-primary rounded-pill p-3 m-3">Book Now!</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-center mb-5 bg-white rounded">
-                                <img src="{% static 'images/opponent.jpg'  %}" class="card-img-top" alt="...">
-                                <div class="card-body">
-                                    <h5 class="card-title">Look for Opponent</h5>
-                                    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                                    <a href="#" class="btn btn-primary rounded-pill p-3 m-3">Find Now!</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-center mb-5 bg-white rounded">
-                                <img src="{% static 'images/event.jpg'  %}" class="card-img-top" alt="...">
-                                <div class="card-body">
-                                    <h5 class="card-title">Host a Match</h5>
-                                    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-                                    <a href="#" class="btn btn-primary rounded-pill p-3 m-3">Host Event!</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="more-feature">
-                    <a class=" btn btn-primary btn-md rounded-pill p-3" href="#">More Things To Do</a>
-                </div>
-             </div>
-        </section>
-        <section class="home-content">
-            <div class="container">
-                <div class="main-title">
-                    <spam>Welcome to </spam>
-                    <h2>Futnet Nepal</h2>
-                </div>
-                <div class="row">
-                    <div class="col-lg-6">
-                        <div class="content-wrap">
-                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rerum, fugit quaerat. Quos sint corporis quae rem quod dolorem! Culpa necessitatibus nihil maxime velit deserunt eos tempore recusandae itaque, aliquid repellendus.
-                              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Magnam molestiae nihil quidem cumque quaerat. Sapiente amet libero sit, vitae laboriosam nisi fuga! Quaerat, voluptate. Doloribus nulla nemo cum laborum recusandae!
-                              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptates ipsum, ipsam debitis dolorum saepe assumenda quaerat officiis accusamus. Inventore ipsam laudantium exercitationem excepturi voluptas illo porro illum vel quisquam corrupti.  
-                            </p>
-                            <a class="btn btn-primary rounded-pill p-3 mt-5" href="#">Read More!</a>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="video-warpper feature-video">
-                            <a data-fancybox href="https://www.youtube.com/embed/_lHve-9EUK0?rel=0">
-                                <img src="{% static 'images/futnet.gif' %}" alt="Futnet Theme Video">
-                                </a>
-                            <div class="video-caption">
-                                <i class="fa fa-youtube-play"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <section id="featured-review">
-            <div class="container">
-                <div class="review-title">
-                    <h1>WHAT OUR FANTASTIC USERS SAY</h1>
-                </div>
-                <div class="row">
-                    <div class="col-lg-9">
-                        <div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
-                            <div class="carousel-inner">
-                              <div class="carousel-item active">
-                                <div class="item">
-                                    <img src="{% static 'images/avatar.jpg'  %}" height="60" width="60">
-                                    <h4 class="review-header">This is fantastic Website</h4>
-                                    <spam>Shekhar Dhakal, Nepal</spam>
-                                </div>
-                                <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Iusto minus corrupti earum culpa consequuntur nesciunt aut officia deserunt. Recusandae, sapiente eum? Molestias nemo odit, nulla natus deserunt laborum magnam architecto!</p>
-                              </div>
-                              <div class="carousel-item">
-                                <div class="item">
-                                    <img src="{% static 'images/avatar.jpg'  %}" height="60" width="60">
-                                    <h4 class="review-header">This is fantastic Website</h4>
-                                    <spam>Shekhar Dhakal, Nepal</spam>
-                                </div>
-                                <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Iusto minus corrupti earum culpa consequuntur nesciunt aut officia deserunt. Recusandae, sapiente eum? Molestias nemo odit, nulla natus deserunt laborum magnam architecto!</p>
-                              </div>
-                              <div class="carousel-item">
-                                <div class="item">
-                                    <img src="{% static 'images/avatar.jpg'  %}" height="60" width="60">
-                                    <h4 class="review-header">This is fantastic Website</h4>
-                                    <spam>Shekhar Dhakal, Nepal</spam>
-                                </div>
-                                <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Iusto minus corrupti earum culpa consequuntur nesciunt aut officia deserunt. Recusandae, sapiente eum? Molestias nemo odit, nulla natus deserunt laborum magnam architecto!</p>
-                              </div>
-                            </div>
-                          </div>
+<!-- Hero Carousel -->
+<section x-data="{
+        activeSlide: 0,
+        slides: [
+            { image: '{% static "images/cover1.jpg" %}', title: 'MEET NEW FRIENDS<br>OVER SPORT' },
+            { image: '{% static "images/cover2.jpg" %}', title: 'ENGAGE GROUPS &amp;<br>SHARE EXPERIENCE' },
+            { image: '{% static "images/cover3.jpg" %}', title: 'DISCOVER EVENTS,<br>DEALS &amp; MORE' }
+        ],
+        next() { this.activeSlide = this.activeSlide === this.slides.length - 1 ? 0 : this.activeSlide + 1 },
+        prev() { this.activeSlide = this.activeSlide === 0 ? this.slides.length - 1 : this.activeSlide - 1 },
+        init() { setInterval(() => { this.next() }, 5000); }
+    }"
+    class="relative h-screen min-h-[600px] w-full overflow-hidden bg-slate-900 group">
 
-                    </div>
-                    <div class="col-lg-3">
-                        <img class="side-img" src="{% static 'images/football-3209205_1920.png'  %}">
-                    </div>
+    <template x-for="(slide, index) in slides" :key="index">
+        <div x-show="activeSlide === index"
+             x-transition:enter="transition ease-out duration-1000"
+             x-transition:enter-start="opacity-0 scale-105"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-1000"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-105"
+             class="absolute inset-0 w-full h-full">
+            <div class="absolute inset-0 bg-slate-900/60 z-10"></div>
+            <img :src="slide.image" class="absolute inset-0 w-full h-full object-cover" alt="">
+            <div class="absolute inset-0 z-20 flex flex-col items-center justify-center pt-32 text-center px-4">
+                <h1 x-html="slide.title" class="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-8 tracking-tight text-white drop-shadow-2xl"></h1>
+                <a href="{% url 'accounts:signup' %}" class="inline-block bg-rose-600 hover:bg-rose-500 text-white font-bold py-4 px-10 rounded-full shadow-[0_0_20px_rgba(225,29,72,0.6)] hover:-translate-y-1 transition-all duration-300">
+                    Register Now!
+                </a>
+            </div>
+        </div>
+    </template>
+
+    <button @click="prev()" type="button" class="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/30 backdrop-blur-sm text-white rounded-full transition-all opacity-0 group-hover:opacity-100">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+    </button>
+    <button @click="next()" type="button" class="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/30 backdrop-blur-sm text-white rounded-full transition-all opacity-0 group-hover:opacity-100">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+    <div class="absolute bottom-8 left-0 right-0 z-30 flex justify-center gap-3">
+        <template x-for="(slide, index) in slides" :key="index">
+            <button @click="activeSlide = index" type="button"
+                    :class="activeSlide === index ? 'bg-rose-600 w-8' : 'bg-white/50 hover:bg-white w-3'"
+                    class="h-3 rounded-full transition-all duration-300"></button>
+        </template>
+    </div>
+</section>
+
+<!-- Things to do -->
+<section class="py-24 bg-white">
+    <div class="container mx-auto px-4 text-center">
+        <p class="text-rose-600 font-bold tracking-wider uppercase text-sm mb-3">Things to do</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-sky-950 mb-16">Great Sporting Experience</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-12 max-w-5xl mx-auto">
+            {% for icon, label in features %}
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="flex flex-col items-center group">
+                <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mb-6 transition-all duration-500 group-hover:scale-110 group-hover:bg-sky-50 group-hover:shadow-xl"
+                     :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'">
+                    <img src="{% static icon %}" alt="" class="h-14 w-14 object-contain">
+                </div>
+                <h3 class="text-lg font-bold text-slate-700 group-hover:text-sky-600 transition-colors">{{ label }}</h3>
+            </div>
+            {% empty %}
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="flex flex-col items-center group">
+                <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-sky-50" :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'"><img src="{% static 'images/svg1.png' %}" class="h-14" alt=""></div>
+                <h3 class="text-lg font-bold text-slate-700">Play a Match</h3>
+            </div>
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="flex flex-col items-center group">
+                <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-sky-50" :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'"><img src="{% static 'images/svg2.png' %}" class="h-14" alt=""></div>
+                <h3 class="text-lg font-bold text-slate-700">Make Friends</h3>
+            </div>
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="flex flex-col items-center group">
+                <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-sky-50" :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'"><img src="{% static 'images/svg3.png' %}" class="h-14" alt=""></div>
+                <h3 class="text-lg font-bold text-slate-700">Stay Healthy</h3>
+            </div>
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="flex flex-col items-center group">
+                <div class="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-sky-50" :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'"><img src="{% static 'images/svg4.png' %}" class="h-14" alt=""></div>
+                <h3 class="text-lg font-bold text-slate-700">Train Yourself</h3>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Top things to do -->
+<section class="py-24 bg-slate-100 border-t border-slate-200">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <div class="mb-16">
+            <p class="text-slate-500 font-semibold mb-2 uppercase tracking-wider text-sm">Top Attraction</p>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-sky-950">Top things to do in Futnet Nepal</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col" :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'">
+                <div class="h-56 overflow-hidden"><img src="{% static 'images/venue.jpg' %}" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"></div>
+                <div class="p-8 text-center flex-1 flex flex-col">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">Book Venue</h3>
+                    <p class="text-slate-500 mb-8 text-sm flex-1">Find and book futsal courts near you.</p>
+                    <a href="{% url 'venuelist' %}" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full transition-all w-3/4 mx-auto inline-block hover:-translate-y-1">Book Now!</a>
                 </div>
             </div>
-        </section>
-{% endblock main %}
-{% block newsletter %}
-{% include "partials/newsletter.html" %}
-{% endblock newsletter %}
-{% block footer %}
-{% include "partials/footer.html" %}
-{% endblock footer %}
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col" :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'">
+                <div class="h-56 overflow-hidden"><img src="{% static 'images/opponent.jpg' %}" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"></div>
+                <div class="p-8 text-center flex-1 flex flex-col">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">Look for Opponent</h3>
+                    <p class="text-slate-500 mb-8 text-sm flex-1">Connect with players at your skill level.</p>
+                    <a href="{% url 'accounts:signup' %}" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full transition-all w-3/4 mx-auto inline-block hover:-translate-y-1">Find Now!</a>
+                </div>
+            </div>
+            <div x-data="{ show: false }" x-intersect.once="show = true" class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col" :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'">
+                <div class="h-56 overflow-hidden"><img src="{% static 'images/event.jpg' %}" alt="" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"></div>
+                <div class="p-8 text-center flex-1 flex flex-col">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">Host a Match</h3>
+                    <p class="text-slate-500 mb-8 text-sm flex-1">Create events and invite your community.</p>
+                    <a href="{% url 'accounts:signup' %}" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full transition-all w-3/4 mx-auto inline-block hover:-translate-y-1">Host Event!</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Welcome -->
+<section class="py-24 bg-white overflow-hidden">
+    <div class="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-16 max-w-6xl">
+        <div class="w-full lg:w-1/2" x-data="{ show: false }" x-intersect.once="show = true" :class="show ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-16'" style="transition: all 0.8s ease-out;">
+            <p class="text-sky-600 font-bold mb-2 uppercase tracking-wider text-sm">Welcome to</p>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-sky-950 mb-8">Futnet Nepal</h2>
+            <div class="text-slate-600 leading-relaxed mb-10 space-y-4">
+                <p>Your one-stop platform for futsal enthusiasts — host matches, discover venues, and grow your playing network across Nepal.</p>
+                <p>Meet new friends, book courts, and share your sporting experience with a growing community.</p>
+            </div>
+            <a href="{% url 'about' %}" class="inline-block bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-10 rounded-full transition-all shadow-lg hover:-translate-y-1">Read More!</a>
+        </div>
+        <div class="w-full lg:w-1/2" x-data="{ show: false }" x-intersect.once="show = true" :class="show ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'" style="transition: all 0.8s ease-out 0.2s;">
+            <a href="https://www.youtube.com/embed/_lHve-9EUK0" target="_blank" rel="noopener" class="block aspect-video bg-slate-900 rounded-2xl overflow-hidden relative shadow-2xl group">
+                <img src="{% static 'images/futnet.gif' %}" alt="Futnet video" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700">
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-20 h-20 bg-white/20 backdrop-blur-md border-2 border-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-24 bg-slate-50 border-t border-slate-200">
+    <div class="container mx-auto px-4 max-w-5xl" x-data="{ show: false }" x-intersect.once="show = true">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-sky-950 mb-16 text-center uppercase tracking-wide">What Our Fantastic Users Say</h2>
+        <div class="flex flex-col md:flex-row items-center gap-12 bg-white p-8 md:p-12 rounded-3xl shadow-xl">
+            <div class="flex-1 text-center">
+                <div class="w-20 h-20 bg-sky-100 rounded-full mx-auto mb-6 flex items-center justify-center overflow-hidden border-4 border-white shadow-md">
+                    <img src="{% static 'images/avatar.jpg' %}" alt="" class="h-full w-full object-cover">
+                </div>
+                <h3 class="text-2xl font-bold text-sky-900 mb-1">This is a fantastic Website</h3>
+                <p class="text-sky-600 font-medium text-sm mb-6">Shekhar Dhakal, Nepal</p>
+                <p class="text-slate-600 italic leading-relaxed">"Futnet Nepal makes it easy to find matches, book venues, and connect with other futsal players in Kathmandu and beyond."</p>
+            </div>
+            <div class="hidden md:block w-1/3">
+                <img src="{% static 'images/football-3209205_1920.png' %}" alt="" class="w-full h-auto drop-shadow-2xl">
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+<aside class="space-y-6 fn-sticky-nav">
+    <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+        <h3 class="font-bold text-sky-950 text-sm uppercase tracking-wider mb-4">Categories</h3>
+        <ul class="space-y-2">
+            <li>
+                <a href="{% url 'blog' %}"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if not category_name %}bg-sky-50 text-sky-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-sky-600{% endif %}">
+                    All posts
+                </a>
+            </li>
+            {% for cat in categories %}
+            {% if cat.title %}
+            <li>
+                <a href="{% url 'blog-cat' cat.title %}"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if category_name == cat.title %}bg-sky-50 text-sky-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-sky-600{% endif %}">
+                    {{ cat.title }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="bg-gradient-to-br from-sky-600 to-sky-800 rounded-2xl p-6 text-white shadow-lg">
+        <p class="font-bold text-lg">Stay in the game</p>
+        <p class="mt-2 text-sky-100 text-sm">Follow us for news, events, and futsal tips.</p>
+        <div class="mt-4">
+            {% include "partials/social_icons.html" with link_class="text-white/90 hover:text-yellow-300 hover:bg-white/10" icon_class="w-5 h-5" btn_class="w-10 h-10" %}
+        </div>
+    </div>
+</aside>

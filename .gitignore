@@ -4,6 +4,15 @@
 # Ignore virtual environment directories
 venv/
 env/
-
+.venv/
 #Ignore Pychase
 __pycache__/
+
+# Local SQLite database
+db.sqlite3
+
+# Node (Tailwind build)
+node_modules/
+
+# collectstatic output
+staticfiles/

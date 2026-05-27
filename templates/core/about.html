@@ -1,68 +1,55 @@
-{% extends "partials/base.html" %} 
+{% extends "partials/base.html" %}
 {% load static %}
-
-{% block navsocial %}
-{% include "partials/navsocial.html" %}
-{% endblock navsocial %}
-{% block navbar %}
-{% include "partials/navbar.html" %}
-{% endblock navbar %}
+{% block title %}About Us{% endblock %}
 {% block main %}
-<section class="about-us">
-    <div class="container">
-        <div class="about-title">
-            <h2>ABOUT US</h2>
-            <div class="row">
-                <div class="col-lg-8">
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Temporibus odio doloremque, minima, inventore sit, ipsa illo sunt aperiam rem nisi ullam suscipit dolor possimus quaerat eveniet est tempora molestiae excepturi?
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere, sapiente impedit ipsum rerum unde laboriosam. Nisi ratione officiis libero. Veritatis deserunt aut eaque eius at quaerat possimus voluptas explicabo adipisci?
-                    </p>
-                </div>
-                <div class="col-lg-4">
-                    <img class="about-img" src="{% static 'images/about-us-bg.png' %}" >
-                </div>
+{% include "partials/page_hero.html" with page_title="About Us" page_eyebrow="Our story" page_subtitle="Connecting futsal players, venues, and communities across Nepal." hero_image="images/about-us-bg.png" hero_static=True %}
+
+<section class="py-16 md:py-20 bg-white">
+    <div class="container mx-auto px-4 md:px-8 max-w-6xl">
+        <div class="grid lg:grid-cols-2 gap-12 items-center" x-data="{ show: false }" x-intersect.once="show = true"
+             :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'" style="transition: all 0.7s ease-out;">
+            <div class="text-slate-600 leading-relaxed space-y-5 text-base md:text-lg">
+                <p>Futnet Nepal connects futsal players, venues, and communities across Nepal. We help you host matches, find opponents, and discover great sporting experiences.</p>
+                <p>Whether you are organizing a casual kickabout or building a regular league, our platform makes it simple to engage, manage groups, and share your passion for the game.</p>
+                <a href="{% url 'accounts:signup' %}" class="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 px-8 rounded-full transition-all shadow-lg shadow-rose-600/25">
+                    Join the community
+                </a>
+            </div>
+            <div class="rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-200">
+                <img src="{% static 'images/about-us-bg.png' %}" alt="About Futnet Nepal" class="w-full aspect-[4/3] object-cover">
             </div>
         </div>
     </div>
 </section>
-<section class="about-story">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="story-header">
-                    <h3>Our <span>Story</span></h3>
-                    <img src="{% static 'images/about-us-04.svg' %}" class="story-icon">
-                    <img src="{% static 'images/ourstory-image-bg.png' %}" class="img-fluid story-bg">
-                </div>
+
+<section class="py-16 bg-slate-100">
+    <div class="container mx-auto px-4 md:px-8 max-w-6xl">
+        <div class="text-center mb-12">
+            <p class="text-rose-600 font-bold uppercase text-xs tracking-wider">Why Futnet</p>
+            <h2 class="mt-2 text-2xl md:text-3xl font-extrabold text-sky-950">Built for players &amp; venues</h2>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm text-center hover:shadow-lg transition-shadow">
+                <i class="fa-solid fa-futbol text-3xl text-sky-600" aria-hidden="true"></i>
+                <h3 class="mt-4 font-bold text-sky-950">Host matches</h3>
+                <p class="mt-2 text-sm text-slate-500">Create events and invite players in your area.</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm text-center hover:shadow-lg transition-shadow">
+                <i class="fa-solid fa-location-dot text-3xl text-rose-500" aria-hidden="true"></i>
+                <h3 class="mt-4 font-bold text-sky-950">Find venues</h3>
+                <p class="mt-2 text-sm text-slate-500">Discover futsal courts and book time slots.</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm text-center hover:shadow-lg transition-shadow">
+                <span class="text-3xl">👥</span>
+                <h3 class="mt-4 font-bold text-sky-950">Grow community</h3>
+                <p class="mt-2 text-sm text-slate-500">Meet players and build lasting teams.</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm text-center hover:shadow-lg transition-shadow">
+                <span class="text-3xl">🏆</span>
+                <h3 class="mt-4 font-bold text-sky-950">Share moments</h3>
+                <p class="mt-2 text-sm text-slate-500">Post updates and celebrate wins together.</p>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-8">
-                <p>This fairytale, like all fairytales, started with a few dudes in distress. One was lamenting his dear departed tennis partner, the second grieving for the badminton racquet left behind, the third desolate after another football weekend that never happened, the fourth broke and gymless from another membership waylaid, and the fifth just #tag bored to death. Alas, unlike in other fairytales, no fair damsel came to their rescue and they wallowed for a while in their sorrow. And so they finally did what all forsaken souls do...start building their very own Neverland, a place for all restless adrenaline junkies like themselves...and thus a thought, nay a belief called Playo was sown.
-                </p>
-            </div>
-            <div class="col-lg-4">
-                <img src="{% static 'images/story1.png' %}" class="stry-1" alt="Story Img">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-4">
-                <img src="{% static 'images/story2.png' %}" class="stry-2 img-fluid" alt="Story Img">
-            </div>
-            <div class="col-lg-8">
-                <p>This fairytale, like all fairytales, started with a few dudes in distress. One was lamenting his dear departed tennis partner, the second grieving for the badminton racquet left behind, the third desolate after another football weekend that never happened, the fourth broke and gymless from another membership waylaid, and the fifth just #tag bored to death. Alas, unlike in other fairytales, no fair damsel came to their rescue and they wallowed for a while in their sorrow. And so they finally did what all forsaken souls do...start building their very own Neverland, a place for all restless adrenaline junkies like themselves...and thus a thought, nay a belief called Playo was sown.
-                </p>
-                
-            </div>
-        </div>
-        <p>We warmly welcome you to Playo, your singular destination for sports, fitness, fun and all things recreational. Come, relive those cherished childhood moments when you exchanged high fives or wept as one for a loss. Time to get your lovable varsity jersey out and give your neighbour a shout or go challenge your colleague...better still make a new friend. Get Addicted to Play...and create your own happily ever after!
-        </p>
     </div>
 </section>
-{% endblock main %}
-{% block newsletter %}
-{% include "partials/newsletter.html" %}
-{% endblock newsletter %}
-{% block footer %}
-{% include "partials/footer.html" %}
-{% endblock footer %}
+{% endblock %}

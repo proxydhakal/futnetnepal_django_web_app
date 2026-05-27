@@ -1,0 +1,11 @@
+Hi {{ display_name }},
+
+Thanks for joining {{ site_name }}.
+
+Verify your email by opening this link:
+{{ verify_url }}
+
+If you did not create an account, you can ignore this email.
+
+— {{ site_name }}
+{{ site_url }}

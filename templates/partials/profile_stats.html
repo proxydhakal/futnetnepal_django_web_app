@@ -1,0 +1,62 @@
+<div class="fn-card p-5 sm:p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div>
+            <h2 class="text-lg font-extrabold text-sky-950">Your stats</h2>
+            <p class="text-sm text-sky-700/70 mt-0.5">Activity across matches, engagement, and bookings</p>
+        </div>
+        <a href="{% url 'home' %}" class="text-sm font-bold text-sky-600 hover:text-sky-800 hover:underline">Host a match →</a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+        <div class="fn-profile-stat fn-profile-stat--sky">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="futbol" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.matches_hosted }}</p>
+            <p class="fn-profile-stat__label">Matches hosted</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--emerald">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="circle-check" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.matches_confirmed }}</p>
+            <p class="fn-profile-stat__label">Confirmed</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--amber">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="calendar-days" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.matches_open }}</p>
+            <p class="fn-profile-stat__label">Open matches</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--violet">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="hand-pointer" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.interest_shown }}</p>
+            <p class="fn-profile-stat__label">Interested in</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--rose">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="users" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.interest_received }}</p>
+            <p class="fn-profile-stat__label">Players interested</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--sky">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="thumbs-up" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.likes_given }}</p>
+            <p class="fn-profile-stat__label">Likes given</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--emerald">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="heart" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.likes_received }}</p>
+            <p class="fn-profile-stat__label">Likes received</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--amber">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="comment" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.comments_made }}</p>
+            <p class="fn-profile-stat__label">Comments</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--violet">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="comments" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.conversations }}</p>
+            <p class="fn-profile-stat__label">Conversations</p>
+        </div>
+        <div class="fn-profile-stat fn-profile-stat--rose">
+            <span class="fn-profile-stat__icon">{% include "partials/fa_icon.html" with name="building" class="fn-icon-lg" %}</span>
+            <p class="fn-profile-stat__value">{{ stats.venue_bookings }}</p>
+            <p class="fn-profile-stat__label">Venue bookings</p>
+        </div>
+    </div>
+</div>

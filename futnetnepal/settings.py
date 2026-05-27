@@ -17,6 +17,21 @@ from decouple import config, Csv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def _env_path(name, default_relative):
+    """Filesystem path from env (absolute, or relative to BASE_DIR)."""
+    raw = config(name, default='')
+    if not raw:
+        return BASE_DIR / default_relative
+    path = Path(raw)
+    return path if path.is_absolute() else BASE_DIR / path
+
+
+def _env_url(name, default):
+    """URL prefix from env, always trailing slash."""
+    value = config(name, default=default)
+    return value if value.endswith('/') else f'{value}/'
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -31,6 +46,7 @@ ALLOWED_HOSTS = ["*","futnetnepal.com","www.futnetnepal.com","futnetnepal.up.rai
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,9 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
 
     #Custom Apps
+    'channels',
     'apps.accounts',
     'apps.core',
     'apps.blogs',
@@ -48,29 +64,20 @@ INSTALLED_APPS = [
     
 
     #third_party Apps
-    'crispy_forms',
-    'phone_field',
     'ckeditor',
     'ckeditor_uploader',
-    'solo',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.twitter',
-    
 ]
-AUTHENTICATION_BACKENDS = [ 
+AUTHENTICATION_BACKENDS = [
+    'apps.accounts.backends.EmailOrUsernameBackend',
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 ]
-SITE_ID = 3
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.accounts.middleware.EmailVerificationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -87,47 +94,69 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.accounts.context_processors.user_profile',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'futnetnepal.wsgi.application'
+ASGI_APPLICATION = 'futnetnepal.asgi.application'
+
+_redis_url = config('REDIS_URL', default='')
+if not _redis_url:
+    _redis_password = config('REDIS_PASSWORD', default='')
+    if _redis_password:
+        _redis_host = config('REDIS_HOST', default='127.0.0.1')
+        _redis_port = config('REDIS_PORT', default=6379, cast=int)
+        _redis_url = f'redis://:{_redis_password}@{_redis_host}:{_redis_port}/0'
+
+if _redis_url:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [_redis_url],
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Local dev: set USE_SQLITE=True or DATABASE_URL=sqlite:///db.sqlite3 in .env
+_database_url = config('DATABASE_URL', default='')
+_use_sqlite = config('USE_SQLITE', default=DEBUG, cast=bool) or (
+    _database_url and 'sqlite' in _database_url.lower()
+)
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config("DB_NAME"),
-        'USER': config("DB_USER"),
-        'PASSWORD': config("DB_PASSWORD"),
-        'HOST': config("DB_HOST"),
-        'PORT': 5432,
+if _use_sqlite:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'futnetnepal',
-#         'USER': 'futnetnepal',
-#         'PASSWORD': 'AVNS_Bp-gKOQ4DDLnpgAUIYe',
-#         'HOST': 'private-dbaas-db-5973383-do-user-14555981-0.b.db.ondigitalocean.com',
-#         'PORT': '25060',
-#     }
-# }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST'),
+            'PORT': config('DB_PORT', default=5432, cast=int),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -164,33 +193,32 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
+# Override via .env: STATIC_URL, STATIC_ROOT, MEDIA_URL, MEDIA_ROOT
 
-STATIC_URL = '/static/'
-CKEDITOR_UPLOAD_PATH = "uploads/"
+STATIC_URL = _env_url('STATIC_URL', '/static/')
+STATIC_ROOT = _env_path('STATIC_ROOT', 'staticfiles')
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / 'static',
 ]
-MEDIA_ROOT = BASE_DIR / 'media'
-STATIC_ROOT = BASE_DIR / 'static/files/'
-MEDIA_URL = '/media/'
-LOGIN_REDIRECT_URL= '/home/'
-LOGIN_URL ='/accounts/login'
+
+MEDIA_URL = _env_url('MEDIA_URL', '/media/')
+MEDIA_ROOT = _env_path('MEDIA_ROOT', 'media')
+
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+LOGIN_REDIRECT_URL = '/home/'
+LOGIN_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/'
 
 #Email configuration 
-EMAIL_USE_TLS = config("EMAIL_USE_TLS")
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 # EMAIL_USE_SSL = config("EMAIL_USE_SSL")
 EMAIL_BACKEND = config("EMAIL_BACKEND")
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-EMAIL_PORT =config("EMAIL_PORT")
-
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_USERNAME_REQUIRED = True
-
-
+EMAIL_PORT = config("EMAIL_PORT")
+DEFAULT_FROM_EMAIL = config("EMAIL_HOST_USER", default="noreply@futnetnepal.com")
+SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 
 #JAZZMIN ADMIN SECTION
 JAZZMIN_SETTINGS = {

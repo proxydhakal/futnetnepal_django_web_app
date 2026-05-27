@@ -1,0 +1,95 @@
+<div class="px-4 py-3 border-t border-sky-100 bg-sky-50/50"
+     x-data="postEngagement({{ post.id }}, '{{ post.slug }}', '{{ post.author.username|default:'' }}', {{ post.user_interested|yesno:'true,false' }}, {{ post.user_liked|yesno:'true,false' }}, {{ post.interest_count }}, {{ post.like_count }}, {{ post.comment_count }}, {{ post.user_can_chat|yesno:'true,false' }}, {{ post.author_id|default:0 }} == {{ request.user.id|default:0 }}, {% if post.event_status == 'confirmed' %}true{% else %}false{% endif %})">
+    <div class="flex flex-wrap items-center gap-2">
+        <div x-show="!eventLocked && isHost" class="flex flex-wrap items-center gap-2">
+            <a href="/messages/"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors">
+                {% include "partials/fa_icon.html" with name="comments" class="fn-icon-sm" %} Messages
+            </a>
+            <button type="button" @click="confirmMatch()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-600 transition-colors">
+                {% include "partials/fa_icon.html" with name="circle-check" class="fn-icon-sm" %} Confirm match
+            </button>
+            <span class="text-xs text-sky-600/70" x-text="interestCount + ' interested'"></span>
+        </div>
+
+        <div x-show="!eventLocked && !isHost" class="flex flex-wrap items-center gap-2">
+            <button type="button" @click="toggleInterest()"
+                    :class="interested ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-sky-700 border-sky-200 hover:bg-sky-100'"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors">
+                {% include "partials/fa_icon.html" with name="futbol" class="fn-icon-sm" %}
+                <span x-text="interested ? 'Interested' : 'Interested?'"></span>
+                <span class="opacity-80" x-text="'(' + interestCount + ')'"></span>
+            </button>
+            <a x-show="canChat" x-cloak :href="messageUrl"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-colors">
+                {% include "partials/fa_icon.html" with name="comment-dots" class="fn-icon-sm" %} Message host
+            </a>
+            <span x-show="!canChat" class="text-xs text-sky-600/60 italic">Mark interested to message the host</span>
+        </div>
+
+        <button type="button" x-show="!eventLocked" @click="toggleLike()"
+                :class="liked ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-sky-700 border-sky-200 hover:bg-sky-100'"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors">
+            {% include "partials/fa_icon.html" with name="thumbs-up" class="fn-icon-sm" %}
+            <span x-text="liked ? 'Liked' : 'Like'"></span>
+            <span class="opacity-80" x-text="'(' + likeCount + ')'"></span>
+        </button>
+        <button type="button" x-show="!eventLocked" @click="toggleComments()"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-sky-200 bg-white text-sky-700 hover:bg-sky-100 transition-colors">
+            {% include "partials/fa_icon.html" with name="comment" class="fn-icon-sm" %} Comment
+            <span class="opacity-80" x-text="'(' + commentCount + ')'"></span>
+        </button>
+
+        <div x-show="eventLocked" class="flex flex-wrap items-center gap-2 w-full">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                {% include "partials/fa_icon.html" with name="circle-check" class="fn-icon-sm" %} Match confirmed — closed
+            </span>
+            <button type="button" @click="toggleComments()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-sky-200 bg-white text-sky-600 hover:bg-sky-50 transition-colors">
+                {% include "partials/fa_icon.html" with name="comment" class="fn-icon-sm" %} View comments
+                <span class="opacity-80" x-text="'(' + commentCount + ')'"></span>
+            </button>
+            <button x-show="isHost" type="button" @click="cancelConfirmation()"
+                    class="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full hover:bg-amber-100">
+                Cancel confirmation
+            </button>
+        </div>
+    </div>
+
+    <div x-show="showComments" x-cloak class="mt-4 space-y-3">
+        <form x-show="!eventLocked" @submit.prevent="addComment()" class="flex gap-2">
+            <input type="text" x-model="newComment" :placeholder="replyTo ? 'Write a reply...' : 'Write a comment...'" class="fn-input flex-1 !mt-0" maxlength="500">
+            <button type="button" x-show="replyTo" @click="replyTo = null; newComment = ''" class="text-xs text-sky-600 font-bold px-2">Cancel</button>
+            <button type="submit" :disabled="commenting" class="shrink-0 bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 rounded-xl text-sm">Post</button>
+        </form>
+        <p x-show="eventLocked" class="text-xs text-sky-600/70 italic">New comments are closed — match confirmed.</p>
+        <p x-show="replyTo && !eventLocked" class="text-xs text-sky-600">Replying to comment #<span x-text="replyTo"></span></p>
+        <div x-show="loadingComments" class="text-sm text-sky-600 text-center py-2">Loading comments...</div>
+        <template x-if="comments.length === 0 && !loadingComments">
+            <p class="text-sm text-sky-600/70">No comments yet.</p>
+        </template>
+        <template x-for="c in comments" :key="c.id">
+            <div>
+                <div class="fn-card-muted rounded-lg px-3 py-2">
+                    <p class="text-xs font-bold text-sky-800"><span x-text="c.user"></span> <span class="font-normal text-sky-600/70" x-text="c.created_at"></span></p>
+                    <p class="text-sm text-sky-900 mt-1" x-text="c.body"></p>
+                    <button x-show="!eventLocked" type="button" @click="startReply(c.id, c.user)" class="text-xs font-bold text-sky-600 mt-1 hover:underline">Reply</button>
+                </div>
+                <template x-if="c.replies && c.replies.length">
+                    <div class="ml-5 mt-2 space-y-2 border-l-2 border-sky-200 pl-3">
+                        <template x-for="r in c.replies" :key="r.id">
+                            <div>
+                                <div class="fn-card-muted rounded-lg px-3 py-2 bg-white/80">
+                                    <p class="text-xs font-bold text-sky-800"><span x-text="r.user"></span> <span class="font-normal text-sky-600/70" x-text="r.created_at"></span></p>
+                                    <p class="text-sm text-sky-900 mt-1" x-text="r.body"></p>
+                                    <button x-show="!eventLocked" type="button" @click="startReply(r.id, r.user)" class="text-xs font-bold text-sky-600 mt-1 hover:underline">Reply</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+</div>

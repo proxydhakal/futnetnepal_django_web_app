@@ -1,73 +1,46 @@
-{% extends "partials/base.html" %} 
+{% extends "partials/base.html" %}
 {% load static %}
-
-{% block navsocial %}
-{% include "partials/navsocial.html" %}
-{% endblock navsocial %}
-{% block navbar %}
-{% include "partials/navbar.html" %}
-{% endblock navbar %}
+{% block title %}Blog{% endblock %}
 {% block main %}
-<section id="blog">
-    <div class="container">
-        <div class="title-with-sorting">
-            <div class="main-title">
-                <h2>Blog</h2>
-            </div>
-            <form action="#" class="form-inline sorting">
-                <label for="duration"> Blog Sort By:</label>
-                    <div class="form-group">
-                        <div class="custom_select">
-                            <div class="custom_select">
-                                <select id="getSortDate" class="form-control">
-                                    <option value="">Date</option>
-                                    {% for date in dates %}
-                                    <option value="2020">2020</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="custom_select">
-                            <div class="custom_select">
-                                <select id="getSortCategory" class="form-control">
-                                    <option value="">Category</option>
-                                    {% for category in categories %}
-                                    <option value="{% url 'blog-cat' category.id %}"><a href="">{{category.title}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-            </form>
-        </div>
-        <div class="blog-list">
-            <div class="row">
-                {% for list_blog  in list_blogs %}
-                <div class="col-md-3">
-                    <div class="item-wrap">
-                        <div class="intro-img">
-                            <a href="#" class="img-wrap">
-                            <img src="{{list_blog.cover_image.url}}" alt="Goalkeeper at Best" class="fill">
+{% include "partials/page_hero.html" with page_title="Blog" page_eyebrow="Insights & news" page_subtitle="Tips, stories, and updates from Nepal's futsal community." hero_image="images/cover3.jpg" hero_static=True %}
+
+<section class="py-16 md:py-20 bg-slate-100">
+    <div class="container mx-auto px-4 md:px-8 max-w-6xl">
+        <div class="grid lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-9">
+                <div class="grid sm:grid-cols-2 gap-6">
+                    {% for list_blog in list_blogs %}
+                    <article class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border border-slate-100">
+                        <a href="{{ list_blog.get_absolute_url }}" class="block h-48 overflow-hidden bg-slate-200">
+                            {% if list_blog.cover_image %}
+                            <img src="{{ list_blog.cover_image.url }}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-4xl bg-sky-100">📰</div>
+                            {% endif %}
+                        </a>
+                        <div class="p-6">
+                            <p class="text-xs text-sky-600 font-bold uppercase tracking-wide">{{ list_blog.created_at|date:"M j, Y" }}</p>
+                            <h2 class="mt-2 text-lg font-bold text-slate-800 group-hover:text-sky-600 transition-colors leading-snug">
+                                <a href="{{ list_blog.get_absolute_url }}">{{ list_blog.title }}</a>
+                            </h2>
+                            <a href="{{ list_blog.get_absolute_url }}" class="inline-flex items-center gap-1 mt-4 text-sm font-bold text-sky-600 hover:text-sky-500">
+                                Read more
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </a>
-                        <span class="date">{{list_blog.created_at| date:"F,j Y" }}</span>
                         </div>
-                        <div class="caption">
-                            <h4><a href="{{list_blog.get_absolute_url}}" class="text-decoration-none">{{list_blog.title}}</a></h4>
-                            <p>{{list_blog.content|safe|truncatewords_html:10}}</p>
-                        </div>
+                    </article>
+                    {% empty %}
+                    <div class="sm:col-span-2 bg-white rounded-2xl p-12 text-center text-slate-500 shadow-sm">
+                        <span class="text-4xl">📭</span>
+                        <p class="mt-4 font-medium">No blog posts yet. Check back soon!</p>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+            </div>
+            <div class="lg:col-span-3">
+                {% include "partials/blog_sidebar.html" %}
             </div>
         </div>
     </div>
 </section>
-{% endblock main %}
-{% block newsletter %}
-{% include "partials/newsletter.html" %}
-{% endblock newsletter %}
-{% block footer %}
-{% include "partials/footer.html" %}
-{% endblock footer %}
+{% endblock %}

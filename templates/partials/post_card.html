@@ -1,0 +1,37 @@
+<article id="post-{{ post.slug }}" class="fn-card overflow-hidden scroll-mt-28">
+    <div class="flex items-center gap-3 p-4 border-b border-sky-50">
+        {% if post.author %}
+            {% if post.author.profile.profile_image %}
+            <img src="{{ post.author.profile.profile_image.url }}" alt="" class="h-10 w-10 rounded-full object-cover ring-2 ring-sky-100">
+            {% else %}
+            <span class="h-10 w-10 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm">{{ post.author.username|slice:":1"|upper }}</span>
+            {% endif %}
+        {% else %}
+            <span class="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center text-sm">?</span>
+        {% endif %}
+        <div class="flex-1 min-w-0">
+            <p class="font-bold text-sky-950">{% if post.author %}{{ post.author.get_full_name|default:post.author.username }}{% else %}Deleted user{% endif %}</p>
+            <p class="text-xs text-sky-600/70">{{ post.whenpublished }}</p>
+        </div>
+        {% if post.author and request.user.pk == post.author_id %}
+        <div class="relative" x-data="{ open: false }">
+            <button type="button" @click="open = !open" class="p-2 rounded-full hover:bg-sky-50 text-sky-700" aria-label="Post options">
+                {% include "partials/fa_icon.html" with name="ellipsis" class="fn-icon-lg" %}
+            </button>
+            <div x-show="open" @click.outside="open = false" x-cloak class="absolute right-0 mt-1 w-36 fn-card py-1 z-10">
+                <button type="button" @click="$dispatch('open-post-edit', { id: {{ post.id }} }); open = false" class="block w-full text-left px-4 py-2 text-sm hover:bg-sky-50 text-sky-900">Edit</button>
+                <button type="button"
+                        @click="$dispatch('open-post-delete', { id: {{ post.id }}, slug: '{{ post.slug }}', preview: '{{ post.message|truncatechars:80|escapejs }}' }); open = false"
+                        class="block w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50">Delete</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="px-4 py-4 text-slate-700">{{ post.message }}</div>
+    <div class="px-4 py-3 fn-card-muted flex flex-wrap gap-4 text-sm text-sky-800/80 border-t border-sky-100">
+        <span class="inline-flex items-center gap-1.5">{% include "partials/fa_icon.html" with name="location-dot" class="fn-icon-sm text-rose-500" %} {{ post.venue }}</span>
+        <span class="inline-flex items-center gap-1.5">{% include "partials/fa_icon.html" with name="calendar-days" class="fn-icon-sm text-sky-600" %} {{ post.date|date:"j M Y" }}</span>
+        <span class="inline-flex items-center gap-1.5">{% include "partials/fa_icon.html" with name="clock" class="fn-icon-sm text-sky-600" %} {{ post.time }}</span>
+    </div>
+    {% include "partials/post_engagement.html" %}
+</article>

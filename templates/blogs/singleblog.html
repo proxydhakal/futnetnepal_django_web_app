@@ -1,94 +1,74 @@
-{% extends "partials/base.html" %} 
-{% load static %}
-
-{% block navsocial %}
-{% include "partials/navsocial.html" %}
-{% endblock navsocial %}
-{% block navbar %}
-{% include "partials/navbar.html" %}
-{% endblock navbar %}
+{% extends "partials/base.html" %}
+{% block title %}{{ single_blogs.title }}{% endblock %}
 {% block main %}
-<section class="single-blog">
-    <div class="banner inner">
-        <div class="bg-stretch">
-            <img src="{% static 'images/cover1.jpg' %}" class="image-responsive">
-        </div>
-        <div class="banner-caption"><h1>Futnet Nepal Blogs</h1></div>
-    </div>
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="blog-title mt-3">
-                    <h2>{{single_blogs.title}}</h2>
-                    <div class="blog-meta mb-8">
-                        <p class="lead">Date: {{single_blogs.created_at| date:"F,j Y" }}&nbsp;&nbsp;|&nbsp;&nbsp; By {{single_blogs.author}} &nbsp;&nbsp;|&nbsp;&nbsp; {{single_blogs.count}} people viewed </p>
-                    </div>
-                </div>
-                <div class="blog-body">
-                    <img src="{{single_blogs.cover_image.url}}" class="image-responsive mt-1" alt="Images Blog">
-                    <p class="mt-2 text-justify">{{single_blogs.content|safe}}</p>
-                </div>
-                <hr>
-                <div class="common-module">
-                    <h2>Tags:</h2>
-                    <div class="taging blog">
-                        <ul>
-                            {% for tag in single_blogs.tags.all %}
-                            <li><a class="item" href="#" target="_blank" rel="nofollow">{{ tag }}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-                <hr>
-                <div id="fb-root"></div>
-                <div class="fb-comments" data-href="https://developers.facebook.com/docs/plugins/comments#configurator" data-numposts="2" data-width=""></div>
-                <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v7.0&appId=313147659488148&autoLogAppEvents=1"></script>
-            </div>
-            <div class="col-lg-4">
-                <div class="blog-items-wrap p-4">
-                    <div class="sidebar-box">
-                        <form action="#" class="search-form">
-                        <div class="form-group">
-                            <span class="icon fa fa-search"></span>
-                            <input type="text" class="form-control" placeholder="Type a keyword and hit enter">
+{% include "partials/page_hero.html" with page_title=single_blogs.title page_eyebrow=single_blogs.created_at|date:"F j, Y" page_subtitle=single_blogs.author hero_image=single_blogs.cover_image.url hero_static=False %}
+
+<section class="py-12 md:py-16 bg-slate-100">
+    <div class="container mx-auto px-4 md:px-8 max-w-6xl">
+        <div class="grid lg:grid-cols-12 gap-8">
+            <article class="lg:col-span-8">
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
+                    {% if single_blogs.cover_image %}
+                    <img src="{{ single_blogs.cover_image.url }}" alt="" class="w-full max-h-[420px] object-cover">
+                    {% endif %}
+                    <div class="p-8 md:p-10">
+                        <div class="fn-blog-content text-slate-700 leading-relaxed space-y-4 text-base md:text-lg">
+                            {{ single_blogs.content|safe }}
                         </div>
-                        </form>
-                    </div>
-                    <div class="common-module">
-                        <h3 class="module-title ">Recent Post</h3>
-                        {% for blog in blogs %}
-                        <div class="blog-list">
-                            <div class="item-wrap">
-                                <div class="intro-img">
-                                    <a href="{{blog.get_absolute_url}}" class="img-wrap"><img src="{{blog.cover_image.url}}" alt="" class="fill"></a>
-                                    <span class="date">{{single_blogs.created_at| date:"F,j Y" }}</span>
-                                </div>
-                                <div class="caption">
-                                    <h4><a href="{{blog.get_absolute_url}}">{{blog.title}}</a></h4>
-                                    <p>{{blog.content|safe|truncatewords_html:10}}</p>
-                                </div>
+                        {% if single_blogs.tags.all %}
+                        <div class="mt-10 pt-8 border-t border-slate-200">
+                            <h3 class="font-bold text-sky-950 mb-3 text-sm uppercase tracking-wider">Tags</h3>
+                            <div class="flex flex-wrap gap-2">
+                                {% for tag in single_blogs.tags.all %}
+                                <span class="bg-sky-50 text-sky-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-sky-100">{{ tag }}</span>
+                                {% endfor %}
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
-                    <div class="side-nav mb-4">
-                        <div class="list-group">
-                            <button type="button" class="list-group-item list-group-item-action disabled" style="background-color: #dfe2e4;">
-                            <h4>Categories</h4>
-                            </button>
-                            {% for category in categories %}
-                            <a href="{% url 'blog-cat' category.id %}" class="list-group-item list-group-item-action">{{category.title}}</a>
-                            {% endfor %}
+                        {% endif %}
+                        <div class="mt-10 pt-8 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                            <a href="{% url 'blog' %}" class="inline-flex items-center gap-2 text-sky-600 font-bold hover:underline">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                Back to blog
+                            </a>
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm text-slate-500 font-medium">Share:</span>
+                                {% include "partials/social_icons.html" with link_class="text-slate-500 hover:text-sky-600 hover:bg-sky-50" icon_class="w-5 h-5" btn_class="w-10 h-10" %}
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </article>
+            <div class="lg:col-span-4 space-y-6">
+                {% include "partials/blog_sidebar.html" %}
+                {% if blogs %}
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+                    <h3 class="font-bold text-sky-950 mb-4">Popular posts</h3>
+                    <ul class="space-y-4">
+                        {% for post in blogs %}
+                        {% if post.pk != single_blogs.pk %}
+                        <li>
+                            <a href="{{ post.get_absolute_url }}" class="group block">
+                                <p class="text-sm font-bold text-slate-800 group-hover:text-sky-600 line-clamp-2">{{ post.title }}</p>
+                                <p class="text-xs text-slate-400 mt-1">{{ post.created_at|date:"M j, Y" }}</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </section>
-{% endblock main %}
-{% block newsletter %}
-{% include "partials/newsletter.html" %}
-{% endblock newsletter %}
-{% block footer %}
-{% include "partials/footer.html" %}
-{% endblock footer %}
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .fn-blog-content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; }
+    .fn-blog-content h2, .fn-blog-content h3 { color: #0c4a6e; font-weight: 800; margin-top: 1.5rem; }
+    .fn-blog-content a { color: #0284c7; text-decoration: underline; }
+    .fn-blog-content ul, .fn-blog-content ol { padding-left: 1.5rem; margin: 0.75rem 0; }
+    .fn-blog-content li { margin: 0.35rem 0; }
+</style>
+{% endblock %}

@@ -9,4 +9,4 @@ COPY requirements.txt /code/
 RUN pip install -r requirements.txt && rm -rf /var/lib/apt/lists/*
 COPY . /code/
 RUN python3 manage.py collectstatic --no-input && python3 manage.py makemigrations --no-input && python3 manage.py migrate
-ENTRYPOINT exec gunicorn --bind :8000 --workers 2 --threads 8 --timeout 0 futnetnepal.wsgi:application  
+ENTRYPOINT exec daphne -b 0.0.0.0 -p 8000 futnetnepal.asgi:application

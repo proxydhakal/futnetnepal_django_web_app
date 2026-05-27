@@ -1,280 +1,114 @@
-{% extends "partials/base.html" %} 
-{% load static %}
-{% load crispy_forms_tags %}
-{% block navbar %}
-{% include "partials/navbar.html" %}
-{% endblock navbar %}
+{% extends "partials/base.html" %}
+{% block title %}{% if category_name %}{{ category_name }}{% else %}Feed{% endif %}{% endblock %}
 {% block main %}
-<div class="container">
-    <div class="row">
-        <!-- Button trigger modal -->
-        <div class="mx-auto" style="width: 200px;">
-            <button type="button" class="btn btn-primary mt-5 mr-5" data-toggle="modal" data-target="#exampleModalCenter">
-                <i class="fas fa-plus"></i> Host a Match
-            </button>
-            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Create your events!</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+<section class="fn-header-offset fn-feed-shell min-h-screen" x-data="Object.assign(dashboard(), postEditModal(), postDeleteModal())" x-init="init()" @open-post-edit.window="openEdit($event.detail.id)" @open-post-delete.window="openDelete($event.detail)">
+    <div class="fn-feed-inner">
+            <aside class="fn-feed-sidebar">
+                <div class="fn-card p-4 space-y-1">
+                    <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-sky-50 font-semibold text-sky-900">
+                        {% if userprofiledata %}<img src="{{ userprofiledata.profile_image.url }}" class="h-9 w-9 rounded-full object-cover ring-2 ring-sky-200" alt="">{% else %}<span class="h-9 w-9 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm">{{ request.user.username|slice:":1"|upper }}</span>{% endif %}
+                        <span class="truncate">{{ request.user.get_full_name|default:request.user.username }}</span>
+                    </a>
+                    {% include "partials/feed_sidebar_nav.html" %}
+                </div>
+            </aside>
+
+            <div class="fn-feed-main space-y-3">
+                {% if category_name %}
+                <div class="fn-card p-4 border-sky-200 bg-gradient-to-r from-sky-50 to-white">
+                    <p class="text-xs font-bold text-sky-600 uppercase tracking-wide">Category</p>
+                    <h2 class="text-lg font-extrabold text-sky-950 mt-0.5">{{ category_name }}</h2>
+                    <a href="{% url 'home' %}" class="inline-block mt-2 text-sm font-semibold text-sky-600 hover:underline">← View all events</a>
+                </div>
+                {% endif %}
+                <div class="fn-card p-4">
+                    <div class="flex items-center gap-3">
+                        {% if userprofiledata %}<img src="{{ userprofiledata.profile_image.url }}" class="h-10 w-10 rounded-full object-cover ring-2 ring-sky-200" alt="">{% else %}<span class="h-10 w-10 rounded-full bg-sky-600 text-white flex items-center justify-center">{{ request.user.username|slice:":1"|upper }}</span>{% endif %}
+                        <button type="button" @click="openCreate()" class="flex-1 text-left fn-card-muted rounded-full px-5 py-3 text-sky-700/70 font-medium transition-colors hover:border-sky-300">
+                            What's on your mind, {{ request.user.get_full_name|default:request.user.username }}?
+                        </button>
+                    </div>
+                    <hr class="my-3 border-sky-100">
+                    <button type="button" @click="openCreate()" class="w-full py-2 text-sm font-bold text-sky-700 hover:bg-sky-50 rounded-xl transition-colors flex items-center justify-center gap-2">
+                        {% include "partials/fa_icon.html" with name="futbol" class="fn-icon text-sky-600" %} Host a Match
                     </button>
-                    </div>
-                    <div class="modal-body">
-                        <form class="needs-validation" novalidate action="{% url 'home' %}" method="POST">
-                          {% csrf_token %}
-                           <div class="form-row">
-                                <div class="col-md-6 mb-3">
-                                  <label>Location<b class="text-danger"> *</b></label>
-                                  {{form.location}}
-                                  {% if form.location.errors %}
-                                      <span class="text-danger">
-                                          {% for error in form.location.errors %}
-                                              {{ error }}
-                                          {% endfor %}
-                                      </span>
-                                  {% endif %}
-                              </div>
-                              <div class="col-md-6 mb-3">
-                                  <label>Venue<b class="text-danger"> *</b></label>
-                                  {{form.venue}}
-                                  {% if form.venue.errors %}
-                                      <span class="text-danger">
-                                          {% for error in form.venue.errors %}
-                                              {{ error }}
-                                          {% endfor %}
-                                      </span>
-                                  {% endif %}
-                              </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-Golden-Form">Date<b class="text-danger"> *</b></label>
-                                    <input type="date" class="form-control {% if form.date.errors %}is-invalid{% endif %}" id="date" name="date" placeholder="Enter Date" value="{{ form.date.value }}" autocomplete="off">
-                                    {% if form.date.errors %}
-                                        <span class="text-danger">
-                                            {% for error in form.date.errors %}
-                                                {{ error }}
-                                            {% endfor %}
-                                        </span>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                  <label>Time<b class="text-danger"> *</b></label>
-                                  
-                                  {{form.time}}
-                                  {% if form.time.errors %}
-                                      <span class="text-danger">
-                                          {% for error in form.time.errors %}
-                                              {{ error }}
-                                          {% endfor %}
-                                      </span>
-                                  {% endif %}
-                                </div>
-                                <div class="col-md-12">
-                                  <div class="form-group">
-                                      <label>Your Message<b class="text-danger"> *</b></label>
-                                      <textarea class="form-control {% if form.message.errors %}is-invalid{% endif %}" placeholder="Your Message" name="message">{{ form.cleaned_data.message }}</textarea>
-                                      {% if form.message.errors %}
-                                          <span class="text-danger">
-                                                  {% for error in form.message.errors %}
-                                                      {{ error }}
-                                                  {% endfor %}
-                                              </span>
-                                      {% endif %}
-                                      <div id="the-count">
-                                        <span id="current">0</span>
-                                        <span id="maximum">/ 500</span>
-                                      </div>
-                                  </div>
-                                </div>
-                            </div> 
-                            <button class="btn btn-primary mt-2" type="submit">Create</button>
-                          </form>
-                    </div>
                 </div>
+
+                {% for post in posts %}
+                {% include "partials/post_card.html" %}
+                {% empty %}
+                <div class="fn-card p-12 text-center">
+                    {% if category_name %}
+                    <p class="text-sky-700/70 mb-4">No events in this time slot yet.</p>
+                    {% else %}
+                    <p class="text-sky-700/70 mb-4">No events yet. Be the first to host a match!</p>
+                    {% endif %}
+                    <button type="button" @click="openCreate()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full shadow-md shadow-sky-600/25">Host a Match</button>
                 </div>
+                {% endfor %}
             </div>
-        </div>
-        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLongTitle">Update Your Events!</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-              </button>
-              </div>
-              <div class="modal-body">
-                  <form class="needs-validation" novalidate action="#" method="POST" id="editForm">
-                    {% csrf_token %}
-                     <div class="form-row">
-                          <div class="col-md-6 mb-3">
-                            <label>Location<b class="text-danger"> *</b></label>
-                            {{form.location}}
-                            <div class="text-danger"></div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label>Venue<b class="text-danger"> *</b></label>
-                            {{form.venue}}
-                            <div class="text-danger"></div>
-                        </div>
-                      </div>
-                      <div class="form-row">
-                          <div class="col-md-6 mb-3">
-                              <label class="text-Golden-Form">Date<b class="text-danger"> *</b></label>
-                              <input type="date" class="form-control {% if form.date.errors %}is-invalid{% endif %}" id="date" name="date" placeholder="Enter Date" value="{{ form.date.value }}" autocomplete="off">
-                              <div class="text-danger"></div>
-                          </div>
-                          <div class="col-md-6 mb-3">
-                            <label>Time<b class="text-danger"> *</b></label>
-                            
-                            {{form.time}}
-                            <div class="text-danger"></div>
-                          </div>
-                          <div class="col-md-12">
-                            <div class="form-group">
-                                <label>Your Message<b class="text-danger"> *</b></label>
-                                <textarea class="form-control {% if form.message.errors %}is-invalid{% endif %}" placeholder="Your Message" id="message" name="message">{{ form.cleaned_data.message }}</textarea>
-                                <div class="text-danger"></div>
-                                <div id="the-count">
-                                  <span id="current">0</span>
-                                  <span id="maximum">/ 500</span>
-                                </div>
-                            </div>
-                          </div>
-                      </div> 
-                      <button class="btn btn-primary mt-2" type="submit">Update</button>
-                    </form>
-              </div>
-          </div>
-          </div>
-        </div>        
-    </div> 
-    <hr>
-    <div class="row mb-5 mt-5">
-        <div class="col-1"></div>
-        <div class="col-md-7">
-            {% for post in posts %}
-            <div class="card mb-5">
-                <div class="card-header">
-                    <div class="media position-relative">
-                        <img src="{{ post.author.profile.profile_image.url }}" class="mr-3 rounded-circle" alt="..." height="60" width="60">
-                        <div class="media-body" style="line-height:0pt;">
-                            <h5 class="mt-2" style="line-height:0pt;">{{post.author.first_name}} {{post.author.last_name}}</h5>
-                            {% if request.user.pk == post.author_id %}
-                              <div class="dropdown float-right">
-                                <i class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  Actions
-                                </i>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                  <a class="dropdown-item mb-3 edit-item" href="#" data-id="{{ post.id }}">Edit</a>
-                                  <a class="dropdown-item" href="{% url 'delete_post' post.id %}">Delete</a>
-                                </div>
-                              </div>                            
-                              {% endif %}
-                            <h5><span>{{post.author}}</span></h5>
-                            <span><small class="text-muted">{{ post.whenpublished }}</small></span>
-                        </div>
-                    </div>
+
+            <aside class="fn-feed-sidebar">
+                <div class="fn-card p-4">
+                    <h3 class="font-bold text-sky-950 mb-3">Categories by Time</h3>
+                    <ul class="space-y-1">
+                        {% for time in times %}
+                        <li>
+                            <a href="{% url 'post-cat' time.slug %}" class="flex justify-between items-center p-2 rounded-lg text-sm font-medium {% if active_time_slug == time.slug %}bg-sky-600 text-white shadow-sm{% else %}hover:bg-sky-50 text-sky-900{% endif %}">
+                                <span>{{ time.name }}</span>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded-full {% if active_time_slug == time.slug %}bg-white/25 text-white{% else %}bg-sky-600 text-white{% endif %}">{{ time.total }}</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                <div class="card-body">
-                    <p>{{post.message}}</p>   
-                </div>
-                    <table class="table table-bordered text-center m-0">
-                        <thead>
-                          <tr>
-                            {% comment %} <th scope="col"><i class="fas fa-map-marker-alt"></i> {{post.location}}</th> {% endcomment %}
-                            <th scope="col"><i class="fas fa-map"></i> {{post.venue}}</th>
-                            <th scope="col"><i class="fas fa-calendar-alt"></i> {{ post.date|date:"j D, Y" }}</th>
-                            <th scope="col"><i class="fas fa-clock"></i> {{post.time}}</th>
-                          </tr>
-                        </thead>
-                      </table>
-            </div>
-            {% endfor %}
-        </div>
-        <div class="col-md-3">
-            <div class="card card-body">
-                <h3>Catgories by:<span>Time</span></h3>
-                
-                <ul class="list-group">
-                  {% for time in times %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                      <a href="{% url 'post-cat' time.id %}">{{time.name}}</a> 
-                      <span class="badge badge-primary badge-pill">{{time.total}}</span>
-                    </li>
-                    {% endfor %}
-                  </ul>
-            </div>
-        </div>
-        <div class="col-1"></div>
+            </aside>
     </div>
-</div>
+
+    <!-- Create modal -->
+    <div id="createModal" x-show="showCreate" x-cloak
+         x-effect="showCreate && $nextTick(() => document.dispatchEvent(new CustomEvent('fn-select2-init', { detail: { scope: '#createForm', parent: '#createModalPanel' } })))"
+         @click.self="closeCreate()" @keydown.escape.window="showCreate && closeCreate()" class="fixed inset-0 z-[60] flex items-start justify-center bg-sky-950/40 backdrop-blur-sm p-4 fn-header-offset overflow-y-auto">
+        <div id="createModalPanel" class="fn-card w-full max-w-lg overflow-visible shadow-2xl shadow-sky-900/20" @click.stop>
+            <div class="fn-modal-header flex items-center justify-between px-6 py-4">
+                <h2 class="text-lg font-bold">Create Event</h2>
+                <button type="button" @click="closeCreate()" class="text-white/80 hover:text-white text-xl">&times;</button>
+            </div>
+            <form id="createForm" method="post" action="{% url 'home' %}" class="p-6 space-y-4 bg-white">
+                {% csrf_token %}
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div><label class="text-sm font-semibold text-sky-900">Location</label>{{ form.location }}</div>
+                    <div><label class="text-sm font-semibold text-sky-900">Venue</label>{{ form.venue }}</div>
+                    <div><label class="text-sm font-semibold text-sky-900">Date</label><input type="date" name="date" class="fn-input" value="{{ form.date.value|default:'' }}"></div>
+                    <div><label class="text-sm font-semibold text-sky-900">Time</label>{{ form.time }}</div>
+                </div>
+                <div><label class="text-sm font-semibold text-sky-900">Message</label>{{ form.message }}<p class="text-xs text-sky-600/70 mt-1">Describe your match (required).</p></div>
+                {% if form.errors %}<p class="text-sm text-rose-600">Please fix the errors below.</p>{% endif %}
+                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl shadow-md shadow-sky-600/20">Post</button>
+            </form>
+        </div>
+    </div>
+
+    {% include "partials/post_edit_modal.html" %}
+    {% include "partials/post_delete_modal.html" %}
+</section>
 <script>
-  {% if form.errors %}
-      $(document).ready(function() {
-          $('#exampleModalCenter').modal('show');
-      });
-  {% endif %}
-$(document).ready(function() {
-  $(".edit-item").on("click", function() {
-    var post_id = $(this).data("id");
-    var editModal = $("#editModal");
-
-    $.ajax({
-        url: '/get_edit_data/' + post_id + '/',  // URL to your Django view
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            // Populate the form fields with the received data
-            editModal.find("#id_location").val(data.location);
-            editModal.find("#id_venue").val(data.venue);
-            editModal.find("#date").val(data.date);
-            editModal.find("#id_time").val(data.time);
-            editModal.find("#message").val(data.message);
-            
-            // Show the modal
-            editModal.modal("show");
+function dashboard() {
+    return {
+        showCreate: false,
+        init() {
+            {% if form.errors %}
+            this.$nextTick(() => this.openCreate());
+            {% endif %}
         },
-        error: function() {
-            alert("Error fetching data for edit.");
-        }
-    });
-  });
-
-  $("#editForm").on("submit", function(event) {
-      event.preventDefault();
-
-      // If all fields are filled, proceed with the AJAX call
-      var postId = $(".edit-item").data("id");
-      $.ajax({
-          url: '/update_post/' + postId + '/',
-          type: 'POST',
-          data: $(this).serialize(),
-          dataType: 'json',
-          success: function(data) {
-              if (data.success) {
-                  Swal.fire({
-                      icon: 'success',
-                      title: 'Success',
-                      text: 'Event Updated Successfully!'
-                  })
-                  $("#editModal").modal("hide");
-              } else {
-                  alert("Error updating data");
-              }
-          },
-          error: function() {
-              alert("Error updating data");
-          }
-      });
-  });
-
-});
+        openCreate() {
+            this.showCreate = true;
+        },
+        closeCreate() {
+            if (window.fnDestroySelect2) window.fnDestroySelect2('#createForm');
+            this.showCreate = false;
+        },
+    };
+}
 </script>
-{% endblock main %}
-{% block footer %}
-{% include "partials/footer.html" %}
-{% endblock footer %}
+{% endblock %}

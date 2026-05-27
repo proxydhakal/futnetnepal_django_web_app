@@ -54,6 +54,10 @@ class Blog(models.Model):
 
 
     def get_absolute_url(self):
-        return reverse("blog_detail", kwargs={"slug": self.slug,"category": self.category})
+        category_slug = self.category.title if self.category else 'general'
+        return reverse(
+            'blog_detail',
+            kwargs={'slug': self.slug, 'category': category_slug},
+        )
 
     

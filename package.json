@@ -1,0 +1,23 @@
+{
+  "name": "futnetnepal",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.css --minify",
+    "build:js": "esbuild static/src/fn-select2.js --bundle --minify --outfile=static/js/fn-select2.bundle.js --format=iife",
+    "build": "npm run build:css && npm run build:js",
+    "copy:fa": "mkdir -p static/webfonts && cp node_modules/@fortawesome/fontawesome-free/css/all.min.css static/css/fontawesome.min.css && cp node_modules/@fortawesome/fontawesome-free/webfonts/* static/webfonts/",
+    "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.css --watch",
+    "watch:js": "esbuild static/src/fn-select2.js --bundle --outfile=static/js/fn-select2.bundle.js --format=iife --watch"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "esbuild": "^0.28.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.5.1",
+    "jquery": "^3.7.1",
+    "select2": "^4.1.0-rc.0"
+  }
+}

@@ -1,0 +1,352 @@
+@import 'select2/dist/css/select2.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 55%, #f0f9ff 100%);
+    color: #0f172a;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+
+  :root {
+    --fn-header-h: 8.25rem;
+    --fn-sticky-top: 8.75rem;
+    --fn-sky: #0284c7;
+    --fn-sky-dark: #0c4a6e;
+    --fn-sky-border: #bae6fd;
+  }
+
+  body.fn-logged-in {
+    --fn-header-h: 6.5rem;
+    --fn-sticky-top: 7rem;
+    background-color: #1a6b45;
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(240, 249, 255, 0.94) 0%,
+        rgba(224, 242, 254, 0.9) 40%,
+        rgba(220, 252, 231, 0.88) 100%
+      ),
+      url('../images/football-3209205_1920.png'),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='28' fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'/%3E%3Cline x1='60' y1='0' x2='60' y2='120' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='2'/%3E%3Cline x1='0' y1='60' x2='120' y2='60' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='2'/%3E%3C/svg%3E"),
+      repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.045) 0,
+        rgba(255, 255, 255, 0.045) 56px,
+        transparent 56px,
+        transparent 112px
+      ),
+      linear-gradient(160deg, #3d9f6a 0%, #2a7d52 40%, #1d6b44 100%);
+    background-size: cover, cover, 280px 280px, auto, cover;
+    background-position: center, center 75%, center center, center, center;
+    background-attachment: fixed;
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat, no-repeat;
+  }
+
+  html {
+    scroll-padding-top: var(--fn-header-h);
+  }
+}
+
+@layer components {
+  .fn-icon {
+    width: 1.125rem;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .fn-icon-sm {
+    width: 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .fn-icon-lg {
+    width: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .fn-icon-xl {
+    width: 1.5rem;
+    font-size: 1.25rem;
+  }
+
+  .fn-header-offset {
+    padding-top: calc(var(--fn-header-h) + 1rem);
+  }
+
+  .fn-sticky-nav {
+    position: sticky;
+    top: calc(var(--fn-header-h) + 1rem);
+  }
+
+  /* Feed: whole-page scroll; sidebars stick while scrolling */
+  .fn-feed-shell {
+    padding-bottom: 2.5rem;
+  }
+
+  .fn-feed-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  @media (min-width: 1024px) {
+    .fn-feed-inner {
+      grid-template-columns: 17rem minmax(0, 1fr) 17rem;
+    }
+  }
+
+  .fn-feed-sidebar {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .fn-feed-sidebar {
+      display: block;
+    }
+  }
+
+  .fn-feed-sidebar .fn-card {
+    position: sticky;
+    top: calc(var(--fn-header-h) + 1rem);
+  }
+
+  .fn-feed-main {
+    min-width: 0;
+  }
+
+  /* Messenger (Facebook-style) — uses fn-logged-in pitch background */
+
+  .fn-messenger-wrap {
+    padding-bottom: 1.5rem;
+    min-height: calc(100vh - var(--fn-header-h));
+  }
+
+  .fn-messenger-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    height: calc(100vh - var(--fn-header-h) - 2rem);
+    max-height: 720px;
+  }
+
+  @media (min-width: 768px) {
+    .fn-messenger-grid {
+      grid-template-columns: 280px 1fr;
+    }
+  }
+
+  .fn-messenger-inbox {
+    border-radius: 1rem 0 0 1rem;
+    max-height: 100%;
+  }
+
+  .fn-messenger-thread {
+    border-radius: 0 1rem 1rem 0;
+    max-height: 100%;
+  }
+
+  @media (max-width: 767px) {
+    .fn-messenger-grid:not(.fn-show-thread) .fn-messenger-thread {
+      display: none;
+    }
+    .fn-messenger-grid.fn-show-thread .fn-messenger-inbox {
+      display: none;
+    }
+    .fn-messenger-thread {
+      border-radius: 1rem;
+    }
+    .fn-messenger-inbox {
+      border-radius: 1rem;
+    }
+    .fn-messenger-grid {
+      height: calc(100vh - var(--fn-header-h) - 1rem);
+    }
+  }
+
+  .fn-toast {
+    top: calc(var(--fn-header-h) + 0.5rem);
+  }
+
+  .fn-card {
+    background: #fff;
+    border: 1px solid var(--fn-sky-border);
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+  }
+
+  body.fn-logged-in .fn-card {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(15, 74, 46, 0.12);
+  }
+
+  .fn-card-muted {
+    background: #f0f9ff;
+    border: 1px solid var(--fn-sky-border);
+  }
+
+  body.fn-logged-in .fn-card-muted {
+    background: rgba(240, 249, 255, 0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .fn-modal-header {
+    background: linear-gradient(135deg, var(--fn-sky-dark), var(--fn-sky));
+    color: #fff;
+    border-bottom: 1px solid #0369a1;
+  }
+
+  .fn-input,
+  select.fn-input,
+  textarea.fn-input {
+    width: 100%;
+    margin-top: 0.25rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--fn-sky-border);
+    background: #f8fafc;
+    font-size: 0.875rem;
+    color: #0f172a;
+  }
+
+  .fn-input:focus {
+    outline: none;
+    border-color: var(--fn-sky);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  }
+
+  .select2-container {
+    width: 100% !important;
+    margin-top: 0.25rem;
+    z-index: 70;
+  }
+
+  .select2-container--default .select2-selection--single {
+    height: 42px;
+    border: 1px solid var(--fn-sky-border);
+    border-radius: 0.75rem;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 40px;
+    padding-left: 0.75rem;
+    color: #0f172a;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px;
+  }
+
+  .select2-container--default.select2-container--open .select2-selection--single,
+  .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--fn-sky);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  }
+
+  .select2-dropdown {
+    border: 1px solid var(--fn-sky-border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    z-index: 100;
+  }
+
+  #createModalPanel .select2-container,
+  #editModalPanel .select2-container {
+    z-index: 90;
+  }
+
+  .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--fn-sky);
+  }
+
+  .select2-search--dropdown .select2-search__field {
+    border: 1px solid var(--fn-sky-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .fn-profile-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.875rem;
+    border: 1px solid var(--fn-sky-border);
+    background: #f8fafc;
+    min-height: 6.5rem;
+  }
+
+  body.fn-logged-in .fn-profile-stat {
+    background: rgba(248, 250, 252, 0.9);
+  }
+
+  .fn-profile-stat__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.625rem;
+  }
+
+  .fn-profile-stat__value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #0c4a6e;
+  }
+
+  .fn-profile-stat__label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .fn-profile-stat--sky .fn-profile-stat__icon {
+    background: #e0f2fe;
+    color: #0284c7;
+  }
+
+  .fn-profile-stat--emerald .fn-profile-stat__icon {
+    background: #d1fae5;
+    color: #059669;
+  }
+
+  .fn-profile-stat--amber .fn-profile-stat__icon {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .fn-profile-stat--violet .fn-profile-stat__icon {
+    background: #ede9fe;
+    color: #7c3aed;
+  }
+
+  .fn-profile-stat--rose .fn-profile-stat__icon {
+    background: #ffe4e6;
+    color: #e11d48;
+  }
+}

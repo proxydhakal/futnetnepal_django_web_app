@@ -1,0 +1,14 @@
+<a href="{% url 'home' %}" class="flex items-center gap-3 p-3 rounded-xl font-bold shadow-sm {% if not active_time_slug %}bg-sky-600 text-white{% else %}hover:bg-sky-50 font-semibold text-sky-900{% endif %}">
+    {% if not active_time_slug %}
+    {% include "partials/fa_icon.html" with name="house" class="fn-icon-lg text-white" %}
+    {% else %}
+    {% include "partials/fa_icon.html" with name="house" class="fn-icon-lg text-sky-600" %}
+    {% endif %}
+    Home Feed
+</a>
+<a href="{% url 'venuelist' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-sky-50 font-semibold text-sky-900">
+    {% include "partials/fa_icon.html" with name="location-dot" class="fn-icon-lg text-rose-500" %} Venues
+</a>
+<a href="{% url 'messages' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-sky-50 font-semibold text-sky-900">
+    {% include "partials/fa_icon.html" with name="comments" class="fn-icon-lg text-emerald-600" %} Messages
+</a>
