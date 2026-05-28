@@ -1,0 +1,159 @@
+{% extends "partials/base.html" %}
+{% block title %}Verify your account{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block main %}
+<div class="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12"
+     x-data="verifyAccountPage()" x-init="init()">
+    <div class="w-full max-w-lg">
+        {% include "partials/auth_brand.html" %}
+        <div class="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+            {% csrf_token %}
+            <div>
+                <h1 class="text-xl font-extrabold text-sky-950">Verify your account</h1>
+                <p class="mt-2 text-sm text-slate-600" x-text="step === 1 ? 'Step 2 of 2 — verify your mobile number.' : 'Step 1 of 2 — verify your email with the link we sent.'"></p>
+                <div class="mt-4 flex gap-2">
+                    <div class="h-1.5 flex-1 rounded-full" :class="emailVerified ? 'bg-emerald-500' : 'bg-sky-600'"></div>
+                    <div class="h-1.5 flex-1 rounded-full" :class="phoneVerified ? 'bg-emerald-500' : (step === 1 ? 'bg-sky-600' : 'bg-slate-200')"></div>
+                </div>
+            </div>
+
+            <!-- Step 1: Email (link) -->
+            <section x-show="step === 0" class="rounded-xl border border-slate-200 p-5">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="font-bold text-sky-950">1. Email</h2>
+                    <span x-show="emailVerified" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Verified</span>
+                </div>
+                <p class="mt-2 text-sm text-slate-600">
+                    Open the verification <strong>link</strong> we sent to
+                    <strong x-text="email || 'your inbox'"></strong>. Check spam if needed.
+                </p>
+                <form method="post" action="{% url 'accounts:resend_verification' %}" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="email" :value="email">
+                    <input type="hidden" name="delivery" value="link">
+                    <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm">
+                        Resend verification email (link)
+                    </button>
+                </form>
+                <button type="button" @click="refreshStatus()" class="w-full mt-3 text-sm font-semibold text-sky-600 hover:underline">
+                    I clicked the link — refresh status
+                </button>
+            </section>
+
+            <!-- Step 2: Phone (SMS) -->
+            <section x-show="step === 1" x-cloak class="rounded-xl border border-slate-200 p-5">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="font-bold text-sky-950">2. Mobile number</h2>
+                    <span x-show="phoneVerified" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Verified</span>
+                </div>
+                <p class="mt-2 text-sm text-slate-600">Enter the 6-digit code we send by SMS.</p>
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <label class="text-sm font-semibold text-slate-700">Phone</label>
+                        <input type="text" x-model="phone" maxlength="10" inputmode="numeric"
+                               class="fn-input w-full mt-1" placeholder="9840123456" readonly>
+                    </div>
+                    <button type="button" @click="sendOtp()" :disabled="phoneSending"
+                            class="w-full border-2 border-sky-600 text-sky-600 font-bold py-2.5 rounded-xl text-sm hover:bg-sky-50 disabled:opacity-50">
+                        <span x-text="phoneSending ? 'Sending…' : 'Send SMS code'"></span>
+                    </button>
+                    <div>
+                        <label class="text-sm font-semibold text-slate-700">SMS code</label>
+                        <input type="text" x-model="otpCode" maxlength="6" inputmode="numeric"
+                               class="fn-input w-full mt-1" placeholder="123456">
+                    </div>
+                    <button type="button" @click="verifyOtp()" :disabled="phoneVerifying"
+                            class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-50">
+                        <span x-text="phoneVerifying ? 'Verifying…' : 'Verify phone'"></span>
+                    </button>
+                    <p class="text-xs text-rose-600" x-text="phoneError" x-show="phoneError"></p>
+                    <p class="text-xs text-emerald-600" x-text="phoneSuccess" x-show="phoneSuccess"></p>
+                </div>
+            </section>
+
+            <p x-show="step === 1 && phoneVerified" class="text-center text-sm text-emerald-700 font-semibold">
+                All set! You can log in now.
+            </p>
+
+            <a href="{% url 'accounts:login' %}" class="block text-center text-sm font-bold text-sky-600 hover:underline">
+                Back to login
+            </a>
+        </div>
+    </div>
+</div>
+<script>
+function verifyAccountPage() {
+    return {
+        email: '{{ email|escapejs }}',
+        phone: '{{ phone|escapejs }}',
+        emailVerified: {{ email_verified|yesno:"true,false" }},
+        phoneVerified: {{ phone_verified|yesno:"true,false" }},
+        step: 0,
+        otpCode: '',
+        phoneSending: false,
+        phoneVerifying: false,
+        phoneError: '',
+        phoneSuccess: '',
+        init() {
+            this.step = this.emailVerified ? 1 : 0;
+        },
+        csrf() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+        },
+        async refreshStatus() {
+            try {
+                const res = await fetch('/api/v1/auth/verification-status/?email=' + encodeURIComponent(this.email));
+                const data = await res.json();
+                if (data.success) {
+                    this.emailVerified = data.email_verified;
+                    this.phoneVerified = data.phone_verified;
+                    this.phone = data.phone || this.phone;
+                    if (this.emailVerified) {
+                        this.step = 1;
+                        this.phoneSuccess = 'Email verified! Now verify your phone.';
+                    }
+                }
+            } catch (e) {}
+        },
+        async sendOtp() {
+            this.phoneError = '';
+            this.phoneSuccess = '';
+            this.phoneSending = true;
+            const fd = new FormData();
+            fd.append('csrfmiddlewaretoken', this.csrf());
+            fd.append('email', this.email);
+            fd.append('phone', this.phone);
+            try {
+                const res = await fetch('{% url "accounts:phone_send_otp" %}', {
+                    method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!data.success) this.phoneError = data.error || 'Could not send code.';
+                else this.phoneSuccess = data.message + (data.dev_code ? ' (Dev: ' + data.dev_code + ')' : '');
+            } catch (e) { this.phoneError = 'Network error.'; }
+            this.phoneSending = false;
+        },
+        async verifyOtp() {
+            this.phoneError = '';
+            this.phoneSuccess = '';
+            this.phoneVerifying = true;
+            const fd = new FormData();
+            fd.append('csrfmiddlewaretoken', this.csrf());
+            fd.append('email', this.email);
+            fd.append('phone', this.phone);
+            fd.append('code', this.otpCode);
+            try {
+                const res = await fetch('{% url "accounts:phone_verify_otp" %}', {
+                    method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!data.success) this.phoneError = data.error || 'Verification failed.';
+                else { this.phoneVerified = true; this.phoneSuccess = data.message; }
+            } catch (e) { this.phoneError = 'Network error.'; }
+            this.phoneVerifying = false;
+        },
+    };
+}
+</script>
+{% endblock %}

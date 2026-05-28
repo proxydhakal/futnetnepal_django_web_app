@@ -9,7 +9,13 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView
 
-from apps.accounts.email_utils import send_verification_email
+from apps.accounts.email_utils import send_verification_email_link
+from apps.accounts.phone_verification import (
+    PhoneVerificationError,
+    issue_phone_otp,
+    profile_for_email,
+    verify_phone_otp,
+)
 from apps.accounts.forms import (
     LoginForm,
     RegisterForm,
@@ -42,9 +48,11 @@ class LoginView(View):
 
     def get(self, request):
         if request.user.is_authenticated:
-            if request.user.profile.email_verified:
+            if request.user.profile.email_verified and (
+                not request.user.profile.phone or request.user.profile.phone_verified
+            ):
                 return redirect(settings.LOGIN_REDIRECT_URL)
-            return redirect('accounts:verify_email_pending')
+            return redirect('accounts:verify_account')
         return render(request, self.template_name, {'form': LoginForm(request)})
 
     def post(self, request):
@@ -61,12 +69,18 @@ class LoginView(View):
         user = getattr(form, 'user_cache', None)
         if user is not None and hasattr(user, 'profile') and not user.profile.email_verified:
             request.session['pending_verify_email'] = user.email
+            request.session['pending_verify_phone'] = user.profile.phone or ''
             messages.warning(
                 request,
                 'Please verify your email before logging in. '
                 'We can send you a new link from the next page.',
             )
-            return redirect('accounts:verify_email_pending')
+            return redirect('accounts:verify_account')
+        if user is not None and hasattr(user, 'profile') and user.profile.phone and not user.profile.phone_verified:
+            request.session['pending_verify_email'] = user.email
+            request.session['pending_verify_phone'] = user.profile.phone
+            messages.warning(request, 'Please verify your phone number before logging in.')
+            return redirect('accounts:verify_account')
         return render(request, self.template_name, {'form': form})
 
 
@@ -90,7 +104,7 @@ class RegisterView(View):
             user = form.save()
             profile = Profile.objects.get(user=user)
             try:
-                send_verification_email(user, profile)
+                send_verification_email_link(user, profile)
             except Exception:
                 messages.error(
                     request,
@@ -98,16 +112,100 @@ class RegisterView(View):
                     'Use “Resend verification email” on the next page.',
                 )
             request.session['pending_verify_email'] = user.email
+            request.session['pending_verify_phone'] = profile.phone
             messages.success(
                 request,
-                'Account created! Check your email to verify before logging in.',
+                'Account created! Verify your email first, then your phone.',
             )
-            return redirect('accounts:signup_email_sent')
+            return redirect('accounts:verify_account')
         return render(request, self.template_name, {'form': form})
 
 
 class SignupEmailSentView(TemplateView):
     template_name = 'accounts/signup_email_sent.html'
+
+
+class VerifyAccountView(View):
+    """Email + phone verification after signup (before login)."""
+
+    template_name = 'accounts/verify_account.html'
+
+    def get(self, request):
+        email = request.session.get('pending_verify_email', '')
+        phone = request.session.get('pending_verify_phone', '')
+        if request.user.is_authenticated:
+            email = request.user.email
+            phone = request.user.profile.phone or phone
+        profile = None
+        if email:
+            user = User.objects.filter(email__iexact=email).first()
+            if user:
+                profile = Profile.objects.get(user=user)
+        return render(request, self.template_name, {
+            'email': email,
+            'phone': phone,
+            'email_verified': profile.email_verified if profile else False,
+            'phone_verified': profile.phone_verified if profile else False,
+        })
+
+
+class PhoneSendOtpView(View):
+    def post(self, request):
+        email = (request.POST.get('email') or '').strip().lower()
+        phone = request.POST.get('phone') or ''
+        if request.user.is_authenticated:
+            email = request.user.email
+            if not phone:
+                phone = request.user.profile.phone
+        try:
+            profile = profile_for_email(email) if email else None
+            if profile is None and request.user.is_authenticated:
+                profile = Profile.objects.get(user=request.user)
+            if profile is None:
+                return JsonResponse({'success': False, 'error': 'Email is required.'}, status=400)
+            if not profile.email_verified:
+                return JsonResponse(
+                    {'success': False, 'error': 'Verify your email before verifying your phone.'},
+                    status=400,
+                )
+            dev_code = issue_phone_otp(profile, phone)
+            payload = {'success': True, 'message': 'Verification code sent via SMS.'}
+            if dev_code and settings.DEBUG:
+                payload['dev_code'] = dev_code
+            return JsonResponse(payload)
+        except PhoneVerificationError as exc:
+            return JsonResponse({'success': False, 'error': str(exc), 'code': exc.code}, status=400)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method != 'POST':
+            return JsonResponse({'error': 'POST required'}, status=405)
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PhoneVerifyOtpView(View):
+    def post(self, request):
+        email = (request.POST.get('email') or '').strip().lower()
+        phone = request.POST.get('phone') or ''
+        code = request.POST.get('code') or ''
+        if request.user.is_authenticated:
+            email = request.user.email
+            if not phone:
+                phone = request.user.profile.phone
+        try:
+            profile = profile_for_email(email) if email else None
+            if profile is None and request.user.is_authenticated:
+                profile = Profile.objects.get(user=request.user)
+            if profile is None:
+                return JsonResponse({'success': False, 'error': 'Email is required.'}, status=400)
+            verify_phone_otp(profile, phone, code)
+            return JsonResponse({'success': True, 'message': 'Phone number verified.'})
+        except PhoneVerificationError as exc:
+            return JsonResponse({'success': False, 'error': str(exc), 'code': exc.code}, status=400)
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method != 'POST':
+            return JsonResponse({'error': 'POST required'}, status=405)
+        return super().dispatch(request, *args, **kwargs)
 
 
 class VerifyEmailPendingView(View):
@@ -127,28 +225,28 @@ class ResendVerificationView(View):
             email = request.user.email
         if not email:
             messages.error(request, 'Please enter your email address.')
-            return redirect('accounts:verify_email_pending')
+            return redirect('accounts:verify_account')
         user = User.objects.filter(email__iexact=email).first()
         if user is None:
             messages.info(
                 request,
                 'If an account exists for that email, a verification link has been sent.',
             )
-            return redirect('accounts:verify_email_pending')
+            return redirect('accounts:verify_account')
         profile = Profile.objects.get(user=user)
         if profile.email_verified:
             messages.info(request, 'This email is already verified. You can log in.')
             return redirect('accounts:login')
         try:
-            send_verification_email(user, profile)
+            send_verification_email_link(user, profile)
             request.session['pending_verify_email'] = user.email
-            messages.success(request, 'Verification email sent. Check your inbox.')
+            messages.success(request, 'Verification email sent. Check your inbox for the link.')
         except Exception:
             messages.error(
                 request,
                 'Could not send email. Please try again later or contact support.',
             )
-        return redirect('accounts:verify_email_pending')
+        return redirect('accounts:verify_account')
 
 
 class VerifyEmailView(View):
@@ -210,6 +308,7 @@ class ProfileUpdateAjaxView(LoginRequiredMixin, View):
                 },
                 'profile': {
                     'phone': user_profile.phone or '',
+                    'phone_verified': user_profile.phone_verified,
                     'address': user_profile.address or '',
                     'dob': user_profile.dob.isoformat() if user_profile.dob else '',
                     'profile_image_url': user_profile.profile_image.url,

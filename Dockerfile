@@ -1,12 +1,23 @@
-
 # syntax=docker/dockerfile:1
-FROM python:3.8-slim
+FROM python:3.11-slim-bookworm
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-WORKDIR /code
-RUN apt-get update && apt-get install -y gunicorn3 python3.8-dev python3-pip build-essential 
-COPY requirements.txt /code/
-RUN pip install -r requirements.txt && rm -rf /var/lib/apt/lists/*
-COPY . /code/
-RUN python3 manage.py collectstatic --no-input && python3 manage.py makemigrations --no-input && python3 manage.py migrate
-ENTRYPOINT exec daphne -b 0.0.0.0 -p 8000 futnetnepal.asgi:application
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Collect static at build time only if DEBUG=False in build args; usually run at deploy:
+# docker run ... python manage.py collectstatic --noinput
+EXPOSE 8000
+
+CMD ["gunicorn", "futnetnepal.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]

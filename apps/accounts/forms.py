@@ -9,6 +9,7 @@ from django.contrib.auth.forms import (
 from django.contrib.auth.models import User
 
 from apps.accounts.models import Profile
+from apps.accounts.phone_verification import PhoneVerificationError, normalize_phone
 
 INPUT_CLASS = 'fn-input w-full mt-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 focus:bg-white'
 
@@ -62,6 +63,11 @@ class LoginForm(forms.Form):
                     'Check your inbox or request a new verification link.',
                     code='email_unverified',
                 )
+            if profile is not None and profile.phone and not profile.phone_verified:
+                raise forms.ValidationError(
+                    'Please verify your phone number before logging in.',
+                    code='phone_unverified',
+                )
         return cleaned
 
     def get_user(self):
@@ -75,6 +81,19 @@ class RegisterForm(UserCreationForm):
             'class': INPUT_CLASS,
             'placeholder': 'Email address',
             'autocomplete': 'email',
+            'required': True,
+        }),
+    )
+    phone = forms.CharField(
+        max_length=10,
+        required=True,
+        label='Mobile number',
+        widget=forms.TextInput(attrs={
+            'class': INPUT_CLASS,
+            'placeholder': '9840123456',
+            'inputmode': 'numeric',
+            'maxlength': '10',
+            'autocomplete': 'tel',
             'required': True,
         }),
     )
@@ -115,11 +134,21 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError('This email is already registered.')
         return email.lower()
 
+    def clean_phone(self):
+        try:
+            return normalize_phone(self.cleaned_data['phone'])
+        except PhoneVerificationError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
+            profile = Profile.objects.get(user=user)
+            profile.phone = self.cleaned_data['phone']
+            profile.phone_verified = False
+            profile.save(update_fields=['phone', 'phone_verified'])
         return user
 
 
@@ -144,12 +173,24 @@ class UserProfileUpdateForm(forms.ModelForm):
         raw = (self.cleaned_data.get('phone') or '').strip()
         if not raw:
             return ''
-        digits = ''.join(c for c in raw if c.isdigit())
-        if not digits:
-            return ''
-        if len(digits) > 10:
-            raise forms.ValidationError('Phone number must be at most 10 digits.')
-        return digits
+        try:
+            return normalize_phone(raw)
+        except PhoneVerificationError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def save(self, commit=True):
+        instance = self.instance
+        old_phone = instance.phone if instance.pk else ''
+        profile = super().save(commit=commit)
+        if commit and profile.phone != old_phone:
+            profile.phone_verified = False
+            profile.phone_otp_hash = ''
+            profile.phone_otp_sent_at = None
+            profile.phone_otp_attempts = 0
+            profile.save(update_fields=[
+                'phone_verified', 'phone_otp_hash', 'phone_otp_sent_at', 'phone_otp_attempts',
+            ])
+        return profile
 
 
 def _split_full_name(full_name):

@@ -1,0 +1,16 @@
+[Unit]
+Description=Futnet Nepal Gunicorn
+After=network.target mysql.service redis.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/futnetnepal
+EnvironmentFile=/var/www/futnetnepal/.env
+ExecStart=/var/www/futnetnepal/.venv/bin/gunicorn futnetnepal.wsgi:application \
+  --bind 127.0.0.1:8000 --workers 3 --timeout 120
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

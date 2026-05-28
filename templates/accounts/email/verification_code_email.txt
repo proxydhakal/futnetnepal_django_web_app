@@ -1,0 +1,14 @@
+Hi {{ display_name }},
+
+Thanks for joining {{ site_name }}.
+
+Your email verification code is:
+
+{{ verification_code }}
+
+This code expires in {{ expiry_minutes }} minutes.
+
+If you did not create an account, you can ignore this email.
+
+— {{ site_name }}
+{{ site_url }}

@@ -1,0 +1,15 @@
+[Unit]
+Description=Futnet Nepal Daphne (WebSockets)
+After=network.target redis.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/futnetnepal
+EnvironmentFile=/var/www/futnetnepal/.env
+ExecStart=/var/www/futnetnepal/.venv/bin/daphne -b 127.0.0.1 -p 8001 futnetnepal.asgi:application
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

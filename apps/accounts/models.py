@@ -16,6 +16,12 @@ class Profile(models.Model):
     email_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=64, blank=True, db_index=True)
     email_verification_sent_at = models.DateTimeField(null=True, blank=True)
+    email_otp_hash = models.CharField(max_length=128, blank=True)
+    email_otp_attempts = models.PositiveSmallIntegerField(default=0)
+    phone_verified = models.BooleanField(default=False)
+    phone_otp_hash = models.CharField(max_length=128, blank=True)
+    phone_otp_sent_at = models.DateTimeField(null=True, blank=True)
+    phone_otp_attempts = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
         return f'{self.user.username} Profile'
@@ -30,7 +36,11 @@ class Profile(models.Model):
     def mark_email_verified(self):
         self.email_verified = True
         self.email_verification_token = ''
-        self.save(update_fields=['email_verified', 'email_verification_token'])
+        self.email_otp_hash = ''
+        self.email_otp_attempts = 0
+        self.save(update_fields=[
+            'email_verified', 'email_verification_token', 'email_otp_hash', 'email_otp_attempts',
+        ])
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

@@ -9,7 +9,7 @@
         {% include "partials/auth_brand.html" with auth_tagline="Join the Futnet Nepal community" %}
         <div class="bg-white rounded-2xl shadow-xl p-8">
             <h1 class="text-xl font-extrabold text-sky-950">Create account</h1>
-            <p class="text-sm text-slate-500 mt-1">You must verify your email before accessing the dashboard.</p>
+            <p class="text-sm text-slate-500 mt-1">Verify your email and mobile number before logging in.</p>
             <form method="post" action="{% url 'accounts:signup' %}" class="mt-6 space-y-3" novalidate>
                 {% csrf_token %}
                 {% include "partials/form_errors.html" %}
@@ -20,6 +20,10 @@
                 <div>
                     <label class="text-sm font-semibold text-slate-700" for="id_email">Email</label>
                     {{ form.email }}
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-slate-700" for="id_phone">Mobile number</label>
+                    {{ form.phone }}
                 </div>
                 <div>
                     <label class="text-sm font-semibold text-slate-700" for="id_password1">Password</label>

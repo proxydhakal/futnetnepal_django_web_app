@@ -1,11 +1,18 @@
 ﻿# Core
 Django>=4.2,<5
 python-decouple
+djangorestframework>=3.14
+djangorestframework-simplejwt>=5.3
+django-cors-headers>=4.3
+whitenoise>=6.6
 
 # ASGI / WebSockets
 channels>=4.0
 channels-redis>=4.2
 daphne>=4.0
+
+# Production WSGI/HTTP server
+gunicorn>=22.0
 
 # Admin & blog
 django-jazzmin
@@ -13,4 +20,4 @@ django-ckeditor
 
 # Media & database
 Pillow
-psycopg2-binary
+mysqlclient>=2.2.0
