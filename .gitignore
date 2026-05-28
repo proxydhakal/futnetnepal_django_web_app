@@ -1,5 +1,8 @@
-# Ignore .env files
+# Secrets — never commit
 .env
+.env.*
+!.env.example
+!.env.production.example
 
 # Ignore virtual environment directories
 venv/
@@ -16,3 +19,5 @@ node_modules/
 
 # collectstatic output
 staticfiles/
+futnet_mobile/
+build/
