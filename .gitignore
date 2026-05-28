@@ -19,5 +19,9 @@ node_modules/
 
 # collectstatic output
 staticfiles/
+
+# User uploads (profile images, covers, blog media) — keep on server only
+media/
+
 futnet_mobile/
 build/
