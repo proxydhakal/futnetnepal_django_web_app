@@ -25,3 +25,9 @@ media/
 
 futnet_mobile/
 build/
+temp/
+passenger_wsgi.py
+public/
+tmp/
+stdout.log
+stderr.log
