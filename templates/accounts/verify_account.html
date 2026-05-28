@@ -6,7 +6,7 @@
 <div class="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12"
      x-data="verifyAccountPage()" x-init="init()">
     <div class="w-full max-w-lg">
-        {% include "partials/auth_brand.html" %}
+        {% include "partials/auth_brand.html" with auth_tagline="Verify your email and phone to activate your account" %}
         <div class="bg-white rounded-2xl shadow-xl p-8 space-y-6">
             {% csrf_token %}
             <div>
