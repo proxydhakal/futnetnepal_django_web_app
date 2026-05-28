@@ -14,8 +14,7 @@ daphne>=4.0
 # Production WSGI/HTTP server
 gunicorn>=22.0
 
-# Admin & blog
-django-jazzmin
+# Blog editor
 django-ckeditor
 
 # Media & database

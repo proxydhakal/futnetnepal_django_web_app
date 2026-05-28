@@ -1,3 +1,4 @@
+import os
 import secrets
 
 from django.db import models
@@ -42,20 +43,25 @@ class Profile(models.Model):
             'email_verified', 'email_verification_token', 'email_otp_hash', 'email_otp_attempts',
         ])
 
+    def _resize_image_file(self, field, max_size):
+        if not field or not field.name:
+            return
+        try:
+            path = field.path
+        except (ValueError, FileNotFoundError):
+            return
+        if not os.path.isfile(path):
+            return
+        with Image.open(path) as img:
+            if img.height > max_size[1] or img.width > max_size[0]:
+                img.thumbnail(max_size)
+            img.save(path)
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
-        img = Image.open(self.profile_image.path)
-        cov = Image.open(self.cover_image.path)
-
-        if img.height > 300 or img.width > 300:
-            output_size = (300, 300)
-            img.thumbnail(output_size)
-            img.save(self.profile_image.path)
-        else:
-            img.save(self.profile_image.path)
-
-        if cov.height > 650 or cov.width > 1650:
-            output_size = (650, 1650)
-            cov.resize(output_size)
-            cov.save(self.cover_image.path)
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None:
+            if not {'profile_image', 'cover_image'} & set(update_fields):
+                return
+        self._resize_image_file(self.profile_image, (300, 300))
+        self._resize_image_file(self.cover_image, (1650, 650))

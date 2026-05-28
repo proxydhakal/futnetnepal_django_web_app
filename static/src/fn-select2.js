@@ -40,8 +40,8 @@ window.fnInitSelect2 = function (scope, dropdownParent) {
       }
       $el.select2({
         width: '100%',
-        placeholder: 'Search...',
-        allowClear: false,
+        placeholder: $el.data('placeholder') || 'Search...',
+        allowClear: $el.data('allowClear') === true || $el.data('allowClear') === 'true',
         minimumResultsForSearch: 0,
         dropdownParent: $parent,
       });

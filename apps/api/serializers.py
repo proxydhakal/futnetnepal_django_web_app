@@ -2,7 +2,11 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+import logging
+
 from apps.accounts.email_utils import send_verification_email_code, send_verification_email_link
+
+logger = logging.getLogger(__name__)
 from apps.accounts.email_verification import EmailVerificationError, issue_email_code, verify_email_code
 from apps.accounts.forms import RegisterForm, UserProfileUpdateForm, UserUpdateForm
 from apps.accounts.models import Profile
@@ -150,8 +154,11 @@ class RegisterSerializer(serializers.Serializer):
         try:
             code = issue_email_code(profile)
             send_verification_email_code(user, profile, code)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.exception('Failed to send verification code to %s', user.email)
+            raise serializers.ValidationError(
+                {'email': 'Account created but we could not send the verification email. Try resend.'},
+            ) from exc
         return user
 
 

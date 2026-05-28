@@ -1,0 +1,69 @@
+<header class="sticky top-0 z-30 admin-glass border-b border-slate-200/50 dark:border-slate-700/40 shrink-0">
+    <div class="admin-shell-header flex items-center gap-2 sm:gap-4 px-3 sm:px-6">
+        <button type="button" @click="sidebarOpen = true"
+                class="lg:hidden p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 touch-manipulation"
+                aria-label="Open menu">
+            <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+
+        <div class="flex-1 min-w-0 max-w-xl" x-data="{ searchOpen: false }">
+            <button type="button" @click="searchOpen = !searchOpen"
+                    class="sm:hidden p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 touch-manipulation"
+                    aria-label="Search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <div class="relative hidden sm:block" :class="searchOpen && '!block absolute left-12 right-14 top-1/2 -translate-y-1/2 z-10 sm:static sm:translate-y-0 sm:left-auto sm:right-auto'">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                <input type="search" placeholder="Search models, users, posts…"
+                       class="admin-input w-full pl-10 pr-4 py-2 h-10 text-sm">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1 sm:gap-2 ml-auto shrink-0">
+            <button type="button" @click="$dispatch('admin-toggle-dark')"
+                    class="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition touch-manipulation"
+                    title="Toggle theme" aria-label="Toggle theme">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:inline text-amber-300"></i>
+            </button>
+
+            <div class="relative hidden xs:block sm:block" x-data="{ open: false }">
+                <button type="button" @click="open = !open"
+                        class="relative p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 touch-manipulation"
+                        aria-label="Notifications">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+                </button>
+                <div x-show="open" @click.outside="open = false" x-cloak
+                     class="absolute right-0 mt-2 w-72 admin-glass-strong rounded-2xl shadow-xl py-2 text-sm z-50">
+                    <p class="px-4 py-2 font-bold text-slate-700 dark:text-slate-200">Notifications</p>
+                    <p class="px-4 py-3 text-slate-500 text-xs">Live alerts from the activity feed on the dashboard.</p>
+                </div>
+            </div>
+
+            <div class="relative" x-data="{ open: false }">
+                <button type="button" @click="open = !open"
+                        class="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition touch-manipulation">
+                    <span class="w-9 h-9 rounded-full bg-gradient-to-br from-sky-400 to-violet-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                        {{ request.user.username|slice:":1"|upper }}
+                    </span>
+                    <span class="hidden md:block text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[120px] truncate">{{ request.user.username }}</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 hidden sm:inline"></i>
+                </button>
+                <div x-show="open" @click.outside="open = false" x-cloak
+                     class="absolute right-0 mt-2 w-52 admin-glass-strong rounded-2xl shadow-xl py-1 text-sm overflow-hidden z-50">
+                    <div class="px-4 py-3 border-b border-slate-200/50 dark:border-slate-700/50">
+                        <p class="font-bold text-slate-800 dark:text-white truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
+                        <p class="text-xs text-slate-500 truncate">{{ request.user.email }}</p>
+                    </div>
+                    <a href="{% url 'dashboard:settings' %}" class="block px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200">Settings</a>
+                    <a href="{% url 'index' %}" target="_blank" class="block px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200">View website</a>
+                    <button type="button" @click="open = false; $dispatch('admin-logout')"
+                            class="w-full text-left px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 font-semibold">
+                        Log out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

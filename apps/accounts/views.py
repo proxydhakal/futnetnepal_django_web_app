@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -27,6 +29,8 @@ from apps.accounts.stats import user_profile_stats
 from apps.core.engagement import posts_with_engagement
 from apps.core.models import Location, Time, Venue
 from django.db.models import Count
+
+logger = logging.getLogger(__name__)
 
 
 def _profile_context(request, user_profile):
@@ -106,6 +110,7 @@ class RegisterView(View):
             try:
                 send_verification_email_link(user, profile)
             except Exception:
+                logger.exception('Failed to send verification email to %s', user.email)
                 messages.error(
                     request,
                     'Account created but we could not send the verification email. '
@@ -242,6 +247,7 @@ class ResendVerificationView(View):
             request.session['pending_verify_email'] = user.email
             messages.success(request, 'Verification email sent. Check your inbox for the link.')
         except Exception:
+            logger.exception('Failed to resend verification email to %s', user.email)
             messages.error(
                 request,
                 'Could not send email. Please try again later or contact support.',

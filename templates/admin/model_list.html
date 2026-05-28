@@ -1,0 +1,311 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ meta.verbose_name_plural|capfirst }}{% endblock %}
+{% block admin_content %}
+<div x-data="modelCrud('{{ meta.key }}')"
+     x-init="init()"
+     data-csrf="{{ csrf_token }}">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ meta.verbose_name_plural|capfirst }}</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ meta.key }}</p>
+        </div>
+        <button type="button" @click="openCreate()"
+                class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-violet-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-xl transition">
+            <i class="fa-solid fa-plus"></i> Add {{ meta.verbose_name }}
+        </button>
+    </div>
+    <div class="admin-glass rounded-2xl p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label class="text-xs font-bold text-slate-500 uppercase">Search</label>
+            <input type="search" x-model="q" @input.debounce.400ms="load(1)"
+                   placeholder="Search…"
+                   class="admin-input w-full mt-1 text-sm">
+        </div>
+        {% for fname in meta.list_filter %}
+        <div class="min-w-[140px]">
+            <label class="text-xs font-bold text-slate-500 uppercase">{{ fname }}</label>
+            <select x-model="filters['{{ fname }}']" @change="load(1)"
+                    class="admin-input w-full mt-1 text-sm">
+                <option value="">All</option>
+                <template x-if="filterOptions['{{ fname }}']">
+                    <template x-for="opt in filterOptions['{{ fname }}']" :key="opt.value">
+                        <option :value="opt.value" x-text="opt.label"></option>
+                    </template>
+                </template>
+            </select>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="admin-glass rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50/80 dark:bg-slate-800/40 border-b border-slate-200/50 dark:border-slate-700/50 text-xs uppercase text-slate-500">
+                    <tr>
+                        <th class="px-4 py-3 font-bold">ID</th>
+                        <template x-for="col in columns" :key="col">
+                            <th class="px-4 py-3 font-bold" x-text="col"></th>
+                        </template>
+                        <th class="px-4 py-3 font-bold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr x-show="loading"><td :colspan="columns.length + 2" class="px-4 py-8 text-center text-slate-400">Loading…</td></tr>
+                    <tr x-show="!loading && rows.length === 0"><td :colspan="columns.length + 2" class="px-4 py-8 text-center text-slate-400">No records found.</td></tr>
+                    <template x-for="row in rows" :key="row.id">
+                        <tr class="admin-table-row border-t border-slate-100 dark:border-slate-800/80">
+                            <td class="px-4 py-3 font-mono text-slate-500" x-text="row.id"></td>
+                            <template x-for="col in columns" :key="col">
+                                <td class="px-4 py-3 max-w-xs truncate" x-text="row[col]"></td>
+                            </template>
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <button type="button" @click="openEdit(row.id)" class="text-sky-600 font-semibold hover:underline mr-3">Edit</button>
+                                <button type="button" @click="askDelete(row.id)" class="text-red-600 font-semibold hover:underline">Delete</button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-t border-slate-200/50 dark:border-slate-700/50 text-sm">
+            <p class="text-slate-500"><span x-text="total"></span> total</p>
+            <div class="flex gap-2 justify-center sm:justify-end">
+                <button type="button" :disabled="!has_previous" @click="load(page - 1)"
+                        class="min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 disabled:opacity-40 font-semibold touch-manipulation">Prev</button>
+                <span class="min-h-[44px] flex items-center px-2 text-slate-600 dark:text-slate-400">Page <span x-text="page"></span> / <span x-text="pages"></span></span>
+                <button type="button" :disabled="!has_next" @click="load(page + 1)"
+                        class="min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 disabled:opacity-40 font-semibold touch-manipulation">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CRUD modal -->
+    <div x-show="modalOpen" x-cloak x-transition.opacity
+         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-sm"
+         @keydown.escape.window="closeModal()">
+        <div id="adminCrudModal"
+             class="admin-modal-panel admin-glass-strong rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[90vh] flex flex-col animate-slide-up"
+             @click.outside="closeModal()">
+            <div class="admin-shell-header border-b border-slate-200/50 dark:border-slate-700/50 px-4 sm:px-6 flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white" x-text="editingId ? 'Edit {{ meta.verbose_name }}' : 'New {{ meta.verbose_name }}'"></h3>
+                    <p class="text-xs text-slate-500 hidden sm:block">Premium fields · search selects · date & time pickers</p>
+                </div>
+                <button type="button" @click="closeModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xl" aria-label="Close">&times;</button>
+            </div>
+            <form @submit.prevent="save()" class="flex flex-col flex-1 min-h-0">
+                <div id="adminCrudFormBody" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 min-h-[12rem]"></div>
+                <div x-show="formError" class="mx-4 sm:mx-6 mb-2 rounded-xl bg-red-500/10 text-red-600 dark:text-red-300 text-sm px-4 py-3 border border-red-500/20" x-text="formError"></div>
+                <div class="shrink-0 flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
+                    <button type="button" @click="closeModal()"
+                            class="flex-1 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-600 font-semibold text-slate-600 dark:text-slate-300">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="saving"
+                            class="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-violet-600 text-white font-bold shadow-lg disabled:opacity-50">
+                        <span x-text="saving ? 'Saving…' : 'Save changes'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete confirm modal -->
+    <div x-show="deleteOpen" x-cloak x-transition.opacity
+         class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="admin-glass-strong rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8" @click.outside="deleteOpen = false">
+            <div class="w-12 h-12 rounded-2xl bg-red-500/15 text-red-600 flex items-center justify-center text-xl mb-4">
+                <i class="fa-solid fa-trash"></i>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">Delete this record?</h3>
+            <p class="text-sm text-slate-500 mt-2">This action cannot be undone.</p>
+            <div class="flex flex-col-reverse sm:flex-row gap-3 mt-6">
+                <button type="button" @click="deleteOpen = false"
+                        class="flex-1 px-5 py-3 rounded-xl border font-semibold text-slate-600">Cancel</button>
+                <button type="button" @click="confirmDelete()" :disabled="deleting"
+                        class="flex-1 px-5 py-3 rounded-xl bg-red-600 text-white font-bold disabled:opacity-50">
+                    <span x-text="deleting ? 'Deleting…' : 'Delete'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block admin_extra_js %}
+{{ field_choices|json_script:"field-choices-data" }}
+<script>
+function modelCrud(modelKey, _ignored) {
+    const fieldDefs = JSON.parse(document.getElementById('field-choices-data').textContent);
+    const filterOptions = {};
+    {% for fname in meta.list_filter %}
+    if (fieldDefs['{{ fname }}']?.choices) {
+        filterOptions['{{ fname }}'] = fieldDefs['{{ fname }}'].choices;
+    }
+    {% endfor %}
+    return {
+        modelKey,
+        fieldDefs,
+        filterOptions,
+        rows: [],
+        columns: [],
+        q: '',
+        filters: { {% for fname in meta.list_filter %}'{{ fname }}': '',{% endfor %} },
+        page: 1,
+        pages: 1,
+        total: 0,
+        has_next: false,
+        has_previous: false,
+        loading: false,
+        modalOpen: false,
+        deleteOpen: false,
+        deleteTargetId: null,
+        deleting: false,
+        editingId: null,
+        form: {},
+        files: {},
+        formError: '',
+        saving: false,
+        csrf: document.querySelector('[data-csrf]')?.dataset.csrf || '',
+        init() { this.load(1); },
+        mountForm() {
+            const el = document.getElementById('adminCrudFormBody');
+            if (!window.adminFormKit || !el) return;
+            adminFormKit.render(el, this.fieldDefs, this.form, {
+                editing: !!this.editingId,
+                dropdownParent: '#adminCrudModal',
+                onChange: (name, val) => { this.form[name] = val; },
+                onFile: (name, file) => { this.files[name] = file; },
+            });
+        },
+        scheduleMountForm() {
+            this.modalOpen = true;
+            const attempt = (n = 0) => {
+                const el = document.getElementById('adminCrudFormBody');
+                if (window.adminFormKit && el) {
+                    this.mountForm();
+                    return;
+                }
+                if (n < 15) requestAnimationFrame(() => attempt(n + 1));
+            };
+            this.$nextTick(() => attempt());
+        },
+        closeModal() {
+            const el = document.getElementById('adminCrudFormBody');
+            if (el && window.adminFormKit) {
+                adminFormKit.destroy(el);
+            }
+            this.modalOpen = false;
+        },
+        listUrl(page) {
+            const p = new URLSearchParams({ page, q: this.q });
+            Object.keys(this.filters).forEach(k => {
+                if (this.filters[k]) p.set('filter_' + k, this.filters[k]);
+            });
+            return `/iamadmin/api/${modelKey}/list/?` + p.toString();
+        },
+        async load(page) {
+            this.loading = true;
+            const res = await fetch(this.listUrl(page));
+            const data = await res.json();
+            this.rows = data.rows;
+            this.columns = data.columns;
+            this.page = data.page;
+            this.pages = data.pages;
+            this.total = data.total;
+            this.has_next = data.has_next;
+            this.has_previous = data.has_previous;
+            this.loading = false;
+        },
+        emptyForm() {
+            const f = {};
+            Object.keys(this.fieldDefs).forEach(k => {
+                const t = this.fieldDefs[k].type;
+                f[k] = t === 'BooleanField' ? false : (t === 'ManyToManyField' ? [] : '');
+            });
+            return f;
+        },
+        openCreate() {
+            this.editingId = null;
+            this.form = this.emptyForm();
+            this.files = {};
+            this.formError = '';
+            this.scheduleMountForm();
+        },
+        async openEdit(id) {
+            const res = await fetch(`/iamadmin/api/${modelKey}/${id}/`);
+            const data = await res.json();
+            this.fieldDefs = data.fields || this.fieldDefs;
+            this.form = { ...data };
+            delete this.form.fields;
+            delete this.form.__str__;
+            this.editingId = id;
+            this.files = {};
+            this.formError = '';
+            this.scheduleMountForm();
+        },
+        onFile(name, ev) {
+            const file = ev.target.files?.[0];
+            if (file) this.files[name] = file;
+        },
+        async save() {
+            this.saving = true;
+            this.formError = '';
+            if (window.adminFormKit) {
+                const el = document.getElementById('adminCrudFormBody');
+                if (el) Object.assign(this.form, adminFormKit.collect(el, this.fieldDefs));
+            }
+            const url = this.editingId
+                ? `/iamadmin/api/${modelKey}/${this.editingId}/update/`
+                : `/iamadmin/api/${modelKey}/create/`;
+            const hasFiles = Object.keys(this.files).length > 0;
+            let res;
+            if (hasFiles) {
+                const fd = new FormData();
+                Object.keys(this.form).forEach(k => {
+                    const v = this.form[k];
+                    if (this.fieldDefs[k]?.type === 'ManyToManyField' && Array.isArray(v)) {
+                        v.forEach(x => fd.append(k, x));
+                    } else if (v !== null && v !== undefined) {
+                        fd.append(k, v);
+                    }
+                });
+                Object.keys(this.files).forEach(k => fd.append(k, this.files[k]));
+                res = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': this.csrf }, body: fd });
+            } else {
+                res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.csrf },
+                    body: JSON.stringify(this.form),
+                });
+            }
+            const data = await res.json();
+            this.saving = false;
+            if (!data.success) {
+                this.formError = typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors);
+                return;
+            }
+            this.closeModal();
+            this.load(this.page);
+            window.dispatchEvent(new CustomEvent('admin-toast', { detail: { message: 'Saved successfully', type: 'success' } }));
+        },
+        askDelete(id) {
+            this.deleteTargetId = id;
+            this.deleteOpen = true;
+        },
+        async confirmDelete() {
+            if (!this.deleteTargetId) return;
+            this.deleting = true;
+            await fetch(`/iamadmin/api/${modelKey}/${this.deleteTargetId}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': this.csrf },
+            });
+            this.deleting = false;
+            this.deleteOpen = false;
+            this.deleteTargetId = null;
+            this.load(this.page);
+            window.dispatchEvent(new CustomEvent('admin-toast', { detail: { message: 'Record deleted', type: 'success' } }));
+        },
+    };
+}
+</script>
+{% endblock %}

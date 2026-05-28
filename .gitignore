@@ -20,11 +20,19 @@ node_modules/
 # collectstatic output
 staticfiles/
 
-# User uploads — keep on server only; exception: default profile avatar
+# User uploads — keep on server only; exceptions: default avatar + cover
 media/*
 !media/profile_pics/
 media/profile_pics/*
 !media/profile_pics/default.jpg
+!media/media/
+media/media/*
+!media/media/profile_pics/
+media/media/profile_pics/*
+!media/media/profile_pics/default.jpg
+!media/media/cover_pics/
+media/media/cover_pics/*
+!media/media/cover_pics/cover.jpg
 
 futnet_mobile/
 build/

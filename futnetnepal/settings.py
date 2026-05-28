@@ -52,8 +52,6 @@ if not DEBUG and SECRET_KEY in ('', 'change-me', 'change-me-in-production'):
 # ——— Apps ———
 INSTALLED_APPS = [
     'daphne',
-    'jazzmin',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -63,6 +61,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'channels',
+    'apps.dashboard.apps.DashboardConfig',
     'apps.api',
     'apps.accounts',
     'apps.core',
@@ -104,6 +103,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.accounts.context_processors.user_profile',
+                'apps.dashboard.context_processors.admin_nav',
             ],
         },
     },
@@ -332,28 +332,6 @@ LOGGING = {
         'django': {'level': _log_level, 'propagate': True},
         'django.request': {'level': 'ERROR', 'propagate': True},
     },
-}
-
-# ——— Jazzmin ———
-JAZZMIN_SETTINGS = {
-    'site_title': 'FutnetNepal Admin',
-    'site_header': 'FutnetNepal',
-    'site_logo': 'images/logo.png',
-    'site_brand': 'Futnet Nepal',
-    'site_logo_classes': 'img-responisve',
-    'site_icon': 'images/logo.png',
-    'welcome_sign': 'Welcome to the Futnet Nepal',
-    'copyright': 'Futnet Nepal Pvt. Ltd.',
-    'search_model': 'auth.User',
-    'user_avatar': None,
-    'topmenu_links': [
-        {'name': 'Home', 'url': 'index', 'new_window': True},
-        {'name': 'Contact', 'url': 'contact', 'new_window': True},
-        {'name': 'Blog', 'url': 'blog', 'new_window': True},
-        {'name': 'About', 'url': 'about', 'new_window': True},
-        {'name': 'Partner WithUS', 'url': 'partnerwithus', 'new_window': True},
-        {'model': 'auth.User'},
-    ],
 }
 
 CKEDITOR_CONFIGS = {
