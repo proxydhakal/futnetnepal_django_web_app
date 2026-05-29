@@ -13,6 +13,7 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from apps.accounts.email_utils import send_verification_email_link
+from apps.accounts.verification_session import stash_pending_verification
 from apps.accounts.phone_verification import (
     PhoneVerificationError,
     issue_phone_otp,
@@ -73,9 +74,13 @@ class LoginView(View):
 
     def post(self, request):
         if request.user.is_authenticated:
-            if request.user.is_email_verified:
+            profile = request.user.profile
+            if request.user.is_email_verified and (
+                not profile.phone or profile.phone_verified
+            ):
                 return redirect(settings.LOGIN_REDIRECT_URL)
-            return redirect('accounts:verify_email_pending')
+            stash_pending_verification(request, request.user, profile)
+            return redirect('accounts:verify_account')
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             login(request, form.get_user())
@@ -105,16 +110,24 @@ class RegisterView(View):
 
     def get(self, request):
         if request.user.is_authenticated:
-            if request.user.is_email_verified:
+            profile = request.user.profile
+            if request.user.is_email_verified and (
+                not profile.phone or profile.phone_verified
+            ):
                 return redirect(settings.LOGIN_REDIRECT_URL)
-            return redirect('accounts:verify_email_pending')
+            stash_pending_verification(request, request.user, profile)
+            return redirect('accounts:verify_account')
         return render(request, self.template_name, {'form': RegisterForm()})
 
     def post(self, request):
         if request.user.is_authenticated:
-            if request.user.is_email_verified:
+            profile = request.user.profile
+            if request.user.is_email_verified and (
+                not profile.phone or profile.phone_verified
+            ):
                 return redirect(settings.LOGIN_REDIRECT_URL)
-            return redirect('accounts:verify_email_pending')
+            stash_pending_verification(request, request.user, profile)
+            return redirect('accounts:verify_account')
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -168,7 +181,10 @@ class VerifyAccountView(View):
     template_name = 'accounts/verify_account.html'
 
     def get(self, request):
-        email = request.session.get('pending_verify_email', '')
+        email = (
+            request.session.get('pending_verify_email', '')
+            or (request.GET.get('email') or '').strip()
+        )
         phone = request.session.get('pending_verify_phone', '')
         if request.user.is_authenticated:
             email = request.user.email
@@ -179,6 +195,8 @@ class VerifyAccountView(View):
             user = User.objects.filter(email__iexact=email).first()
             if user:
                 profile = Profile.objects.get(user=user)
+                stash_pending_verification(request, user, profile)
+                phone = profile.phone or phone
         return render(request, self.template_name, {
             'email': email,
             'phone': phone,
@@ -290,6 +308,10 @@ class ResendVerificationView(View):
             return redirect('accounts:verify_account')
         profile = Profile.objects.get(user=user)
         if user.is_email_verified:
+            stash_pending_verification(request, user, profile)
+            if profile.phone and not profile.phone_verified:
+                messages.info(request, 'Email already verified. Complete phone verification below.')
+                return redirect('accounts:verify_account')
             messages.info(request, 'This email is already verified. You can log in.')
             return redirect('accounts:login')
         try:
@@ -306,7 +328,6 @@ class ResendVerificationView(View):
 
 
 class VerifyEmailView(View):
-    template_success = 'accounts/verify_email_success.html'
     template_invalid = 'accounts/verify_email_invalid.html'
 
     def get(self, request, token):
@@ -314,11 +335,13 @@ class VerifyEmailView(View):
         if profile is None:
             return render(request, self.template_invalid)
         user = profile.user
+        stash_pending_verification(request, user, profile)
         if user.is_email_verified:
-            return render(request, self.template_success, {'already_verified': True})
-        profile.mark_email_verified()
-        request.session.pop('pending_verify_email', None)
-        return render(request, self.template_success, {'already_verified': False})
+            messages.info(request, 'Your email is already verified.')
+        else:
+            profile.mark_email_verified()
+            messages.success(request, 'Email verified! Now verify your mobile number.')
+        return redirect('accounts:verify_account')
 
 
 class LogoutView(View):
