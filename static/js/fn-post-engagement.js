@@ -5,6 +5,7 @@ function fnApplyFormErrors(formEl, errors) {
         el.textContent = '';
         el.classList.add('hidden');
         el.closest('.fn-field')?.classList.remove('fn-field--error');
+        el.closest('.hd-field')?.classList.remove('ring-1', 'ring-red-300', 'rounded-xl', 'p-1');
     });
     if (!errors || typeof errors !== 'object') return;
     Object.entries(errors).forEach(([field, msgs]) => {
@@ -17,7 +18,12 @@ function fnApplyFormErrors(formEl, errors) {
         if (slot) {
             slot.textContent = text;
             slot.classList.remove('hidden');
-            slot.closest('.fn-field')?.classList.add('fn-field--error');
+            const wrap = slot.closest('.fn-field') || slot.closest('.hd-field');
+            if (wrap?.classList.contains('fn-field')) {
+                wrap.classList.add('fn-field--error');
+            } else if (wrap?.classList.contains('hd-field')) {
+                wrap.classList.add('ring-1', 'ring-red-300', 'rounded-xl', 'p-1');
+            }
         } else {
             window.dispatchEvent(new CustomEvent('toast', { detail: { text, type: 'error' } }));
         }

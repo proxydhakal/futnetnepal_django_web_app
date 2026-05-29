@@ -1,119 +1,30 @@
-{% extends "partials/base.html" %}
-{% block title %}{% if category_name %}{{ category_name }}{% else %}Feed{% endif %}{% endblock %}
-{% block main %}
-<section class="fn-header-offset fn-feed-shell min-h-screen" x-data="Object.assign(dashboard(), postEditModal(), postDeleteModal())" x-init="init()" @open-post-edit.window="openEdit($event.detail.id)" @open-post-delete.window="openDelete($event.detail)">
-    <div class="fn-feed-inner">
-            <aside class="fn-feed-sidebar">
-                <div class="fn-card p-4 space-y-1">
-                    <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-sky-50 font-semibold text-sky-900">
-                        {% if userprofiledata %}<img src="{{ userprofiledata.profile_image.url }}" class="h-9 w-9 rounded-full object-cover ring-2 ring-sky-200" alt="">{% else %}<span class="h-9 w-9 rounded-full bg-sky-600 text-white flex items-center justify-center text-sm">{{ request.user.username|slice:":1"|upper }}</span>{% endif %}
-                        <span class="truncate">{{ request.user.get_full_name|default:request.user.username }}</span>
-                    </a>
-                    {% include "partials/feed_sidebar_nav.html" %}
-                </div>
-            </aside>
+{% extends "partials/home_dashboard/layout.html" %}
 
-            <div class="fn-feed-main space-y-3">
-                {% if category_name %}
-                <div class="fn-card p-4 border-sky-200 bg-gradient-to-r from-sky-50 to-white">
-                    <p class="text-xs font-bold text-sky-600 uppercase tracking-wide">Category</p>
-                    <h2 class="text-lg font-extrabold text-sky-950 mt-0.5">{{ category_name }}</h2>
-                    <a href="{% url 'home' %}" class="inline-block mt-2 text-sm font-semibold text-sky-600 hover:underline">← View all events</a>
-                </div>
-                {% endif %}
-                <div class="fn-card p-4">
-                    <div class="flex items-center gap-3">
-                        {% if userprofiledata %}<img src="{{ userprofiledata.profile_image.url }}" class="h-10 w-10 rounded-full object-cover ring-2 ring-sky-200" alt="">{% else %}<span class="h-10 w-10 rounded-full bg-sky-600 text-white flex items-center justify-center">{{ request.user.username|slice:":1"|upper }}</span>{% endif %}
-                        <button type="button" @click="openCreate()" class="flex-1 text-left fn-card-muted rounded-full px-5 py-3 text-sky-700/70 font-medium transition-colors hover:border-sky-300">
-                            What's on your mind, {{ request.user.get_full_name|default:request.user.username }}?
-                        </button>
-                    </div>
-                    <hr class="my-3 border-sky-100">
-                    <button type="button" @click="openCreate()" class="w-full py-2 text-sm font-bold text-sky-700 hover:bg-sky-50 rounded-xl transition-colors flex items-center justify-center gap-2">
-                        {% include "partials/fa_icon.html" with name="futbol" class="fn-icon text-sky-600" %} Host a Match
-                    </button>
-                </div>
+{% block dashboard_title %}Feed – {{ site_config.site_title|default:"Futnet Nepal" }}{% endblock %}
 
-                {% for post in posts %}
-                {% include "partials/post_card.html" %}
-                {% empty %}
-                <div class="fn-card p-12 text-center">
-                    {% if category_name %}
-                    <p class="text-sky-700/70 mb-4">No events in this time slot yet.</p>
-                    {% else %}
-                    <p class="text-sky-700/70 mb-4">No events yet. Be the first to host a match!</p>
-                    {% endif %}
-                    <button type="button" @click="openCreate()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full shadow-md shadow-sky-600/25">Host a Match</button>
-                </div>
-                {% endfor %}
-            </div>
+{% block shell_data %}homeShell(){% endblock %}
+{% block shell_attrs %}{% if form.errors %}data-form-errors{% endif %}{% endblock %}
+{% block shell_events %}
+@open-post-edit.window="openEdit($event.detail?.id ?? $event.detail)"
+@open-post-delete.window="openDelete($event.detail)"
+{% endblock %}
 
-            <aside class="fn-feed-sidebar">
-                <div class="fn-card p-4">
-                    <h3 class="font-bold text-sky-950 mb-3">Categories by Time</h3>
-                    <ul class="space-y-1">
-                        {% for time in times %}
-                        <li>
-                            <a href="{% url 'post-cat' time.slug %}" class="flex justify-between items-center p-2 rounded-lg text-sm font-medium {% if active_time_slug == time.slug %}bg-sky-600 text-white shadow-sm{% else %}hover:bg-sky-50 text-sky-900{% endif %}">
-                                <span>{{ time.name }}</span>
-                                <span class="text-xs font-bold px-2 py-0.5 rounded-full {% if active_time_slug == time.slug %}bg-white/25 text-white{% else %}bg-sky-600 text-white{% endif %}">{{ time.total }}</span>
-                            </a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </aside>
-    </div>
+{% block content %}
+{% if category_name %}
+<div class="glass rounded-2xl p-4 shadow-sm border border-brand-100/60 animate-fade-up">
+  <p class="text-[10px] font-bold text-brand-500 uppercase tracking-widest">Category</p>
+  <h2 class="font-display font-bold text-brand-900 text-xl mt-0.5">{{ category_name }}</h2>
+  <a href="{% url 'home' %}" class="inline-block mt-2 text-sm font-semibold text-brand-600 hover:text-brand-800 transition-colors">← View all events</a>
+</div>
+{% endif %}
 
-    <!-- Create modal -->
-    <div id="createModal" x-show="showCreate" x-cloak
-         x-effect="showCreate && $nextTick(() => document.dispatchEvent(new CustomEvent('fn-select2-init', { detail: { scope: '#createForm', parent: '#createModalPanel' } })))"
-         @click.self="closeCreate()" @keydown.escape.window="showCreate && closeCreate()" class="fixed inset-0 z-[60] flex items-start justify-center bg-sky-950/40 backdrop-blur-sm p-4 fn-header-offset overflow-y-auto">
-        <div id="createModalPanel" class="fn-card w-full max-w-lg overflow-visible shadow-2xl shadow-sky-900/20" @click.stop>
-            <div class="fn-modal-header flex items-center justify-between px-6 py-4">
-                <h2 class="text-lg font-bold">Create Event</h2>
-                <button type="button" @click="closeCreate()" class="text-white/80 hover:text-white text-xl">&times;</button>
-            </div>
-            <form id="createForm" method="post" action="{% url 'home' %}" class="p-6 space-y-4 bg-white" novalidate>
-                {% csrf_token %}
-                {% include "partials/form_non_field_toast.html" %}
-                <div class="grid gap-4 sm:grid-cols-2">
-                    {% include "partials/form_field.html" with field=form.location %}
-                    {% include "partials/form_field.html" with field=form.venue %}
-                    <div class="fn-field{% if form.date.errors %} fn-field--error{% endif %}">
-                        <label class="fn-label" for="id_date">Date <span class="text-red-500">*</span></label>
-                        <input type="date" name="date" id="id_date" class="fn-input" value="{{ form.date.value|default:'' }}" required>
-                        {% for error in form.date.errors %}<p class="fn-field-error" role="alert">{{ error }}</p>{% endfor %}
-                    </div>
-                    {% include "partials/form_field.html" with field=form.time %}
-                </div>
-                {% include "partials/form_field.html" with field=form.message hide_help=False %}
-                <p class="text-xs text-sky-600/70 -mt-2">Describe your match (required).</p>
-                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl shadow-md shadow-sky-600/20">Post</button>
-            </form>
-        </div>
-    </div>
+{% include "partials/home_dashboard/composer.html" %}
 
-    {% include "partials/post_edit_modal.html" %}
-    {% include "partials/post_delete_modal.html" %}
-</section>
-<script>
-function dashboard() {
-    return {
-        showCreate: false,
-        init() {
-            {% if form.errors %}
-            this.$nextTick(() => this.openCreate());
-            {% endif %}
-        },
-        openCreate() {
-            this.showCreate = true;
-        },
-        closeCreate() {
-            if (window.fnDestroySelect2) window.fnDestroySelect2('#createForm');
-            this.showCreate = false;
-        },
-    };
-}
-</script>
+<div id="homeFeed" class="space-y-4">
+{% for post in posts %}
+{% include "partials/home_dashboard/post_card.html" %}
+{% empty %}
+{% include "partials/home_dashboard/empty_feed.html" %}
+{% endfor %}
+</div>
 {% endblock %}

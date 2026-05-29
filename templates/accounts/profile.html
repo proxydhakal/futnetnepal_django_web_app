@@ -1,159 +1,147 @@
-{% extends "partials/base.html" %}
-{% block title %}Profile{% endblock %}
-{% block main %}
-<section class="fn-header-offset pb-12 min-h-screen" x-data="profilePage()" x-init="init()">
-    <div class="container mx-auto px-4 max-w-6xl">
-        <div class="grid lg:grid-cols-12 gap-4 lg:gap-5 items-start">
-            <aside class="hidden lg:block lg:col-span-3">
-                <div class="fn-card p-4 fn-sticky-nav space-y-1">
-                    {% include "partials/feed_sidebar_nav.html" %}
-                    <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 p-3 rounded-xl bg-sky-600 text-white font-bold shadow-sm">
-                        {% include "partials/fa_icon.html" with name="user" class="fn-icon-lg text-white" %} Profile
-                    </a>
-                </div>
-            </aside>
+{% extends "partials/home_dashboard/layout.html" %}
 
-            <div class="lg:col-span-9 space-y-4">
-                <div class="fn-card overflow-hidden">
-                    <div class="h-48 bg-gradient-to-r from-sky-600 to-sky-800 relative">
-                        <img :src="coverUrl" alt="" class="w-full h-full object-cover" x-show="coverUrl">
-                        <template x-if="editing">
-                            <label class="absolute bottom-3 right-3 bg-white/90 hover:bg-white text-sky-700 text-xs font-bold px-3 py-1.5 rounded-full cursor-pointer shadow">
-                                Change cover
-                                <input type="file" name="cover_image" form="profileForm" accept="image/*" class="hidden" @change="previewCover">
-                            </label>
-                        </template>
-                    </div>
-                    <div class="px-6 pb-6 relative">
-                        <div class="relative -mt-12 inline-block">
-                            <img :src="avatarUrl" alt="" class="h-24 w-24 rounded-full border-4 border-white shadow-lg object-cover bg-slate-200">
-                            <template x-if="editing">
-                                <label class="absolute bottom-0 right-0 bg-sky-600 text-white text-xs font-bold px-2 py-1 rounded-full cursor-pointer shadow">
-                                    Edit
-                                    <input type="file" name="profile_image" form="profileForm" accept="image/*" class="hidden" @change="previewAvatar">
-                                </label>
-                            </template>
-                        </div>
+{% block dashboard_title %}Profile – {{ site_config.site_title|default:"Futnet Nepal" }}{% endblock %}
 
-                        <!-- View mode -->
-                        <div x-show="!editing" class="mt-4 flex flex-wrap justify-between gap-4 items-start">
-                            <div>
-                                <h1 class="text-2xl font-extrabold text-sky-950" x-text="displayName"></h1>
-                                <p class="text-slate-500">@<span x-text="user.username"></span> · <span x-text="user.email"></span></p>
-                                <p class="mt-2 text-sm text-slate-600 inline-flex items-center gap-1.5" x-show="profile.phone">
-                                    {% include "partials/fa_icon.html" with name="phone" class="fn-icon-sm text-sky-600" %}
-                                    <span x-text="profile.phone"></span>
-                                    <span x-show="phoneVerified" class="text-xs font-bold text-emerald-600">✓ verified</span>
-                                    <span x-show="profile.phone && !phoneVerified" class="text-xs font-bold text-amber-600">not verified</span>
-                                </p>
-                                <p class="text-sm text-slate-600 inline-flex items-center gap-1.5" x-show="profile.address">
-                                    {% include "partials/fa_icon.html" with name="location-dot" class="fn-icon-sm text-rose-500" %}
-                                    <span x-text="profile.address"></span>
-                                </p>
-                                <p class="text-sm text-slate-600" x-show="profile.dob">🎂 <span x-text="profile.dob"></span></p>
-                            </div>
-                            <button type="button" @click="editing = true" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-6 rounded-full text-sm shrink-0">
-                                Edit Profile
-                            </button>
-                        </div>
+{% block shell_data %}profileShell(){% endblock %}
+{% block shell_events %}
+@open-post-edit.window="openEdit($event.detail?.id ?? $event.detail)"
+@open-post-delete.window="openDelete($event.detail)"
+{% endblock %}
 
-                        <!-- Edit mode -->
-                        <div x-show="editing" x-cloak class="mt-4">
-                            <form id="profileForm" @submit.prevent="saveProfile" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <div class="grid sm:grid-cols-2 gap-4">
-                                    <div class="sm:col-span-2">
-                                        <label class="text-sm font-semibold text-slate-700">Full name</label>
-                                        <input type="text" name="full_name" x-model="user.full_name" class="fn-input" required>
-                                        <p class="fn-field-error" x-show="errors.user_full_name" x-text="errors.user_full_name" role="alert"></p>
-                                    </div>
-                                    <div>
-                                        <label class="text-sm font-semibold text-slate-700">Username</label>
-                                        <input type="text" name="username" x-model="user.username" class="fn-input bg-slate-100 text-slate-600 cursor-not-allowed" readonly aria-readonly="true">
-                                        <p class="text-xs text-slate-500 mt-1">Username cannot be changed.</p>
-                                    </div>
-                                    <div>
-                                        <label class="text-sm font-semibold text-slate-700">Email</label>
-                                        <template x-if="emailVerified">
-                                            <input type="email" x-model="user.email" class="fn-input bg-slate-100 text-slate-600 cursor-not-allowed" readonly aria-readonly="true">
-                                            <p class="text-xs text-slate-500 mt-1">Verified email cannot be changed.</p>
-                                        </template>
-                                        <template x-if="!emailVerified">
-                                            <input type="email" name="email" x-model="user.email" class="fn-input" required>
-                                            <p class="text-xs text-slate-500 mt-1">Verify your email before it is locked.</p>
-                                        </template>
-                                        <p class="fn-field-error" x-show="errors.user_email" x-text="errors.user_email" role="alert"></p>
-                                    </div>
-                                    <div>
-                                        <label class="text-sm font-semibold text-slate-700">Phone</label>
-                                        <template x-if="phoneVerified">
-                                            <input type="text" x-model="profile.phone" maxlength="10" class="fn-input bg-slate-100 text-slate-600 cursor-not-allowed" readonly aria-readonly="true">
-                                            <p class="text-xs text-slate-500 mt-1">Verified phone cannot be changed.</p>
-                                        </template>
-                                        <template x-if="!phoneVerified">
-                                            <input type="text" name="phone" x-model="profile.phone" maxlength="10" inputmode="numeric" placeholder="9840123456" class="fn-input">
-                                        </template>
-                                        <p class="fn-field-error" x-show="errors.profile_phone" x-text="errors.profile_phone" role="alert"></p>
-                                    </div>
-                                    <div>
-                                        <label class="text-sm font-semibold text-slate-700">Date of birth</label>
-                                        <input type="date" name="dob" x-model="profile.dob" class="fn-input">
-                                        <p class="fn-field-error" x-show="errors.profile_dob" x-text="errors.profile_dob" role="alert"></p>
-                                    </div>
-                                    <div class="sm:col-span-2">
-                                        <label class="text-sm font-semibold text-slate-700">Address</label>
-                                        <input type="text" name="address" x-model="profile.address" class="fn-input">
-                                        <p class="fn-field-error" x-show="errors.profile_address" x-text="errors.profile_address" role="alert"></p>
-                                    </div>
-                                </div>
-                                <div class="mt-5 flex flex-wrap gap-3">
-                                    <button type="submit" :disabled="saving" class="bg-sky-600 hover:bg-sky-500 disabled:opacity-60 text-white font-bold py-2.5 px-8 rounded-full text-sm">
-                                        <span x-text="saving ? 'Saving...' : 'Save changes'"></span>
-                                    </button>
-                                    <button type="button" @click="cancelEdit()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-8 rounded-full text-sm">Cancel</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div x-show="profile.phone && !phoneVerified" x-cloak class="fn-card p-5 border border-amber-200 bg-amber-50/80">
-                    <h3 class="font-bold text-sky-950 text-sm">Verify your phone</h3>
-                    <p class="text-xs text-slate-600 mt-1">We will send a 6-digit code by SMS to <span x-text="profile.phone" class="font-semibold"></span>.</p>
-                    <div class="mt-3 flex flex-wrap gap-2 items-end">
-                        <input type="text" x-model="otpCode" maxlength="6" inputmode="numeric" placeholder="SMS code"
-                               class="fn-input flex-1 min-w-[8rem]">
-                        <button type="button" @click="sendPhoneOtp()" :disabled="phoneSending"
-                                class="bg-white border border-sky-600 text-sky-600 font-bold py-2 px-4 rounded-full text-xs">
-                            <span x-text="phoneSending ? 'Sending…' : 'Send code'"></span>
-                        </button>
-                        <button type="button" @click="verifyPhoneOtp()" :disabled="phoneVerifying"
-                                class="bg-sky-600 text-white font-bold py-2 px-4 rounded-full text-xs">
-                            <span x-text="phoneVerifying ? '…' : 'Verify'"></span>
-                        </button>
-                    </div>
-                    <p class="fn-field-error mt-2" x-show="otpCode && phoneVerifyError" x-text="phoneVerifyError" role="alert"></p>
-                </div>
-
-                {% include "partials/profile_stats.html" %}
-
-                <h2 class="font-bold text-sky-950 text-lg">Your Matches</h2>
-                <div class="space-y-3" x-data="Object.assign(postEditModal(), postDeleteModal())" @open-post-edit.window="openEdit($event.detail.id)" @open-post-delete.window="openDelete($event.detail)">
-                    {% for post in posts %}
-                    {% include "partials/post_card.html" %}
-                    {% empty %}
-                    <div class="fn-card p-10 text-center text-sky-700/70">
-                        No matches yet. <a href="{% url 'home' %}" class="text-sky-600 font-bold">Host one</a>
-                    </div>
-                    {% endfor %}
-                    {% include "partials/post_edit_modal.html" %}
-                    {% include "partials/post_delete_modal.html" %}
-                </div>
-            </div>
-        </div>
+{% block content %}
+<div class="hd-page space-y-4" x-data="profilePage()" x-init="init()">
+  <div class="glass rounded-2xl overflow-hidden shadow-sm animate-fade-up">
+    <div class="h-48 bg-gradient-to-r from-brand-500 to-brand-700 relative">
+      <img :src="coverUrl" alt="" class="w-full h-full object-cover" x-show="coverUrl">
+      <template x-if="editing">
+        <label class="absolute bottom-3 right-3 bg-white/90 hover:bg-white text-brand-700 text-xs font-bold px-3 py-1.5 rounded-full cursor-pointer shadow">
+          Change cover
+          <input type="file" name="cover_image" form="profileForm" accept="image/*" class="hidden" @change="previewCover">
+        </label>
+      </template>
     </div>
-</section>
+    <div class="px-6 pb-6 relative">
+      <div class="relative -mt-12 inline-block">
+        <img :src="avatarUrl" alt="" class="h-24 w-24 rounded-2xl border-4 border-white shadow-lg object-cover bg-brand-100">
+        <template x-if="editing">
+          <label class="absolute bottom-0 right-0 bg-brand-600 text-white text-xs font-bold px-2 py-1 rounded-full cursor-pointer shadow">
+            Edit
+            <input type="file" name="profile_image" form="profileForm" accept="image/*" class="hidden" @change="previewAvatar">
+          </label>
+        </template>
+      </div>
 
+      <div x-show="!editing" class="mt-4 flex flex-wrap justify-between gap-4 items-start">
+        <div>
+          <h1 class="font-display font-bold text-brand-900 text-2xl" x-text="displayName"></h1>
+          <p class="text-brand-500 text-sm">@<span x-text="user.username"></span> · <span x-text="user.email"></span></p>
+          <p class="mt-2 text-sm text-brand-700 inline-flex items-center gap-1.5" x-show="profile.phone">
+            <i class="fa-solid fa-phone text-brand-500 text-xs"></i>
+            <span x-text="profile.phone"></span>
+            <span x-show="phoneVerified" class="text-xs font-bold text-pitch-600">✓ verified</span>
+            <span x-show="profile.phone && !phoneVerified" class="text-xs font-bold text-amber-600">not verified</span>
+          </p>
+          <p class="text-sm text-brand-700 inline-flex items-center gap-1.5" x-show="profile.address">
+            <i class="fa-solid fa-location-dot text-red-400 text-xs"></i>
+            <span x-text="profile.address"></span>
+          </p>
+          <p class="text-sm text-brand-700" x-show="profile.dob">🎂 <span x-text="profile.dob"></span></p>
+        </div>
+        <button type="button" @click="editing = true" class="btn-primary py-2 px-6 rounded-xl text-white text-sm font-semibold font-display shrink-0">
+          Edit Profile
+        </button>
+      </div>
+
+      <div x-show="editing" x-cloak class="mt-4">
+        <form id="profileForm" @submit.prevent="saveProfile" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="hd-label">Full name</label>
+              <input type="text" name="full_name" x-model="user.full_name" class="hd-input" required>
+              <p class="hd-field-error" x-show="errors.user_full_name" x-text="errors.user_full_name" role="alert"></p>
+            </div>
+            <div>
+              <label class="hd-label">Username</label>
+              <input type="text" name="username" x-model="user.username" class="hd-input bg-brand-50 text-brand-600 cursor-not-allowed" readonly aria-readonly="true">
+              <p class="text-xs text-brand-400 mt-1">Username cannot be changed.</p>
+            </div>
+            <div>
+              <label class="hd-label">Email</label>
+              <template x-if="emailVerified">
+                <input type="email" x-model="user.email" class="hd-input bg-brand-50 text-brand-600 cursor-not-allowed" readonly aria-readonly="true">
+                <p class="text-xs text-brand-400 mt-1">Verified email cannot be changed.</p>
+              </template>
+              <template x-if="!emailVerified">
+                <input type="email" name="email" x-model="user.email" class="hd-input" required>
+                <p class="text-xs text-brand-400 mt-1">Verify your email before it is locked.</p>
+              </template>
+              <p class="hd-field-error" x-show="errors.user_email" x-text="errors.user_email" role="alert"></p>
+            </div>
+            <div>
+              <label class="hd-label">Phone</label>
+              <template x-if="phoneVerified">
+                <input type="text" x-model="profile.phone" maxlength="10" class="hd-input bg-brand-50 text-brand-600 cursor-not-allowed" readonly aria-readonly="true">
+                <p class="text-xs text-brand-400 mt-1">Verified phone cannot be changed.</p>
+              </template>
+              <template x-if="!phoneVerified">
+                <input type="text" name="phone" x-model="profile.phone" maxlength="10" inputmode="numeric" placeholder="9840123456" class="hd-input">
+              </template>
+              <p class="hd-field-error" x-show="errors.profile_phone" x-text="errors.profile_phone" role="alert"></p>
+            </div>
+            <div>
+              <label class="hd-label">Date of birth</label>
+              <input type="date" name="dob" x-model="profile.dob" class="hd-input">
+              <p class="hd-field-error" x-show="errors.profile_dob" x-text="errors.profile_dob" role="alert"></p>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="hd-label">Address</label>
+              <input type="text" name="address" x-model="profile.address" class="hd-input">
+              <p class="hd-field-error" x-show="errors.profile_address" x-text="errors.profile_address" role="alert"></p>
+            </div>
+          </div>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <button type="submit" :disabled="saving" class="btn-primary py-2.5 px-8 rounded-xl text-white text-sm font-semibold font-display disabled:opacity-60">
+              <span x-text="saving ? 'Saving...' : 'Save changes'"></span>
+            </button>
+            <button type="button" @click="cancelEdit()" class="bg-brand-100 hover:bg-brand-200 text-brand-800 font-semibold py-2.5 px-8 rounded-xl text-sm">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div x-show="profile.phone && !phoneVerified" x-cloak class="glass rounded-2xl p-5 border border-amber-200/80 bg-amber-50/50 shadow-sm">
+    <h3 class="font-display font-bold text-brand-900 text-sm">Verify your phone</h3>
+    <p class="text-xs text-brand-600 mt-1">We will send a 6-digit code by SMS to <span x-text="profile.phone" class="font-semibold"></span>.</p>
+    <div class="mt-3 flex flex-wrap gap-2 items-end">
+      <input type="text" x-model="otpCode" maxlength="6" inputmode="numeric" placeholder="SMS code" class="hd-input flex-1 min-w-[8rem]">
+      <button type="button" @click="sendPhoneOtp()" :disabled="phoneSending"
+              class="bg-white border border-brand-500 text-brand-600 font-semibold py-2 px-4 rounded-xl text-xs">
+        <span x-text="phoneSending ? 'Sending…' : 'Send code'"></span>
+      </button>
+      <button type="button" @click="verifyPhoneOtp()" :disabled="phoneVerifying"
+              class="btn-primary py-2 px-4 rounded-xl text-white text-xs font-semibold">
+        <span x-text="phoneVerifying ? '…' : 'Verify'"></span>
+      </button>
+    </div>
+    <p class="hd-field-error mt-2" x-show="otpCode && phoneVerifyError" x-text="phoneVerifyError" role="alert"></p>
+  </div>
+
+  {% include "partials/profile_stats.html" %}
+
+  <h2 class="font-display font-bold text-brand-900 text-lg">Your Matches</h2>
+  <div class="space-y-4">
+    {% for post in posts %}
+    {% include "partials/home_dashboard/post_card.html" %}
+    {% empty %}
+    {% include "partials/home_dashboard/empty_feed.html" %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
 function profilePage() {
     const initial = {
@@ -178,9 +166,7 @@ function profilePage() {
         phoneSending: false,
         phoneVerifying: false,
         phoneVerifyError: '',
-        phoneVerifySuccess: '',
         saving: false,
-        saveError: '',
         errors: {},
         user: { ...initial.user },
         profile: { ...initial.profile },
@@ -208,13 +194,11 @@ function profilePage() {
             this.avatarUrl = initial.avatarUrl;
             this.coverUrl = initial.coverUrl;
             this.errors = {};
-            this.saveError = '';
             this.editing = false;
         },
         async saveProfile() {
             this.saving = true;
             this.errors = {};
-            this.saveError = '';
             const form = document.getElementById('profileForm');
             const fd = new FormData(form);
             try {
@@ -256,7 +240,6 @@ function profilePage() {
         },
         async sendPhoneOtp() {
             this.phoneVerifyError = '';
-            this.phoneVerifySuccess = '';
             this.phoneSending = true;
             const fd = new FormData();
             fd.append('csrfmiddlewaretoken', this.csrf());
@@ -282,7 +265,6 @@ function profilePage() {
         },
         async verifyPhoneOtp() {
             this.phoneVerifyError = '';
-            this.phoneVerifySuccess = '';
             this.phoneVerifying = true;
             const fd = new FormData();
             fd.append('csrfmiddlewaretoken', this.csrf());
@@ -298,8 +280,7 @@ function profilePage() {
                     this.phoneVerified = true;
                     window.dispatchEvent(new CustomEvent('toast', { detail: { text: data.message, type: 'success' } }));
                 } else {
-                    const msg = data.error || 'Verification failed.';
-                    this.phoneVerifyError = msg;
+                    this.phoneVerifyError = data.error || 'Verification failed.';
                 }
             } catch (e) {
                 window.dispatchEvent(new CustomEvent('toast', { detail: { text: 'Network error.', type: 'error' } }));

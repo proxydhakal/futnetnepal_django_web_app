@@ -41,7 +41,7 @@ window.fnInitSelect2 = function (scope, dropdownParent) {
       const isMultiple = $el.prop('multiple');
       $el.select2({
         width: '100%',
-        placeholder: $el.data('placeholder') || (isMultiple ? 'Select one or more…' : 'Search...'),
+        placeholder: $el.data('placeholder') || (isMultiple ? 'Select one or more…' : 'Select an option'),
         allowClear:
           !isMultiple &&
           ($el.data('allowClear') === true || $el.data('allowClear') === 'true'),

@@ -1,6 +1,7 @@
 import array
 from multiprocessing import context
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 from django.http import HttpResponseRedirect
 from django.views import View
 from django.contrib import messages
@@ -256,17 +257,50 @@ class ReviewView(View):
         })
 
 
+def _platform_stats():
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    return {
+        'matches': Post.objects.count(),
+        'players': User.objects.count(),
+        'venues': Venue.objects.count(),
+        'cities': Location.objects.count(),
+    }
+
+
 def _home_context(request, form=None):
+    from apps.accounts.stats import user_profile_stats
+
     form = form or UserPostForm()
+    profile = Profile.objects.filter(user=request.user).first()
     return {
         'form': form,
         'posts': posts_with_engagement(request.user),
         'venues': Venue.objects.select_related('location').all(),
         'timess': Time.objects.all(),
         'locations': Location.objects.all(),
-        'userprofiledata': Profile.objects.get(user=request.user.pk),
+        'userprofiledata': profile,
         'times': Time.objects.values('id', 'name', 'slug').annotate(total=Count('post')),
+        'stats': user_profile_stats(request.user),
+        'featured_venues': Venue.objects.select_related('location').order_by('name')[:5],
+        'platform_stats': _platform_stats(),
     }
+
+
+def _render_home_post_card(request, post):
+    post_obj = posts_with_engagement(request.user).filter(pk=post.pk).first()
+    if not post_obj:
+        return ''
+    return render_to_string(
+        'partials/home_dashboard/post_card.html',
+        {'post': post_obj, 'request': request},
+        request=request,
+    )
+
+
+def _is_ajax(request):
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
 class HomeView(LoginRequiredMixin, View):
@@ -282,7 +316,17 @@ class HomeView(LoginRequiredMixin, View):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            if _is_ajax(request):
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Match posted successfully.',
+                    'post_html': _render_home_post_card(request, post),
+                    'post_id': str(post.pk),
+                    'post_slug': post.slug,
+                })
             return redirect('home')
+        if _is_ajax(request):
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
         return render(request, self.template_name, _home_context(request, form))
 
 class CategoryPostListView(LoginRequiredMixin, View):

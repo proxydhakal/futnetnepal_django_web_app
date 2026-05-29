@@ -1,0 +1,54 @@
+{% with form=form|default:create_form %}
+<div id="createModal" x-show="showCreate" x-cloak
+     x-effect="showCreate && $nextTick(() => document.dispatchEvent(new CustomEvent('fn-select2-init', { detail: { scope: '#createForm', parent: '#createModalPanel' } })))"
+     @click.self="closeCreate()" @keydown.escape.window="showCreate && closeCreate()"
+     class="fixed inset-0 z-[60] flex items-start justify-center bg-brand-900/40 backdrop-blur-sm p-4 pt-24 overflow-y-auto">
+  <div id="createModalPanel" class="glass rounded-2xl w-full max-w-lg overflow-visible shadow-2xl shadow-brand-500/15" @click.stop>
+    <div class="hd-modal-header flex items-center justify-between px-6 py-4 rounded-t-2xl">
+      <h2 class="text-lg font-display font-bold">Create Event</h2>
+      <button type="button" @click="closeCreate()" class="text-white/80 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>
+    </div>
+    <form id="createForm" method="post" action="{% url 'home' %}" @submit.prevent="submitCreate()" class="p-6 space-y-4 bg-white/90 rounded-b-2xl" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div data-form-errors class="hidden"></div>{% endif %}
+      {% include "partials/form_non_field_toast.html" %}
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="hd-field{% if form.location.errors %} ring-1 ring-red-300 rounded-xl p-1{% endif %}">
+          <label class="hd-label" for="id_location">Location <span class="text-red-500">*</span></label>
+          {{ form.location }}
+          {% for error in form.location.errors %}<p class="hd-field-error" role="alert">{{ error }}</p>{% endfor %}
+          <p class="hd-field-error hidden" data-field-error="location" role="alert"></p>
+        </div>
+        <div class="hd-field{% if form.venue.errors %} ring-1 ring-red-300 rounded-xl p-1{% endif %}">
+          <label class="hd-label" for="id_venue">Venue <span class="text-red-500">*</span></label>
+          {{ form.venue }}
+          {% for error in form.venue.errors %}<p class="hd-field-error" role="alert">{{ error }}</p>{% endfor %}
+          <p class="hd-field-error hidden" data-field-error="venue" role="alert"></p>
+        </div>
+        <div class="hd-field{% if form.date.errors %} ring-1 ring-red-300 rounded-xl p-1{% endif %}">
+          <label class="hd-label" for="id_date">Date <span class="text-red-500">*</span></label>
+          <input type="date" name="date" id="id_date" class="hd-input" value="{{ form.date.value|default:'' }}" required>
+          {% for error in form.date.errors %}<p class="hd-field-error" role="alert">{{ error }}</p>{% endfor %}
+          <p class="hd-field-error hidden" data-field-error="date" role="alert"></p>
+        </div>
+        <div class="hd-field{% if form.time.errors %} ring-1 ring-red-300 rounded-xl p-1{% endif %}">
+          <label class="hd-label" for="id_time">Time <span class="text-red-500">*</span></label>
+          {{ form.time }}
+          {% for error in form.time.errors %}<p class="hd-field-error" role="alert">{{ error }}</p>{% endfor %}
+          <p class="hd-field-error hidden" data-field-error="time" role="alert"></p>
+        </div>
+      </div>
+      <div class="hd-field{% if form.message.errors %} ring-1 ring-red-300 rounded-xl p-1{% endif %}">
+        <label class="hd-label" for="id_message">Message <span class="text-red-500">*</span></label>
+        {{ form.message }}
+        {% for error in form.message.errors %}<p class="hd-field-error" role="alert">{{ error }}</p>{% endfor %}
+        <p class="hd-field-error hidden" data-field-error="message" role="alert"></p>
+        <p class="text-xs text-brand-500/80 mt-1">Describe your match (required).</p>
+      </div>
+      <button type="submit" :disabled="creating" class="w-full btn-primary py-3 rounded-xl text-white font-display font-bold text-sm disabled:opacity-60">
+        <span x-text="creating ? 'Posting…' : 'Post'"></span>
+      </button>
+    </form>
+  </div>
+</div>
+{% endwith %}

@@ -107,6 +107,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'apps.accounts.context_processors.user_profile',
                 'apps.core.context_processors.site_content',
+                'apps.core.context_processors.dashboard_shell',
                 'apps.dashboard.context_processors.admin_nav',
             ],
         },

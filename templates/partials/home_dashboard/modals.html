@@ -1,0 +1,79 @@
+{# Edit modal — brand wrapper; same IDs for fn-post-engagement.js #}
+<div id="editModal" x-show="showEdit" x-cloak
+     x-effect="showEdit && $nextTick(() => document.dispatchEvent(new CustomEvent('fn-select2-init', { detail: { scope: '#editForm', parent: '#editModalPanel' } })))"
+     @click.self="closeEdit()" @keydown.escape.window="showEdit && closeEdit()"
+     class="fixed inset-0 z-[70] flex items-start justify-center bg-brand-900/40 backdrop-blur-sm p-4 pt-24 overflow-y-auto">
+    <div id="editModalPanel" class="glass rounded-2xl w-full max-w-lg overflow-visible shadow-2xl shadow-brand-500/15" @click.stop>
+        <div class="hd-modal-header flex items-center justify-between px-6 py-4 rounded-t-2xl">
+            <h2 class="text-lg font-display font-bold">Edit Event</h2>
+            <button type="button" @click="closeEdit()" class="text-white/80 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>
+        </div>
+        <form id="editForm" @submit.prevent="submitEdit" class="p-6 space-y-4 bg-white/90 rounded-b-2xl" novalidate>
+            {% csrf_token %}
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="hd-field">
+                    <label class="hd-label" for="edit_location">Location</label>
+                    <select name="location" id="edit_location" class="hd-input fn-select2" data-placeholder="Select location">
+                        {% for loc in locations %}<option value="{{ loc.id }}">{{ loc.name }}</option>{% endfor %}
+                    </select>
+                    <p class="hd-field-error hidden" data-field-error="location" role="alert"></p>
+                </div>
+                <div class="hd-field">
+                    <label class="hd-label" for="edit_venue">Venue</label>
+                    <select name="venue" id="edit_venue" class="hd-input fn-select2" data-placeholder="Select venue">
+                        {% for v in venues %}<option value="{{ v.id }}">{{ v.name }}</option>{% endfor %}
+                    </select>
+                    <p class="hd-field-error hidden" data-field-error="venue" role="alert"></p>
+                </div>
+                <div class="hd-field">
+                    <label class="hd-label" for="edit_date">Date</label>
+                    <input type="date" name="date" id="edit_date" class="hd-input">
+                    <p class="hd-field-error hidden" data-field-error="date" role="alert"></p>
+                </div>
+                <div class="hd-field">
+                    <label class="hd-label" for="edit_time">Time</label>
+                    <select name="time" id="edit_time" class="hd-input fn-select2" data-placeholder="Select time">
+                        {% for t in timess %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                    </select>
+                    <p class="hd-field-error hidden" data-field-error="time" role="alert"></p>
+                </div>
+            </div>
+            <div class="hd-field">
+                <label class="hd-label" for="edit_message">Message</label>
+                <textarea name="message" id="edit_message" rows="3" class="hd-input"></textarea>
+                <p class="hd-field-error hidden" data-field-error="message" role="alert"></p>
+            </div>
+            <button type="submit" :disabled="saving" class="w-full btn-primary py-3 rounded-xl text-white font-display font-bold text-sm disabled:opacity-60">
+                <span x-text="saving ? 'Saving...' : 'Save changes'"></span>
+            </button>
+        </form>
+    </div>
+</div>
+
+{# Delete modal #}
+<div id="deletePostModal" x-show="showDelete" x-cloak
+     @click.self="closeDelete()" @keydown.escape.window="showDelete && closeDelete()"
+     class="fixed inset-0 z-[70] flex items-center justify-center bg-brand-900/40 backdrop-blur-sm p-4 pt-24">
+    <div class="glass rounded-2xl w-full max-w-md shadow-2xl shadow-brand-500/15 overflow-hidden" @click.stop>
+        <div class="hd-modal-header flex items-center justify-between px-6 py-4">
+            <h2 class="text-lg font-display font-bold">Delete match?</h2>
+            <button type="button" @click="closeDelete()" class="text-white/80 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>
+        </div>
+        <div class="p-6 bg-white/90">
+            <p class="text-brand-600 text-sm leading-relaxed">
+                This will permanently remove your match post, including all interest, likes, comments, and messages. This cannot be undone.
+            </p>
+            <p class="mt-3 text-sm font-semibold text-brand-900 line-clamp-2" x-show="deletingPreview" x-text="deletingPreview"></p>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <button type="button" @click="closeDelete()" :disabled="deleting"
+                        class="flex-1 min-w-[7rem] bg-brand-100 hover:bg-brand-200 disabled:opacity-60 text-brand-800 font-bold py-2.5 px-4 rounded-xl text-sm">
+                    Cancel
+                </button>
+                <button type="button" @click="confirmDelete()" :disabled="deleting"
+                        class="flex-1 min-w-[7rem] bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-bold py-2.5 px-4 rounded-xl text-sm shadow-md shadow-red-500/25">
+                    <span x-text="deleting ? 'Deleting...' : 'Delete match'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

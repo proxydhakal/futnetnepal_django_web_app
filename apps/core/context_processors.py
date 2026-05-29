@@ -1,5 +1,7 @@
 import logging
 
+from django.db.models import Count
+
 from futnetnepal.youtube import youtube_embed_url
 
 logger = logging.getLogger(__name__)
@@ -45,3 +47,61 @@ def site_content(request):
             'navbar_cms_pages': [],
             'footer_cms_pages': [],
         }
+
+
+def _platform_stats():
+    from django.contrib.auth import get_user_model
+
+    from apps.core.models import Location, Post, Venue
+
+    User = get_user_model()
+    return {
+        'matches': Post.objects.count(),
+        'players': User.objects.count(),
+        'venues': Venue.objects.count(),
+        'cities': Location.objects.count(),
+    }
+
+
+def _dashboard_active(request):
+    match = getattr(request, 'resolver_match', None)
+    if not match:
+        return 'feed'
+    name = match.url_name or ''
+    namespace = match.namespace or ''
+    if namespace == 'accounts':
+        if name == 'profile':
+            return 'profile'
+        if name in ('password_change', 'password_change_done'):
+            return 'settings'
+        if name == 'verify_account':
+            return 'profile'
+    if name in ('venuelist', 'venue_detail'):
+        return 'venues'
+    if name in ('messages', 'messages_conversation', 'messages_thread', 'messages_with_user'):
+        return 'messages'
+    if name in ('home', 'post-cat'):
+        return 'feed'
+    return ''
+
+
+def dashboard_shell(request):
+    """Shared sidebar/header context for authenticated app pages."""
+    if not request.user.is_authenticated:
+        return {}
+    try:
+        from apps.accounts.stats import user_profile_stats
+        from apps.core.forms import UserPostForm
+        from apps.core.models import Time, Venue
+
+        return {
+            'stats': user_profile_stats(request.user),
+            'platform_stats': _platform_stats(),
+            'times': Time.objects.values('id', 'name', 'slug').annotate(total=Count('post')),
+            'featured_venues': Venue.objects.select_related('location').order_by('name')[:5],
+            'dashboard_active': _dashboard_active(request),
+            'create_form': UserPostForm(),
+        }
+    except Exception:
+        logger.exception('Unable to load dashboard shell context')
+        return {}

@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% block dashboard_head %}
+{% include "partials/home_dashboard/head.html" %}
+{% endblock %}
+{% block extra_head %}{% endblock %}
+</head>
+<body class="hero-bg min-h-screen text-brand-900"
+      x-data="{
+        toast: null,
+        toastQueue: [],
+        toastTimer: null,
+        showToast(detail) {
+          this.toastQueue.push(detail);
+          if (!this.toast) this._dequeueToast();
+        },
+        _dequeueToast() {
+          if (!this.toastQueue.length) { this.toast = null; return; }
+          const detail = this.toastQueue.shift();
+          this.toast = detail;
+          clearTimeout(this.toastTimer);
+          const ms = detail.duration || 4500;
+          this.toastTimer = setTimeout(() => { this.toast = null; this.$nextTick(() => this._dequeueToast()); }, ms);
+        }
+      }"
+      @toast.window="showToast($event.detail)">
+<section class="relative min-h-screen"
+         x-data="{% block shell_data %}appShell(){% endblock %}"
+         x-init="{% block shell_init %}init(){% endblock %}"
+         {% block shell_attrs %}{% endblock %}
+         @open-create.window="openCreate()"
+         {% block shell_events %}{% endblock %}>
+
+  {% include "partials/home_dashboard/header.html" %}
+
+  <main class="pt-20 min-h-screen relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div class="flex gap-6 items-start">
+        {% block left_sidebar %}
+        {% include "partials/home_dashboard/left_sidebar.html" %}
+        {% endblock %}
+
+        <div class="flex-1 min-w-0 {% block content_wrapper_class %}space-y-4{% endblock %}">
+          {% block content %}{% endblock %}
+        </div>
+
+        {% block right_sidebar %}
+        {% include "partials/home_dashboard/right_sidebar.html" %}
+        {% endblock %}
+      </div>
+    </div>
+  </main>
+
+  {% block dashboard_footer %}
+  {% include "partials/home_dashboard/footer.html" %}
+  {% endblock %}
+
+  {% block modals %}
+  {% include "partials/home_dashboard/create_modal.html" %}
+  {% include "partials/home_dashboard/modals.html" %}
+  {% endblock %}
+
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+  {% include "partials/home_dashboard/toast.html" %}
+  {% include "partials/django_messages_toast.html" %}
+</section>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+<script src="{% static 'js/fn-select2.bundle.js' %}?v=npm2"></script>
+{% block dashboard_scripts %}
+<script src="{% static 'js/fn-post-engagement.js' %}?v=2"></script>
+<script src="{% static 'js/fn-home-dashboard.js' %}?v=4"></script>
+<script src="{% static 'js/fn-realtime.js' %}?v=dm3"></script>
+{% endblock %}
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

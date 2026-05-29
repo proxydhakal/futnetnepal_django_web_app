@@ -1,0 +1,12 @@
+<footer class="relative z-10 bg-brand-900 border-t border-brand-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="text-brand-400 text-xs text-center sm:text-left">
+      &copy; {% now "Y" %} {{ site_config.site_title|default:"Futnet Nepal" }}. All rights reserved.
+    </p>
+    <nav class="flex items-center gap-4" aria-label="Legal">
+      <a href="{% url 'cms_page' slug='privacy' %}" class="text-brand-400 text-xs hover:text-brand-300 transition-colors">Privacy</a>
+      <a href="{% url 'cms_page' slug='terms' %}" class="text-brand-400 text-xs hover:text-brand-300 transition-colors">Terms</a>
+      <a href="{% url 'cms_page' slug='cookies' %}" class="text-brand-400 text-xs hover:text-brand-300 transition-colors">Cookies</a>
+    </nav>
+  </div>
+</footer>

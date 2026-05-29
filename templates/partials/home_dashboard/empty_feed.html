@@ -1,0 +1,61 @@
+<div id="homeFeedEmpty" class="hd-empty-feed glass rounded-2xl shadow-sm animate-fade-up" style="animation-delay:0.1s">
+  <div class="hd-empty-feed__strip"></div>
+  <div class="hd-empty-feed__body">
+    <div class="hd-empty-feed__illustration" aria-hidden="true">
+      <div class="hd-empty-feed__ball">
+        <svg class="hd-empty-feed__ball-icon" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="4" fill="white"/>
+          <polygon points="50,18 60,30 55,43 45,43 40,30" fill="currentColor" opacity="0.9"/>
+          <polygon points="50,82 40,70 45,57 55,57 60,70" fill="currentColor" opacity="0.9"/>
+          <polygon points="18,50 30,40 43,45 43,55 30,60" fill="currentColor" opacity="0.9"/>
+          <polygon points="82,50 70,60 57,55 57,45 70,40" fill="currentColor" opacity="0.9"/>
+          <polygon points="28,28 40,30 43,45 32,52 22,42" fill="currentColor" opacity="0.6"/>
+          <polygon points="72,28 78,42 68,52 57,45 60,30" fill="currentColor" opacity="0.6"/>
+          <polygon points="28,72 22,58 32,48 43,55 40,70" fill="currentColor" opacity="0.6"/>
+          <polygon points="72,72 60,70 57,55 68,48 78,58" fill="currentColor" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="hd-empty-feed__ring-wrap hd-empty-feed__ring-wrap--1">
+        <div class="hd-empty-feed__ring"></div>
+      </div>
+      <div class="hd-empty-feed__ring-wrap hd-empty-feed__ring-wrap--2">
+        <div class="hd-empty-feed__ring"></div>
+      </div>
+      <div class="hd-empty-feed__ring-wrap hd-empty-feed__ring-wrap--3">
+        <div class="hd-empty-feed__ring"></div>
+      </div>
+    </div>
+
+    <h2 class="font-display font-extrabold text-brand-900 text-2xl mb-2">
+      {% if category_name %}No events in this slot yet{% else %}No matches yet!{% endif %}
+    </h2>
+    <p class="text-brand-500 text-sm max-w-xs mb-6 leading-relaxed">
+      {% if category_name %}
+      Be the first to host a match in this time category.
+      {% else %}
+      Be the first to host a match in your area. Invite friends, pick a venue, and get the game started.
+      {% endif %}
+    </p>
+
+    <div class="hd-empty-feed__steps">
+      <div class="hd-empty-feed__step hd-empty-feed__step--brand">
+        <svg class="w-5 h-5 text-brand-500 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+        <p class="text-[10px] text-brand-600 font-medium">Pick venue</p>
+      </div>
+      <div class="hd-empty-feed__step hd-empty-feed__step--pitch">
+        <svg class="w-5 h-5 text-pitch-500 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <p class="text-[10px] text-pitch-600 font-medium">Invite players</p>
+      </div>
+      <div class="hd-empty-feed__step hd-empty-feed__step--brand">
+        <svg class="w-5 h-5 text-brand-500 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p class="text-[10px] text-brand-600 font-medium">Play &amp; enjoy</p>
+      </div>
+    </div>
+
+    <button type="button" @click="$dispatch('open-create')" class="hd-empty-feed__cta btn-primary px-8 py-3 rounded-2xl text-white font-display font-bold text-sm tracking-wide inline-flex items-center justify-center gap-2.5">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+      {% if category_name %}Host a Match{% else %}Host Your First Match{% endif %}
+    </button>
+    <p class="text-xs text-brand-300 mt-3">It takes less than 2 minutes</p>
+  </div>
+</div>

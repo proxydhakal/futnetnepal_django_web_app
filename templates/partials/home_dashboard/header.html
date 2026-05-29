@@ -1,0 +1,290 @@
+{% load static %}
+<header
+  x-data="appHeader()"
+  x-init="init()"
+  @keydown.escape.window="closeAll()"
+  class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+  :class="scrolled ? 'glass shadow-lg shadow-brand-500/5 py-2' : 'bg-transparent py-3'"
+  @scroll.window="scrolled = window.scrollY > 20"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4">
+    <a href="{% url 'home' %}" class="flex items-center mr-4 flex-shrink-0" aria-label="{{ site_config.site_title|default:'Futnet Nepal' }}">
+      {% include "partials/site_logo.html" with logo_class="h-12 w-auto" %}
+    </a>
+
+    <div class="flex-1 max-w-md hidden sm:block relative" @click.outside="searchOpen = false">
+      <div class="relative group">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-sm text-brand-400 group-focus-within:text-brand-500 transition-colors"></i>
+        <input
+          type="search"
+          x-model="query"
+          @input.debounce.300ms="runSearch()"
+          @focus="searchOpen = true"
+          placeholder="Search venues, matches, players…"
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/70 border border-white/80 text-sm text-brand-800 placeholder-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:bg-white transition-all"
+        />
+      </div>
+      <div x-show="searchOpen && (query.length >= 2 || loading)" x-cloak
+           class="absolute left-0 right-0 mt-2 glass rounded-xl shadow-xl shadow-brand-500/10 border border-white/50 max-h-96 overflow-y-auto z-50">
+        <template x-if="loading">
+          <p class="p-4 text-sm text-brand-500 text-center">Searching…</p>
+        </template>
+        <template x-if="!loading && query.length >= 2 && results.posts.length === 0 && results.venues.length === 0 && results.users.length === 0">
+          <p class="p-4 text-sm text-brand-500 text-center">No results found</p>
+        </template>
+        <template x-if="results.posts.length">
+          <div class="px-4 pt-3 pb-1 text-[10px] font-bold text-brand-400 uppercase tracking-widest">Events</div>
+          <template x-for="item in results.posts" :key="'p'+item.id">
+            <a :href="item.url" class="block px-4 py-2.5 hover:bg-brand-50 text-sm">
+              <span class="font-semibold text-brand-800" x-text="item.title"></span>
+              <span class="block text-xs text-brand-400" x-text="item.subtitle"></span>
+            </a>
+          </template>
+        </template>
+        <template x-if="results.venues.length">
+          <div class="px-4 pt-3 pb-1 text-[10px] font-bold text-brand-400 uppercase tracking-widest">Venues</div>
+          <template x-for="item in results.venues" :key="'v'+item.id">
+            <a :href="item.url" class="block px-4 py-2.5 hover:bg-brand-50 text-sm font-medium text-brand-800" x-text="item.title"></a>
+          </template>
+        </template>
+        <template x-if="results.users.length">
+          <div class="px-4 pt-3 pb-1 text-[10px] font-bold text-brand-400 uppercase tracking-widest">People</div>
+          <template x-for="item in results.users" :key="'u'+item.id">
+            <a :href="item.url" class="block px-4 py-2.5 hover:bg-brand-50 text-sm font-medium text-brand-800" x-text="item.title"></a>
+          </template>
+        </template>
+      </div>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <div class="hidden md:flex items-center gap-2">
+      <div class="relative" @click.outside="notifOpen = false">
+        <button type="button" @click="notifOpen = !notifOpen; if (notifOpen) loadNotifications()"
+                class="relative w-9 h-9 rounded-xl bg-white/70 hover:bg-white flex items-center justify-center transition-all hover:shadow-md border border-white/60 group"
+                aria-label="Notifications">
+          <i class="fa-regular fa-bell text-brand-600 group-hover:text-brand-500"></i>
+          <span x-show="wsConnected" class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-pitch-500 ring-2 ring-white" title="Live"></span>
+          <span x-show="unreadCount > 0" x-cloak
+                class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-4 px-1 rounded-full bg-pitch-500 border-2 border-white flex items-center justify-center text-white text-[9px] font-bold"
+                x-text="unreadCount > 9 ? '9+' : unreadCount"></span>
+        </button>
+        <div x-show="notifOpen" x-cloak x-transition
+             class="absolute right-0 top-full mt-2 w-80 sm:w-96 glass rounded-xl shadow-xl shadow-brand-500/10 border border-white/50 z-50 max-h-[28rem] flex flex-col">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-brand-100/50">
+            <h3 class="font-display font-bold text-brand-800 text-sm">Notifications</h3>
+            <button type="button" @click="markAllRead()" class="text-xs font-semibold text-brand-500 hover:text-brand-700" x-show="unreadCount > 0">Mark all read</button>
+          </div>
+          <div class="overflow-y-auto flex-1">
+            <template x-if="notifications.length === 0">
+              <p class="p-6 text-sm text-brand-400 text-center">No notifications yet</p>
+            </template>
+            <template x-for="n in notifications" :key="n.id">
+              <a :href="n.url || '#'" @click="markRead(n)"
+                 class="block px-4 py-3 hover:bg-brand-50/80 border-b border-brand-50 text-sm"
+                 :class="!n.is_read && 'bg-brand-50/60'">
+                <p class="font-semibold text-brand-800" x-text="n.message"></p>
+                <p class="text-xs text-brand-400 mt-0.5"><span x-text="n.actor"></span> · <span x-text="n.created_at"></span></p>
+              </a>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <a href="{% url 'messages' %}" class="relative w-9 h-9 rounded-xl bg-white/70 hover:bg-white flex items-center justify-center transition-all hover:shadow-md border border-white/60 group" title="Messages">
+        <i class="fa-regular fa-comment-dots text-brand-600 group-hover:text-brand-500"></i>
+      </a>
+
+      <div class="relative" @click.outside="menuOpen = false">
+        <button type="button" @click="menuOpen = !menuOpen"
+                class="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl bg-white/70 hover:bg-white border border-white/60 transition-all hover:shadow-md">
+          {% if userprofiledata and userprofiledata.profile_image %}
+          <img src="{{ userprofiledata.profile_image.url }}" alt="" class="w-7 h-7 rounded-lg object-cover ring-2 ring-brand-200">
+          {% else %}
+          <span class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-display font-bold">{{ request.user.username|slice:":2"|upper }}</span>
+          {% endif %}
+          <span class="text-sm font-medium text-brand-800 hidden lg:block truncate max-w-[8rem]">{% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</span>
+          <i class="fa-solid fa-chevron-down text-brand-400 text-xs transition-transform" :class="menuOpen && 'rotate-180'"></i>
+        </button>
+        <div x-show="menuOpen" x-cloak
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 translate-y-1"
+             x-transition:enter-end="opacity-1 translate-y-0"
+             class="absolute right-0 top-full mt-2 w-52 glass rounded-xl shadow-xl shadow-brand-500/10 border border-white/50 overflow-hidden py-1">
+          <div class="px-4 py-2.5 border-b border-brand-100/50">
+            <p class="text-xs text-brand-400 font-medium">Signed in as</p>
+            <p class="text-sm font-semibold text-brand-800 font-display truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
+          </div>
+          <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50 transition-colors">
+            <i class="fa-regular fa-user w-4 text-brand-400"></i> My Profile
+          </a>
+          <a href="{% url 'accounts:password_change' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50 transition-colors">
+            <i class="fa-solid fa-gear w-4 text-brand-400"></i> Password
+          </a>
+          <div class="border-t border-brand-100/50 mt-1">
+            <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+              {% csrf_token %}
+              <button type="submit" class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors text-left">
+                <i class="fa-solid fa-right-from-bracket w-4"></i> Sign Out
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" @click="mobileOpen = !mobileOpen" class="md:hidden w-9 h-9 rounded-xl bg-white/70 flex items-center justify-center border border-white/60" aria-label="Menu">
+      <i class="fa-solid text-brand-600" :class="mobileOpen ? 'fa-xmark' : 'fa-bars'"></i>
+    </button>
+  </div>
+
+  <div x-show="mobileOpen" x-cloak
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0 -translate-y-2"
+       x-transition:enter-end="opacity-1 translate-y-0"
+       class="md:hidden glass border-t border-white/40 mt-2 px-4 py-4 space-y-1">
+    <div class="relative mb-3" @click.outside="searchOpen = false">
+      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-sm text-brand-400"></i>
+      <input type="search" x-model="query" @input.debounce.300ms="runSearch()" @focus="searchOpen = true"
+             placeholder="Search…"
+             class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/80 border border-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-400/30"/>
+      <div x-show="searchOpen && (query.length >= 2 || loading)" x-cloak
+           class="absolute left-0 right-0 mt-2 glass rounded-xl shadow-lg border border-white/50 max-h-72 overflow-y-auto z-50">
+        <template x-if="loading"><p class="p-4 text-sm text-brand-500 text-center">Searching…</p></template>
+        <template x-if="!loading && query.length >= 2 && !results.posts.length && !results.venues.length && !results.users.length">
+          <p class="p-4 text-sm text-brand-500 text-center">No results</p>
+        </template>
+        <template x-for="item in results.posts" :key="'mp'+item.id">
+          <a :href="item.url" class="block px-4 py-2 text-sm font-medium text-brand-800 hover:bg-brand-50" x-text="item.title"></a>
+        </template>
+        <template x-for="item in results.venues" :key="'mv'+item.id">
+          <a :href="item.url" class="block px-4 py-2 text-sm font-medium text-brand-800 hover:bg-brand-50" x-text="item.title"></a>
+        </template>
+        <template x-for="item in results.users" :key="'mu'+item.id">
+          <a :href="item.url" class="block px-4 py-2 text-sm font-medium text-brand-800 hover:bg-brand-50" x-text="item.title"></a>
+        </template>
+      </div>
+    </div>
+    <a href="{% url 'home' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-700 hover:bg-brand-50 transition-colors">
+      <i class="fa-solid fa-house text-brand-500 w-4"></i> Home Feed
+    </a>
+    <a href="{% url 'venuelist' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-700 hover:bg-brand-50 transition-colors">
+      <i class="fa-solid fa-location-dot text-red-400 w-4"></i> Venues
+    </a>
+    <a href="{% url 'messages' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-700 hover:bg-brand-50 transition-colors">
+      <i class="fa-regular fa-comment-dots text-pitch-500 w-4"></i> Messages
+    </a>
+    <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-brand-700 hover:bg-brand-50 transition-colors">
+      <i class="fa-regular fa-user text-brand-400 w-4"></i> Profile
+    </a>
+    <form method="post" action="{% url 'accounts:logout' %}" class="pt-2 border-t border-brand-100/50">
+      {% csrf_token %}
+      <button type="submit" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 text-left">
+        <i class="fa-solid fa-right-from-bracket w-4"></i> Sign Out
+      </button>
+    </form>
+  </div>
+</header>
+
+<script>
+function appHeader() {
+    return {
+        scrolled: false,
+        mobileOpen: false,
+        menuOpen: false,
+        searchOpen: false,
+        query: '',
+        loading: false,
+        results: { posts: [], venues: [], users: [] },
+        notifications: [],
+        unreadCount: 0,
+        lastNotifId: 0,
+        wsConnected: false,
+        _notifWs: null,
+        init() {
+            this.loadNotifications();
+            this.connectNotificationWs();
+        },
+        connectNotificationWs() {
+            if (!window.FnRealtime) return;
+            this._notifWs = FnRealtime.connectNotifications({
+                onopen: () => { this.wsConnected = true; },
+                onmessage: (data) => this.handleWsNotification(data),
+                onclose: () => { this.wsConnected = false; },
+            });
+        },
+        handleWsNotification(data) {
+            if (data.event === 'notification' && data.notification) {
+                const n = data.notification;
+                if (n.id > this.lastNotifId) {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { text: n.message, type: 'info' },
+                    }));
+                }
+                this.lastNotifId = Math.max(this.lastNotifId, n.id);
+                if (!this.notifications.find(x => x.id === n.id)) {
+                    this.notifications.unshift(n);
+                }
+                if (data.unread_count !== undefined) {
+                    this.unreadCount = data.unread_count;
+                }
+            } else if (data.event === 'unread_count') {
+                this.unreadCount = data.unread_count;
+            }
+        },
+        csrf() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        },
+        closeAll() {
+            this.menuOpen = false;
+            this.searchOpen = false;
+            this.notifOpen = false;
+            this.mobileOpen = false;
+        },
+        notifOpen: false,
+        async loadNotifications() {
+            try {
+                const res = await fetch('{% url "notifications_list" %}');
+                const d = await res.json();
+                if (d.success) {
+                    this.notifications = d.notifications;
+                    this.unreadCount = d.unread_count;
+                    if (d.notifications.length) {
+                        this.lastNotifId = Math.max(this.lastNotifId, d.notifications[0].id);
+                    }
+                }
+            } catch (e) {}
+        },
+        async markRead(n) {
+            if (n.is_read) return;
+            const fd = new FormData();
+            fd.append('csrfmiddlewaretoken', this.csrf());
+            await fetch(`/notifications/${n.id}/read/`, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            n.is_read = true;
+            this.unreadCount = Math.max(0, this.unreadCount - 1);
+        },
+        async markAllRead() {
+            const fd = new FormData();
+            fd.append('csrfmiddlewaretoken', this.csrf());
+            await fetch('{% url "notifications_mark_all_read" %}', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            this.notifications.forEach(n => { n.is_read = true; });
+            this.unreadCount = 0;
+        },
+        async runSearch() {
+            if (this.query.trim().length < 2) {
+                this.results = { posts: [], venues: [], users: [] };
+                return;
+            }
+            this.loading = true;
+            this.searchOpen = true;
+            try {
+                const res = await fetch('{% url "global_search" %}?q=' + encodeURIComponent(this.query.trim()));
+                this.results = await res.json();
+            } catch (e) {
+                this.results = { posts: [], venues: [], users: [] };
+            }
+            this.loading = false;
+        },
+    };
+}
+</script>

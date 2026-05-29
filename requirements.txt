@@ -11,6 +11,7 @@ whitenoise>=6.8
 channels>=4.2
 channels-redis>=4.2
 daphne>=4.1
+uvicorn[standard]>=0.30
 
 # Production WSGI/HTTP server
 gunicorn>=22.0

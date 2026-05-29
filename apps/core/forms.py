@@ -14,6 +14,8 @@ from apps.core.models import (
 from futnetnepal.forms import SecureModelForm
 
 SELECT_CLASS = INPUT_CLASS
+HD_INPUT_CLASS = 'hd-input w-full'
+HD_SELECT_CLASS = HD_INPUT_CLASS + ' fn-select2'
 TEXTAREA_CLASS = INPUT_CLASS + ' min-h-[100px]'
 
 
@@ -30,12 +32,23 @@ class UserPostForm(SecureModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        select_attrs = {'class': SELECT_CLASS + ' fn-select2'}
-        self.fields['location'].widget.attrs.update(select_attrs)
-        self.fields['venue'].widget.attrs.update(select_attrs)
-        self.fields['time'].widget.attrs.update(select_attrs)
-        self.fields['date'].widget = forms.DateInput(attrs={'class': INPUT_CLASS, 'type': 'date'})
-        self.fields['message'].widget.attrs.update({'class': TEXTAREA_CLASS, 'rows': 4, 'maxlength': 500})
+        self.fields['location'].empty_label = 'Select location'
+        self.fields['venue'].empty_label = 'Select venue'
+        self.fields['time'].empty_label = 'Select time'
+        self.fields['location'].widget.attrs.update({
+            'class': HD_SELECT_CLASS,
+            'data-placeholder': 'Select location',
+        })
+        self.fields['venue'].widget.attrs.update({
+            'class': HD_SELECT_CLASS,
+            'data-placeholder': 'Select venue',
+        })
+        self.fields['time'].widget.attrs.update({
+            'class': HD_SELECT_CLASS,
+            'data-placeholder': 'Select time',
+        })
+        self.fields['date'].widget = forms.DateInput(attrs={'class': HD_INPUT_CLASS, 'type': 'date'})
+        self.fields['message'].widget.attrs.update({'class': HD_INPUT_CLASS + ' min-h-[100px]', 'rows': 4, 'maxlength': 500})
 
 
 

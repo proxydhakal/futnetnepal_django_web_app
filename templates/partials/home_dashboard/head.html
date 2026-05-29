@@ -1,0 +1,83 @@
+{% load static %}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block dashboard_title %}{% if page_title %}{{ page_title }} – {% elif category_name %}{{ category_name }} – Feed – {% endif %}{{ site_config.site_title|default:"Futnet Nepal" }}{% endblock %}</title>
+{% if site_config.favicon %}
+<link rel="icon" href="{{ site_config.favicon.url }}">
+{% else %}
+<link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+{% endif %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:  '#e8f1fd',
+          100: '#c4d9f9',
+          200: '#9cbef5',
+          300: '#6fa2ef',
+          400: '#3f83e9',
+          500: '#1565C0',
+          600: '#1258aa',
+          700: '#0d4a93',
+          800: '#093c7c',
+          900: '#062d5e',
+        },
+        pitch: {
+          50:  '#e4f5ef',
+          100: '#b9e3d2',
+          200: '#88cfb3',
+          300: '#50ba90',
+          400: '#1aaa73',
+          500: '#0d9e6a',
+          600: '#088e5c',
+          700: '#057a4d',
+          800: '#02673e',
+          900: '#01502f',
+        }
+      },
+      fontFamily: {
+        display: ['Syne', 'sans-serif'],
+        body: ['DM Sans', 'sans-serif'],
+      },
+      backgroundImage: {
+        'mesh': 'radial-gradient(ellipse 80% 60% at 20% 10%, rgba(21,101,192,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 90%, rgba(13,158,106,0.10) 0%, transparent 60%)',
+      },
+      keyframes: {
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(24px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'slide-down': {
+          '0%': { opacity: '0', transform: 'translateY(-12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'pulse-ring': {
+          '0%': { transform: 'scale(1)', opacity: '1' },
+          '100%': { transform: 'scale(1.5)', opacity: '0' },
+        },
+      },
+      animation: {
+        'fade-up': 'fade-up 0.6s ease-out both',
+        'fade-in': 'fade-in 0.4s ease-out both',
+        'slide-down': 'slide-down 0.3s ease-out both',
+        'pulse-ring': 'pulse-ring 1.8s ease-out infinite',
+      }
+    }
+  }
+}
+</script>
+<link rel="stylesheet" href="{% static 'css/home-dashboard.css' %}?v=9"/>
+<link rel="stylesheet" href="{% static 'css/fontawesome.min.css' %}?v=fa2"/>
+<link rel="stylesheet" href="{% static 'css/select2.min.css' %}?v=1"/>
+<script src="{% static 'js/fn-toast.js' %}?v=1"></script>
