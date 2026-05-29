@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import (
     PasswordChangeForm,
@@ -10,6 +11,11 @@ from django.contrib.auth.forms import (
 from apps.accounts.models import Profile, User
 from futnetnepal.forms import SecureForm, SecureModelForm
 from apps.accounts.phone_verification import PhoneVerificationError, normalize_phone
+from apps.accounts.profile_locks import (
+    LOCKED_PHONE_MSG,
+    reject_email_change,
+    reject_phone_change,
+)
 
 UserModel = get_user_model()
 
@@ -192,7 +198,15 @@ class UserProfileUpdateForm(SecureModelForm):
             'cover_image': forms.FileInput(attrs={'class': 'mt-1 block w-full text-sm text-slate-600'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and self.instance.phone_verified:
+            self.fields['phone'].disabled = True
+            self.fields['phone'].help_text = LOCKED_PHONE_MSG
+
     def clean_phone(self):
+        if self.instance.pk and self.instance.phone_verified:
+            return self.instance.phone
         raw = (self.cleaned_data.get('phone') or '').strip()
         if not raw:
             return ''
@@ -205,6 +219,8 @@ class UserProfileUpdateForm(SecureModelForm):
         instance = self.instance
         old_phone = instance.phone if instance.pk else ''
         profile = super().save(commit=False)
+        if instance.pk and instance.phone_verified:
+            profile.phone = instance.phone
         if self.files.get('profile_image'):
             profile.user.profile_image = self.files['profile_image']
             profile.user.save(update_fields=['profile_image'])
@@ -224,15 +240,29 @@ class UserProfileUpdateForm(SecureModelForm):
 class UserUpdateForm(SecureModelForm):
     class Meta:
         model = UserModel
-        fields = ['username', 'email', 'full_name']
+        fields = ['full_name', 'email']
         widgets = {
-            'username': forms.TextInput(attrs={'class': INPUT_CLASS}),
             'email': forms.EmailInput(attrs={'class': INPUT_CLASS}),
             'full_name': forms.TextInput(attrs={
                 'class': INPUT_CLASS,
                 'placeholder': 'Your full name',
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and self.instance.is_email_verified:
+            self.fields.pop('email', None)
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        try:
+            reject_email_change(self.instance, email)
+        except ValidationError as exc:
+            raise forms.ValidationError(list(exc.messages)) from exc
+        if UserModel.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError('This email is already registered.')
+        return email
 
 
 class StyledPasswordChangeForm(SecureForm, PasswordChangeForm):

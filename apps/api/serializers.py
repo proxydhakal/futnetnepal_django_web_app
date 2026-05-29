@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 import logging
@@ -9,6 +10,11 @@ from apps.accounts.email_utils import send_verification_email_code, send_verific
 logger = logging.getLogger(__name__)
 from apps.accounts.email_verification import EmailVerificationError, issue_email_code, verify_email_code
 from apps.accounts.forms import RegisterForm, UserProfileUpdateForm, UserUpdateForm
+from apps.accounts.profile_locks import (
+    reject_email_change,
+    reject_phone_change,
+    reject_username_change,
+)
 from apps.api.secure_serializers import SecureInputSerializerMixin
 from apps.accounts.models import Profile
 from apps.accounts.phone_verification import PhoneVerificationError, issue_phone_otp
@@ -113,7 +119,6 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150, required=False)
     email = serializers.EmailField(required=False)
     full_name = serializers.CharField(max_length=300, required=False, allow_blank=True)
     phone = serializers.CharField(max_length=10, required=False, allow_blank=True)
@@ -122,11 +127,33 @@ class UserProfileUpdateSerializer(serializers.Serializer):
     profile_image = serializers.ImageField(required=False)
     cover_image = serializers.ImageField(required=False)
 
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if request is not None and 'username' in request.data:
+            try:
+                reject_username_change(self.instance, request.data.get('username'))
+            except ValidationError as exc:
+                raise serializers.ValidationError({'username': list(exc.messages)})
+        return attrs
+
     def update(self, instance, validated_data):
         user = instance
         profile = user.profile
+
+        if 'email' in validated_data:
+            try:
+                reject_email_change(user, validated_data['email'])
+            except ValidationError as exc:
+                raise serializers.ValidationError({'email': list(exc.messages)})
+
+        if 'phone' in validated_data:
+            try:
+                reject_phone_change(profile, validated_data['phone'])
+            except ValidationError as exc:
+                raise serializers.ValidationError({'phone': list(exc.messages)})
+
         user_data = {}
-        for key in ('username', 'email', 'full_name'):
+        for key in ('email', 'full_name'):
             if key in validated_data:
                 user_data[key] = validated_data[key]
         if user_data:
@@ -136,7 +163,7 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
         profile_data = {}
         for key in ('phone', 'address', 'dob'):
-            if key in validated_data:
+            if key in validated_data and not (key == 'phone' and profile.phone_verified):
                 profile_data[key] = validated_data[key]
         files = {}
         if 'profile_image' in validated_data:

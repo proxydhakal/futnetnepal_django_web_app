@@ -69,17 +69,30 @@
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-slate-700">Username</label>
-                                        <input type="text" name="username" x-model="user.username" class="fn-input" required>
-                                        <p class="fn-field-error" x-show="errors.user_username" x-text="errors.user_username" role="alert"></p>
+                                        <input type="text" name="username" x-model="user.username" class="fn-input bg-slate-100 text-slate-600 cursor-not-allowed" readonly aria-readonly="true">
+                                        <p class="text-xs text-slate-500 mt-1">Username cannot be changed.</p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-slate-700">Email</label>
-                                        <input type="email" name="email" x-model="user.email" class="fn-input" required>
+                                        <template x-if="emailVerified">
+                                            <input type="email" x-model="user.email" class="fn-input bg-slate-100 text-slate-600 cursor-not-allowed" readonly aria-readonly="true">
+                                            <p class="text-xs text-slate-500 mt-1">Verified email cannot be changed.</p>
+                                        </template>
+                                        <template x-if="!emailVerified">
+                                            <input type="email" name="email" x-model="user.email" class="fn-input" required>
+                                            <p class="text-xs text-slate-500 mt-1">Verify your email before it is locked.</p>
+                                        </template>
                                         <p class="fn-field-error" x-show="errors.user_email" x-text="errors.user_email" role="alert"></p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-slate-700">Phone</label>
-                                        <input type="text" name="phone" x-model="profile.phone" maxlength="10" inputmode="numeric" placeholder="9840123456" class="fn-input">
+                                        <template x-if="phoneVerified">
+                                            <input type="text" x-model="profile.phone" maxlength="10" class="fn-input bg-slate-100 text-slate-600 cursor-not-allowed" readonly aria-readonly="true">
+                                            <p class="text-xs text-slate-500 mt-1">Verified phone cannot be changed.</p>
+                                        </template>
+                                        <template x-if="!phoneVerified">
+                                            <input type="text" name="phone" x-model="profile.phone" maxlength="10" inputmode="numeric" placeholder="9840123456" class="fn-input">
+                                        </template>
                                         <p class="fn-field-error" x-show="errors.profile_phone" x-text="errors.profile_phone" role="alert"></p>
                                     </div>
                                     <div>
@@ -159,7 +172,8 @@ function profilePage() {
     };
     return {
         editing: {{ start_editing|yesno:"true,false" }},
-        phoneVerified: {{ userprofiledata.phone_verified|yesno:"true,false" }},
+        emailVerified: {{ email_verified|yesno:"true,false" }},
+        phoneVerified: {{ phone_verified|yesno:"true,false" }},
         otpCode: '',
         phoneSending: false,
         phoneVerifying: false,
@@ -212,6 +226,7 @@ function profilePage() {
                 const data = await res.json();
                 if (data.success) {
                     this.user = { ...this.user, ...data.user };
+                    this.emailVerified = data.user.email_verified;
                     this.profile.phone = data.profile.phone;
                     this.phoneVerified = data.profile.phone_verified;
                     this.profile.address = data.profile.address;

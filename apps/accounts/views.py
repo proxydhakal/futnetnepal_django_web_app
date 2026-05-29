@@ -17,6 +17,7 @@ from apps.accounts.verification_session import stash_pending_verification
 from apps.accounts.phone_verification import (
     PhoneVerificationError,
     issue_phone_otp,
+    phone_error_user_message,
     profile_for_email,
     verify_phone_otp,
 )
@@ -47,10 +48,16 @@ logger = logging.getLogger(__name__)
 
 
 def _profile_context(request, user_profile):
+    user = request.user
     return {
-        'stats': user_profile_stats(request.user),
-        'posts': posts_with_engagement(request.user).filter(author=request.user),
+        'stats': user_profile_stats(user),
+        'posts': posts_with_engagement(user).filter(author=user),
         'userprofiledata': user_profile,
+        'email_verified': user.is_email_verified,
+        'phone_verified': user_profile.phone_verified,
+        'username_locked': True,
+        'email_locked': user.is_email_verified,
+        'phone_locked': user_profile.phone_verified,
         'times': Time.objects.values('id', 'name').annotate(total=Count('post')),
         'venues': Venue.objects.select_related('location').all(),
         'timess': Time.objects.all(),
@@ -236,7 +243,11 @@ class PhoneSendOtpView(View):
                 payload['dev_code'] = dev_code
             return JsonResponse(payload)
         except PhoneVerificationError as exc:
-            return JsonResponse({'success': False, 'error': str(exc), 'code': exc.code}, status=400)
+            return JsonResponse({
+                'success': False,
+                'error': phone_error_user_message(exc),
+                'code': exc.code,
+            }, status=400)
 
     def dispatch(self, request, *args, **kwargs):
         if request.method != 'POST':
@@ -269,7 +280,11 @@ class PhoneVerifyOtpView(View):
             verify_phone_otp(profile, phone, code)
             return JsonResponse({'success': True, 'message': 'Phone number verified.'})
         except PhoneVerificationError as exc:
-            return JsonResponse({'success': False, 'error': str(exc), 'code': exc.code}, status=400)
+            return JsonResponse({
+                'success': False,
+                'error': phone_error_user_message(exc),
+                'code': exc.code,
+            }, status=400)
 
     def dispatch(self, request, *args, **kwargs):
         if request.method != 'POST':
@@ -385,6 +400,7 @@ class ProfileUpdateAjaxView(LoginRequiredMixin, View):
                     'username': user.username,
                     'email': user.email,
                     'full_name': user.get_full_name() or user.username,
+                    'email_verified': user.is_email_verified,
                 },
                 'profile': {
                     'phone': user_profile.phone or '',

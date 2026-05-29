@@ -1,3 +1,4 @@
+import logging
 import random
 import re
 
@@ -9,15 +10,41 @@ User = get_user_model()
 from django.utils import timezone
 
 from apps.accounts.models import Profile
-from apps.accounts.sms import SmsDeliveryError, send_sms
+from apps.accounts.sms import SmsDeliveryError, USER_SMS_SEND_FAILED, send_sms
+
+logger = logging.getLogger(__name__)
 
 _PHONE_RE = re.compile(r'^[9][6-8]\d{8}$')
+
+# Error codes safe to expose verbatim (app-authored copy, not SMS gateway text).
+_USER_SAFE_PHONE_ERROR_CODES = frozenset({
+    'invalid',
+    'invalid_phone',
+    'cooldown',
+    'invalid_code',
+    'phone_mismatch',
+    'no_otp',
+    'expired',
+    'max_attempts',
+    'email_required',
+    'not_found',
+})
 
 
 class PhoneVerificationError(Exception):
     def __init__(self, message, code='invalid'):
         super().__init__(message)
         self.code = code
+
+
+def phone_error_user_message(exc: 'PhoneVerificationError') -> str:
+    """Return a message safe to show in the UI or public API."""
+    if exc.code in _USER_SAFE_PHONE_ERROR_CODES:
+        return str(exc)
+    if exc.code == 'sms_failed':
+        return USER_SMS_SEND_FAILED
+    logger.warning('Unknown phone verification error code %r: %s', exc.code, exc)
+    return USER_SMS_SEND_FAILED
 
 
 def normalize_phone(raw: str) -> str:
@@ -71,11 +98,11 @@ def issue_phone_otp(profile: Profile, phone: str) -> str:
     try:
         send_sms(to=phone, text=_otp_message(code))
     except SmsDeliveryError as exc:
-        raise PhoneVerificationError(str(exc), code='sms_failed') from exc
+        logger.error('OTP SMS not delivered for phone ending %s', phone[-4:])
+        raise PhoneVerificationError(USER_SMS_SEND_FAILED, code='sms_failed') from exc
 
     if settings.DEBUG:
-        import logging
-        logging.getLogger(__name__).warning('DEV phone OTP for %s: %s', phone, code)
+        logger.warning('DEV phone OTP for %s: %s', phone, code)
     return code if settings.DEBUG else ''
 
 

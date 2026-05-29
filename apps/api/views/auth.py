@@ -16,6 +16,7 @@ from apps.accounts.models import Profile
 from apps.accounts.phone_verification import (
     PhoneVerificationError,
     issue_phone_otp,
+    phone_error_user_message,
     profile_for_email,
     verify_phone_otp,
 )
@@ -202,7 +203,11 @@ class PhoneSendOtpAPIView(APIView):
             return Response(payload)
         except PhoneVerificationError as exc:
             return Response(
-                {'success': False, 'error': str(exc), 'code': exc.code},
+                {
+                    'success': False,
+                    'error': phone_error_user_message(exc),
+                    'code': exc.code,
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -233,7 +238,11 @@ class PhoneVerifyOtpAPIView(APIView):
             return Response({'success': True, 'message': 'Phone number verified.'})
         except PhoneVerificationError as exc:
             return Response(
-                {'success': False, 'error': str(exc), 'code': exc.code},
+                {
+                    'success': False,
+                    'error': phone_error_user_message(exc),
+                    'code': exc.code,
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
