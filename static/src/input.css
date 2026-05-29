@@ -94,6 +94,11 @@
     margin-left: auto;
   }
 
+  /* Fixed header: safe area on notched devices */
+  #fn-site-header {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
   @media (min-width: 640px) {
     .fn-site-topbar {
       font-size: 0.75rem;
@@ -103,7 +108,22 @@
   }
 
   .fn-header-offset {
-    padding-top: calc(var(--fn-header-h) + 0.75rem);
+    padding-top: calc(var(--fn-header-h, 6.25rem) + 0.75rem);
+  }
+
+  /* 404/500: clear fixed navbar (same idea as .fn-hero-carousel margin-top) */
+  .fn-error-page {
+    margin-top: var(--fn-header-h, 6.25rem);
+    min-height: calc(100dvh - var(--fn-header-h, 6.25rem));
+    padding-top: 1.25rem;
+    padding-bottom: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .fn-error-page {
+      padding-top: 2rem;
+      padding-bottom: 4rem;
+    }
   }
 
   /* Auth pages (login/signup): top-aligned on mobile so forms don't require extra scroll */
@@ -155,7 +175,7 @@
   }
 
   .fn-page-hero {
-    padding-top: calc(var(--fn-header-h) + 0.75rem);
+    padding-top: calc(var(--fn-header-h, 6.25rem) + 0.75rem);
     padding-bottom: 2rem;
   }
 

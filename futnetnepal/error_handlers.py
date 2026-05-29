@@ -22,13 +22,14 @@ def page_not_found(request, exception):
 
 
 def server_error(request):
-    """Render 500 without request context processors (DB may be down)."""
+    """Render 500; fall back to a minimal template if context processors or DB fail."""
     path = getattr(request, 'path', '')
     logger.exception('Unhandled server error%s', f' for {path}' if path else '')
 
-    template = loader.get_template('500.html')
-    body = template.render({
-        'site_name': 'Futnet Nepal',
-        'path': path,
-    })
-    return HttpResponse(body, status=500)
+    try:
+        return render(request, '500.html', {'path': path}, status=500)
+    except Exception:
+        logger.exception('500 fallback template (site layout unavailable)')
+        template = loader.get_template('500_standalone.html')
+        body = template.render({'path': path})
+        return HttpResponse(body, status=500)
