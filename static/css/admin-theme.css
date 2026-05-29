@@ -417,6 +417,20 @@ body.admin-body.overflow-hidden {
   padding-left: 0.5rem;
 }
 
+#adminCrudModal .select2-container--default .select2-selection--multiple .select2-selection__choice {
+  background: linear-gradient(90deg, #0284c7, #0ea5e9);
+  border: none;
+  color: #fff;
+  border-radius: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8125rem;
+}
+
+#adminCrudModal .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+  color: rgba(255, 255, 255, 0.85);
+  margin-right: 0.25rem;
+}
+
 .select2-dropdown {
   border-radius: 0.75rem !important;
   overflow: hidden;

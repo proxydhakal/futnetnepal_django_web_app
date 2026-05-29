@@ -38,10 +38,14 @@ window.fnInitSelect2 = function (scope, dropdownParent) {
       if ($el.hasClass('select2-hidden-accessible')) {
         $el.select2('destroy');
       }
+      const isMultiple = $el.prop('multiple');
       $el.select2({
         width: '100%',
-        placeholder: $el.data('placeholder') || 'Search...',
-        allowClear: $el.data('allowClear') === true || $el.data('allowClear') === 'true',
+        placeholder: $el.data('placeholder') || (isMultiple ? 'Select one or more…' : 'Search...'),
+        allowClear:
+          !isMultiple &&
+          ($el.data('allowClear') === true || $el.data('allowClear') === 'true'),
+        closeOnSelect: !isMultiple,
         minimumResultsForSearch: 0,
         dropdownParent: $parent,
       });
@@ -54,7 +58,9 @@ window.fnInitSelect2 = function (scope, dropdownParent) {
 
 window.fnSetSelect2Values = function (values) {
   Object.keys(values).forEach(function (id) {
-    jQuery('#' + id).val(String(values[id])).trigger('change');
+    const $el = jQuery('#' + id);
+    const val = values[id];
+    $el.val(Array.isArray(val) ? val.map(String) : String(val)).trigger('change');
   });
 };
 

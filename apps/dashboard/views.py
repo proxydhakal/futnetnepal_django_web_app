@@ -166,13 +166,24 @@ class ModelDetailAPIView(StaffRequiredMixin, View):
         return JsonResponse(data)
 
 
-def _parse_body(request):
+def _parse_body(request, meta=None):
     if request.content_type and 'application/json' in request.content_type:
         try:
             return json.loads(request.body.decode() or '{}')
         except json.JSONDecodeError:
             return {}
-    return request.POST.dict()
+    m2m_names = set()
+    if meta is not None:
+        m2m_names = {f.name for f in meta.model._meta.many_to_many}
+    if not m2m_names:
+        return request.POST.dict()
+    data = {}
+    for key in request.POST:
+        if key in m2m_names:
+            data[key] = request.POST.getlist(key)
+        else:
+            data[key] = request.POST.get(key)
+    return data
 
 
 class SlugifyAPIView(StaffRequiredMixin, View):
@@ -208,7 +219,7 @@ class SlugifyAPIView(StaffRequiredMixin, View):
 class ModelCreateAPIView(StaffRequiredMixin, View):
     def post(self, request, model_key):
         meta = get_model_meta(model_key)
-        data = _parse_body(request)
+        data = _parse_body(request, meta=meta)
         obj, errors = save_instance(meta, data, files=request.FILES or None)
         if errors:
             return JsonResponse({'success': False, 'errors': errors}, status=400)
@@ -219,7 +230,7 @@ class ModelUpdateAPIView(StaffRequiredMixin, View):
     def post(self, request, model_key, pk):
         meta = get_model_meta(model_key)
         obj = get_object_or_404(meta.model, pk=pk)
-        data = _parse_body(request)
+        data = _parse_body(request, meta=meta)
         obj, errors = save_instance(meta, data, instance=obj, files=request.FILES or None)
         if errors:
             return JsonResponse({'success': False, 'errors': errors}, status=400)

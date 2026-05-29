@@ -462,6 +462,11 @@
     text-decoration: underline;
   }
 
+  .fn-cms-content a[class*="bg-"] {
+    color: #fff;
+    text-decoration: none;
+  }
+
   .fn-cms-content img {
     max-width: 100%;
     height: auto;

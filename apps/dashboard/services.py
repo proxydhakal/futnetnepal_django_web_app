@@ -279,7 +279,10 @@ def get_field_choices(meta: ModelAdminMeta, *, for_edit=False):
     choices = {}
     skip = _crud_form_skip_fields(meta, for_edit=for_edit)
     for f in model._meta.get_fields():
-        if not getattr(f, 'concrete', False):
+        if isinstance(f, models.ManyToManyField):
+            if f.auto_created:
+                continue
+        elif not getattr(f, 'concrete', False):
             continue
         if f.name in skip:
             continue
@@ -300,7 +303,7 @@ def get_field_choices(meta: ModelAdminMeta, *, for_edit=False):
             qs = related.objects.all()[:200]
             info['choices'] = [{'value': o.pk, 'label': str(o)} for o in qs]
             info['type'] = 'ForeignKey'
-        if isinstance(f, models.ManyToManyField):
+        elif isinstance(f, models.ManyToManyField):
             related = f.related_model
             qs = related.objects.all()[:200]
             info['choices'] = [{'value': o.pk, 'label': str(o)} for o in qs]
@@ -426,7 +429,17 @@ def _coerce_data(meta: ModelAdminMeta, data):
             if isinstance(field, models.ManyToManyField):
                 if isinstance(val, str):
                     val = [v for v in val.split(',') if v.strip()]
-                cleaned[key] = val
+                elif val is None:
+                    val = []
+                elif not isinstance(val, list):
+                    val = [val]
+                pks = []
+                for item in val:
+                    try:
+                        pks.append(int(item))
+                    except (TypeError, ValueError):
+                        continue
+                cleaned[key] = pks
             elif isinstance(field, models.BooleanField):
                 cleaned[key] = val in (True, 'true', '1', 'on', 'yes', 1)
             elif isinstance(field, models.ForeignKey):

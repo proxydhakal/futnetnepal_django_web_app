@@ -282,7 +282,9 @@
           const sel = document.createElement('select');
           sel.id = id;
           sel.className = 'admin-input fn-select2';
-          sel.dataset.placeholder = 'Search or select…';
+          sel.dataset.placeholder = info.type === 'ManyToManyField'
+            ? 'Select one or more…'
+            : 'Search or select…';
           if (info.type === 'ManyToManyField') sel.multiple = true;
           if (!info.required && info.type !== 'ManyToManyField') {
             sel.dataset.allowClear = 'true';
