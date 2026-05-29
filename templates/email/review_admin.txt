@@ -1,0 +1,13 @@
+New user review on Futnet Nepal (pending approval)
+
+Name: {{ name }}
+Email: {{ email }}
+Rating: {{ rating }}/5
+
+Message:
+{{ message }}
+
+Manage reviews: {{ admin_reviews_url }}
+
+© {{ copyright_year }} Futnet Nepal Pvt. Ltd. All rights reserved.
+{{ site_url }} · {{ info_email }}

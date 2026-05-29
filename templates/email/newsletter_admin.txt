@@ -1,0 +1,9 @@
+New newsletter subscription on Futnet Nepal
+
+Name: {{ name }}
+Email: {{ email }}
+
+Subscribed at: {{ site_url }}
+
+© {{ copyright_year }} Futnet Nepal Pvt. Ltd. All rights reserved.
+{{ site_url }} · {{ info_email }}

@@ -1,20 +1,22 @@
 """
 Django settings for futnetnepal.
 
-All sensitive and environment-specific values come from `.env` (python-decouple).
+Environment variables are loaded from `.env` via python-dotenv (see futnetnepal.env).
 Copy `.env.example` to `.env` and adjust per environment.
 """
 
 from datetime import timedelta
 from pathlib import Path
 
-from decouple import Csv, config
+from corsheaders.defaults import default_headers, default_methods
+
+from futnetnepal.env import env, env_bool, env_csv, env_int
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def _env_path(name, default_relative):
-    raw = config(name, default='')
+    raw = env(name, default='')
     if not raw:
         return BASE_DIR / default_relative
     path = Path(raw)
@@ -22,18 +24,17 @@ def _env_path(name, default_relative):
 
 
 def _env_url(name, default):
-    value = config(name, default=default)
+    value = env(name, default=default)
     return value if value.endswith('/') else f'{value}/'
 
 
 def _csv(name, default=''):
-    raw = config(name, default=default, cast=Csv())
-    return [item.strip() for item in raw if item and item.strip()]
+    return env_csv(name, default=default)
 
 
 # ——— Core ———
-SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
+SECRET_KEY = env('SECRET_KEY', required=True)
+DEBUG = env_bool('DEBUG', default=False)
 
 _allowed_hosts = _csv('ALLOWED_HOSTS')
 if _allowed_hosts:
@@ -78,12 +79,14 @@ AUTHENTICATION_BACKENDS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'futnetnepal.middleware.request_logging.RequestLoggingMiddleware',
+    'futnetnepal.middleware.AuditContextMiddleware',
     'apps.accounts.middleware.EmailVerificationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -103,6 +106,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.accounts.context_processors.user_profile',
+                'apps.core.context_processors.site_content',
                 'apps.dashboard.context_processors.admin_nav',
             ],
         },
@@ -113,12 +117,12 @@ WSGI_APPLICATION = 'futnetnepal.wsgi.application'
 ASGI_APPLICATION = 'futnetnepal.asgi.application'
 
 # ——— Redis / Channels ———
-_redis_url = config('REDIS_URL', default='')
+_redis_url = env('REDIS_URL', default='')
 if not _redis_url:
-    _redis_password = config('REDIS_PASSWORD', default='')
+    _redis_password = env('REDIS_PASSWORD', default='')
     if _redis_password:
-        _redis_host = config('REDIS_HOST', default='127.0.0.1')
-        _redis_port = config('REDIS_PORT', default=6379, cast=int)
+        _redis_host = env('REDIS_HOST', default='127.0.0.1')
+        _redis_port = env_int('REDIS_PORT', default=6379)
         _redis_url = f'redis://:{_redis_password}@{_redis_host}:{_redis_port}/0'
 
 if _redis_url:
@@ -142,8 +146,8 @@ else:
 # ——— Database ———
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-_database_url = config('DATABASE_URL', default='')
-_use_sqlite = config('USE_SQLITE', default=DEBUG, cast=bool) or (
+_database_url = env('DATABASE_URL', default='')
+_use_sqlite = env_bool('USE_SQLITE', default=DEBUG) or (
     _database_url and 'sqlite' in _database_url.lower()
 )
 
@@ -155,7 +159,7 @@ if _use_sqlite:
         },
     }
 else:
-    _db_engine = config('DB_ENGINE', default='django.db.backends.mysql')
+    _db_engine = env('DB_ENGINE', default='django.db.backends.mysql')
     if _db_engine == 'mysql':
         _db_engine = 'django.db.backends.mysql'
 
@@ -166,17 +170,19 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': _db_engine,
-            'NAME': config('DB_NAME'),
-            'USER': config('DB_USER'),
-            'PASSWORD': config('DB_PASSWORD'),
-            'HOST': config('DB_HOST', default='127.0.0.1'),
-            'PORT': config('DB_PORT', default='3306', cast=int),
-            'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60 if not DEBUG else 0, cast=int),
+            'NAME': env('DB_NAME', required=True),
+            'USER': env('DB_USER', required=True),
+            'PASSWORD': env('DB_PASSWORD', default=''),
+            'HOST': env('DB_HOST', default='127.0.0.1'),
+            'PORT': env_int('DB_PORT', default=3306),
+            'CONN_MAX_AGE': env_int('DB_CONN_MAX_AGE', default=60 if not DEBUG else 0),
             'OPTIONS': _db_options,
         },
     }
 
 # ——— Auth ———
+AUTH_USER_MODEL = 'accounts.User'
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -186,9 +192,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # ——— i18n ———
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = config('TIME_ZONE', default='Asia/Kathmandu')
+TIME_ZONE = env('TIME_ZONE', default='Asia/Kathmandu')
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 # ——— Static & media ———
@@ -208,41 +213,57 @@ LOGIN_URL = '/accounts/login/'
 LOGOUT_REDIRECT_URL = '/'
 
 # ——— Email ———
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = env_int('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', default=True)
+EMAIL_USE_SSL = env_bool('EMAIL_USE_SSL', default=False)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 # From address must match the authenticated mailbox (or an allowed alias) on most SMTP hosts.
-DEFAULT_FROM_EMAIL = config(
+DEFAULT_FROM_EMAIL = env(
     'DEFAULT_FROM_EMAIL',
     default=EMAIL_HOST_USER or 'noreply@futnetnepal.com',
 )
-SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
-EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=30, cast=int)
+SERVER_EMAIL = env('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
+EMAIL_TIMEOUT = env_int('EMAIL_TIMEOUT', default=30)
 # Optional: send all outbound mail to this address (testing only; leave empty in production).
-EMAIL_OVERRIDE_RECIPIENT = config('EMAIL_OVERRIDE_RECIPIENT', default='').strip()
+EMAIL_OVERRIDE_RECIPIENT = env('EMAIL_OVERRIDE_RECIPIENT', default='').strip()
+FUTNET_INFO_EMAIL = env('FUTNET_INFO_EMAIL', default='info@futnetnepal.com').strip()
 
-SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000').rstrip('/')
+SITE_URL = env('SITE_URL', default='http://127.0.0.1:8000').rstrip('/')
 
 # ——— SMS / OTP ———
-AAKASH_SMS_AUTH_TOKEN = config('AAKASH_SMS_AUTH_TOKEN', default='')
-PHONE_OTP_EXPIRY_MINUTES = config('PHONE_OTP_EXPIRY_MINUTES', default=10, cast=int)
-PHONE_OTP_RESEND_COOLDOWN_SECONDS = config('PHONE_OTP_RESEND_COOLDOWN_SECONDS', default=60, cast=int)
-PHONE_OTP_MAX_ATTEMPTS = config('PHONE_OTP_MAX_ATTEMPTS', default=5, cast=int)
-EMAIL_OTP_EXPIRY_MINUTES = config('EMAIL_OTP_EXPIRY_MINUTES', default=15, cast=int)
-EMAIL_OTP_RESEND_COOLDOWN_SECONDS = config('EMAIL_OTP_RESEND_COOLDOWN_SECONDS', default=60, cast=int)
-EMAIL_OTP_MAX_ATTEMPTS = config('EMAIL_OTP_MAX_ATTEMPTS', default=5, cast=int)
+AAKASH_SMS_AUTH_TOKEN = env('AAKASH_SMS_AUTH_TOKEN', default='')
+PHONE_OTP_EXPIRY_MINUTES = env_int('PHONE_OTP_EXPIRY_MINUTES', default=10)
+PHONE_OTP_RESEND_COOLDOWN_SECONDS = env_int('PHONE_OTP_RESEND_COOLDOWN_SECONDS', default=60)
+PHONE_OTP_MAX_ATTEMPTS = env_int('PHONE_OTP_MAX_ATTEMPTS', default=5)
+EMAIL_OTP_EXPIRY_MINUTES = env_int('EMAIL_OTP_EXPIRY_MINUTES', default=15)
+EMAIL_OTP_RESEND_COOLDOWN_SECONDS = env_int('EMAIL_OTP_RESEND_COOLDOWN_SECONDS', default=60)
+EMAIL_OTP_MAX_ATTEMPTS = env_int('EMAIL_OTP_MAX_ATTEMPTS', default=5)
 
-# ——— CORS ———
+# ——— CORS (django-cors-headers) ———
+# Applies to REST API routes (Flutter web, SPA). Native mobile apps are not affected by CORS.
+CORS_URLS_REGEX = r'^/api/.*$'
+
 _cors_origins = _csv('CORS_ALLOWED_ORIGINS')
+_cors_origin_regexes = _csv('CORS_ALLOWED_ORIGIN_REGEXES')
+
 if _cors_origins:
     CORS_ALLOWED_ORIGINS = _cors_origins
     CORS_ALLOW_ALL_ORIGINS = False
 elif DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_ALL_ORIGINS = env_bool('CORS_ALLOW_ALL_ORIGINS', default=True)
+    if not CORS_ALLOW_ALL_ORIGINS:
+        CORS_ALLOWED_ORIGINS = [
+            'http://localhost:3000',
+            'http://localhost:5173',
+            'http://localhost:8080',
+            'http://127.0.0.1:3000',
+            'http://127.0.0.1:5173',
+            'http://127.0.0.1:8000',
+            'http://127.0.0.1:8001',
+        ]
 else:
     CORS_ALLOWED_ORIGINS = [
         'https://futnetnepal.com',
@@ -250,15 +271,20 @@ else:
     ]
     CORS_ALLOW_ALL_ORIGINS = False
 
-CORS_ALLOW_CREDENTIALS = config('CORS_ALLOW_CREDENTIALS', default=False, cast=bool)
-CORS_ALLOW_HEADERS = (
-    'accept',
-    'authorization',
-    'content-type',
-    'origin',
-    'user-agent',
-    'x-requested-with',
-)
+if _cors_origin_regexes:
+    CORS_ALLOWED_ORIGIN_REGEXES = _cors_origin_regexes
+
+CORS_ALLOW_CREDENTIALS = env_bool('CORS_ALLOW_CREDENTIALS', default=False)
+if CORS_ALLOW_CREDENTIALS and CORS_ALLOW_ALL_ORIGINS:
+    CORS_ALLOW_ALL_ORIGINS = False
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-csrftoken',
+    'cache-control',
+]
+CORS_ALLOW_METHODS = list(default_methods)
+CORS_EXPOSE_HEADERS = ['content-type', 'content-length']
+CORS_PREFLIGHT_MAX_AGE = env_int('CORS_PREFLIGHT_MAX_AGE', default=86400)
 
 # ——— DRF / JWT ———
 REST_FRAMEWORK = {
@@ -270,6 +296,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',),
+    'EXCEPTION_HANDLER': 'futnetnepal.api_exceptions.logged_api_exception_handler',
 }
 
 if DEBUG:
@@ -279,8 +306,8 @@ if DEBUG:
     )
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('JWT_ACCESS_MINUTES', default=60 * 24, cast=int)),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=config('JWT_REFRESH_DAYS', default=30, cast=int)),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env_int('JWT_ACCESS_MINUTES', default=60 * 24)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=env_int('JWT_REFRESH_DAYS', default=30)),
     'ROTATE_REFRESH_TOKENS': True,
     'UPDATE_LAST_LOGIN': True,
 }
@@ -297,42 +324,20 @@ elif not DEBUG:
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
-    SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
-    CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
-    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)
-    SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=True, cast=bool)
+    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', default=True)
+    SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', default=True)
+    CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', default=True)
+    SECURE_HSTS_SECONDS = env_int('SECURE_HSTS_SECONDS', default=31536000)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True)
+    SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', default=True)
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = 'same-origin'
     X_FRAME_OPTIONS = 'DENY'
 
 # ——— Logging ———
-_log_level = config('LOG_LEVEL', default='DEBUG' if DEBUG else 'INFO')
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': _log_level,
-    },
-    'loggers': {
-        'django': {'level': _log_level, 'propagate': True},
-        'django.request': {'level': 'ERROR', 'propagate': True},
-    },
-}
+from futnetnepal.logging_config import build_logging_settings  # noqa: E402
+
+LOGGING = build_logging_settings(debug=DEBUG)
 
 CKEDITOR_CONFIGS = {
     'default': {

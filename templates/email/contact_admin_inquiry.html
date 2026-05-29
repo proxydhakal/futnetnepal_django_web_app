@@ -1,0 +1,37 @@
+{% extends "email/base_email.html" %}
+
+{% block email_title %}New contact inquiry{% endblock %}
+
+{% block email_eyebrow %}
+<p style="margin:0;font-size:13px;font-weight:600;color:#bae6fd;letter-spacing:0.04em;text-transform:uppercase;">Admin notification</p>
+{% endblock %}
+
+{% block email_body %}
+<h1 style="margin:0 0 8px;font-size:20px;font-weight:800;color:#0c4a6e;">New contact inquiry</h1>
+<p style="margin:0 0 20px;font-size:14px;color:#64748b;">Reply from the admin panel to email the customer automatically.</p>
+<table role="presentation" style="border-collapse:collapse;width:100%;">
+    <tr>
+        <td style="padding:8px 12px;font-weight:600;border-bottom:1px solid #e2e8f0;vertical-align:top;width:100px;color:#475569;">Name</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;">{{ fullname }}</td>
+    </tr>
+    <tr>
+        <td style="padding:8px 12px;font-weight:600;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#475569;">Email</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;"><a href="mailto:{{ email }}" style="color:#0284c7;">{{ email }}</a></td>
+    </tr>
+    <tr>
+        <td style="padding:8px 12px;font-weight:600;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#475569;">Phone</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;">{{ phone }}</td>
+    </tr>
+    <tr>
+        <td style="padding:8px 12px;font-weight:600;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#475569;">Subject</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;">{{ subject }}</td>
+    </tr>
+    <tr>
+        <td style="padding:8px 12px;font-weight:600;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#475569;">Message</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;white-space:pre-wrap;color:#0f172a;">{{ message }}</td>
+    </tr>
+</table>
+<p style="margin:24px 0 0;">
+    <a href="{{ admin_contacts_url }}" style="display:inline-block;background:#0284c7;color:#fff;text-decoration:none;padding:10px 18px;border-radius:9999px;font-size:14px;font-weight:600;">Open inquiries in admin</a>
+</p>
+{% endblock %}

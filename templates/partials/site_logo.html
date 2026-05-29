@@ -1,0 +1,6 @@
+{% load static %}
+{% if site_config.logo %}
+<img src="{{ site_config.logo.url }}" alt="{{ site_config.site_title }}" class="{{ logo_class|default:'h-9 w-auto' }}">
+{% else %}
+<img src="{% static 'images/logo.png' %}" alt="{{ site_config.site_title|default:'Futnet Nepal' }}" class="{{ logo_class|default:'h-9 w-auto' }}">
+{% endif %}

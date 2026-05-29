@@ -1,5 +1,7 @@
 """Shared match engagement logic for web JSON views and REST API."""
 
+from futnetnepal.decorators import log_execution
+
 from apps.core.chat import ensure_dm_with_host
 from apps.core.engagement import build_comment_tree
 from apps.core.event_guard import is_event_locked
@@ -15,6 +17,7 @@ class EngagementError(Exception):
         self.locked = locked
 
 
+@log_execution()
 def toggle_post_interest(post, user):
     if is_event_locked(post):
         raise EngagementError(
@@ -36,6 +39,7 @@ def toggle_post_interest(post, user):
     }
 
 
+@log_execution()
 def toggle_post_reaction(post, user, reaction_type=PostReaction.REACTION_LIKE):
     if is_event_locked(post):
         raise EngagementError(
@@ -58,6 +62,7 @@ def toggle_post_reaction(post, user, reaction_type=PostReaction.REACTION_LIKE):
     }
 
 
+@log_execution()
 def add_post_comment(post, user, body, parent_id=None):
     if is_event_locked(post):
         raise EngagementError(

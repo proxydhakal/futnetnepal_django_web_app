@@ -74,16 +74,21 @@
                 <h2 class="text-lg font-bold">Create Event</h2>
                 <button type="button" @click="closeCreate()" class="text-white/80 hover:text-white text-xl">&times;</button>
             </div>
-            <form id="createForm" method="post" action="{% url 'home' %}" class="p-6 space-y-4 bg-white">
+            <form id="createForm" method="post" action="{% url 'home' %}" class="p-6 space-y-4 bg-white" novalidate>
                 {% csrf_token %}
+                {% include "partials/form_non_field_toast.html" %}
                 <div class="grid gap-4 sm:grid-cols-2">
-                    <div><label class="text-sm font-semibold text-sky-900">Location</label>{{ form.location }}</div>
-                    <div><label class="text-sm font-semibold text-sky-900">Venue</label>{{ form.venue }}</div>
-                    <div><label class="text-sm font-semibold text-sky-900">Date</label><input type="date" name="date" class="fn-input" value="{{ form.date.value|default:'' }}"></div>
-                    <div><label class="text-sm font-semibold text-sky-900">Time</label>{{ form.time }}</div>
+                    {% include "partials/form_field.html" with field=form.location %}
+                    {% include "partials/form_field.html" with field=form.venue %}
+                    <div class="fn-field{% if form.date.errors %} fn-field--error{% endif %}">
+                        <label class="fn-label" for="id_date">Date <span class="text-red-500">*</span></label>
+                        <input type="date" name="date" id="id_date" class="fn-input" value="{{ form.date.value|default:'' }}" required>
+                        {% for error in form.date.errors %}<p class="fn-field-error" role="alert">{{ error }}</p>{% endfor %}
+                    </div>
+                    {% include "partials/form_field.html" with field=form.time %}
                 </div>
-                <div><label class="text-sm font-semibold text-sky-900">Message</label>{{ form.message }}<p class="text-xs text-sky-600/70 mt-1">Describe your match (required).</p></div>
-                {% if form.errors %}<p class="text-sm text-rose-600">Please fix the errors below.</p>{% endif %}
+                {% include "partials/form_field.html" with field=form.message hide_help=False %}
+                <p class="text-xs text-sky-600/70 -mt-2">Describe your match (required).</p>
                 <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl shadow-md shadow-sky-600/20">Post</button>
             </form>
         </div>

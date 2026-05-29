@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block email_title %}{{ site_name }}{% endblock %}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#e0f2fe;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:linear-gradient(180deg,#f0f9ff 0%,#e0f2fe 55%,#f0f9ff 100%);padding:32px 16px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(2,132,199,0.15);">
+                <tr>
+                    <td style="background:linear-gradient(135deg,#0284c7 0%,#0c4a6e 100%);padding:28px 24px;text-align:center;">
+                        <img src="{{ logo_url }}" alt="{{ site_name }}" width="160" style="display:block;margin:0 auto 12px;height:auto;max-width:160px;border:0;">
+                        {% block email_eyebrow %}
+                        <p style="margin:0;font-size:13px;font-weight:600;color:#bae6fd;letter-spacing:0.04em;text-transform:uppercase;">{{ site_name }}</p>
+                        {% endblock %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:32px 28px;">
+                        {% block email_body %}{% endblock %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background:#f8fafc;padding:16px 24px;text-align:center;border-top:1px solid #e2e8f0;">
+                        <p style="margin:0 0 6px;font-size:12px;line-height:1.5;color:#64748b;">
+                            &copy; {{ copyright_year }} Futnet Nepal Pvt. Ltd. All rights reserved.
+                        </p>
+                        <p style="margin:0;font-size:12px;line-height:1.5;color:#94a3b8;">
+                            <a href="{{ site_url }}" style="color:#0284c7;text-decoration:none;font-weight:600;">{{ site_url }}</a>
+                            &nbsp;&middot;&nbsp;
+                            <a href="mailto:{{ info_email }}" style="color:#0284c7;text-decoration:none;">{{ info_email }}</a>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

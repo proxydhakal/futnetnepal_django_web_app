@@ -1,11 +1,32 @@
 import json
+import logging
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from django.db.models import Q
 
+from futnetnepal.audit import audit_user
+
 from apps.core.models import DirectConversation, Post
+
+ws_logger = logging.getLogger('futnetnepal.request')
+
+
+def _safe_message_body(raw):
+    from django.core.exceptions import ValidationError as DjangoValidationError
+    from futnetnepal.input_validation import sanitize_plain_text
+
+    try:
+        return sanitize_plain_text(
+            raw or '',
+            max_length=1000,
+            multiline=True,
+            min_length=1,
+            field_label='Message',
+        )
+    except DjangoValidationError:
+        return ''
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -19,6 +40,11 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         self.group_name = f'user_notifications_{user.id}'
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
+        ws_logger.info(
+            'WS connect notifications user=%s(%s)',
+            user.username,
+            user.pk,
+        )
         await self.send(text_data=json.dumps({
             'event': 'connected',
             'message': 'Notifications connected',
@@ -27,6 +53,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         if hasattr(self, 'group_name'):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        ws_logger.info('WS disconnect notifications code=%s', close_code)
 
     async def push_message(self, event):
         await self.send(text_data=json.dumps(event['payload']))
@@ -48,6 +75,12 @@ class DmChatConsumer(AsyncWebsocketConsumer):
         self.group_name = f'dm_{self.conversation_id}'
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
+        ws_logger.info(
+            'WS connect dm user=%s(%s) conversation=%s',
+            user.username,
+            user.pk,
+            self.conversation_id,
+        )
         await self.send(text_data=json.dumps({
             'event': 'connected',
             'conversation_id': self.conversation_id,
@@ -56,6 +89,7 @@ class DmChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         if hasattr(self, 'group_name'):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        ws_logger.info('WS disconnect dm conversation=%s code=%s', getattr(self, 'conversation_id', '-'), close_code)
 
     async def receive(self, text_data):
         user = self.scope['user']
@@ -66,7 +100,7 @@ class DmChatConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             return
         if data.get('action') == 'send_message':
-            body = (data.get('body') or '').strip()
+            body = self._safe_message_body(data.get('body'))
             if body:
                 result = await self._send_message(self.conversation_id, user, body)
                 if result and result.get('error'):
@@ -100,10 +134,11 @@ class DmChatConsumer(AsyncWebsocketConsumer):
             return {'error': 'Access denied.'}
         if is_event_locked(conv.post):
             return {'error': 'This match is confirmed. Chat is closed.'}
-        try:
-            _send_dm_and_broadcast(conv, user, body)
-        except ValueError:
-            return {'error': 'This match is confirmed. Chat is closed.'}
+        with audit_user(user):
+            try:
+                _send_dm_and_broadcast(conv, user, body)
+            except ValueError:
+                return {'error': 'This match is confirmed. Chat is closed.'}
         return {'success': True}
 
 
@@ -115,7 +150,7 @@ class LegacyEventChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         user = self.scope['user']
-        self.post_id = int(self.scope['url_route']['kwargs']['post_id'])
+        self.post_id = self.scope['url_route']['kwargs']['post_id']
         if not user.is_authenticated:
             await self.close()
             return
@@ -146,7 +181,7 @@ class LegacyEventChatConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             return
         if data.get('action') == 'send_message':
-            body = (data.get('body') or '').strip()
+            body = _safe_message_body(data.get('body'))
             if body:
                 result = await DmChatConsumer._send_message(
                     self, self.conversation_id, user, body,

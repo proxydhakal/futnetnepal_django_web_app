@@ -1,0 +1,10 @@
+Hi {{ name }},
+
+Thank you for subscribing to the Futnet Nepal newsletter.
+
+You will receive updates about venues, community events, and news from Nepal's football network.
+
+If you did not sign up, please contact us at {{ info_email }}.
+
+© {{ copyright_year }} Futnet Nepal Pvt. Ltd. All rights reserved.
+{{ site_url }} · {{ info_email }}

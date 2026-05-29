@@ -7,6 +7,7 @@ from apps.accounts.forms import (
     StyledSetPasswordForm,
 )
 from apps.accounts.views import (
+    BrandedPasswordResetView,
     EditProfile,
     LoginView,
     LogoutView,
@@ -14,6 +15,7 @@ from apps.accounts.views import (
     PhoneSendOtpView,
     PhoneVerifyOtpView,
     ProfileUpdateAjaxView,
+    PasswordCheckView,
     RegisterView,
     ResendVerificationView,
     SignupEmailSentView,
@@ -29,6 +31,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('signup/', RegisterView.as_view(), name='signup'),
+    path('signup/password-check/', PasswordCheckView.as_view(), name='password_check'),
     path('signup/sent/', SignupEmailSentView.as_view(), name='signup_email_sent'),
     path('verify-account/', VerifyAccountView.as_view(), name='verify_account'),
     path('verify-phone/send/', PhoneSendOtpView.as_view(), name='phone_send_otp'),
@@ -55,7 +58,7 @@ urlpatterns = [
     ),
     path(
         'password/reset/',
-        auth_views.PasswordResetView.as_view(
+        BrandedPasswordResetView.as_view(
             template_name='accounts/password_reset.html',
             form_class=StyledPasswordResetForm,
             email_template_name='accounts/email/password_reset_email.txt',

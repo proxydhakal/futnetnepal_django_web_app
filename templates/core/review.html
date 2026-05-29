@@ -1,14 +1,56 @@
 {% extends "partials/base.html" %}
 {% block title %}Reviews{% endblock %}
 {% block main %}
-<section class="fn-header-offset pb-20 bg-slate-50">
-    <div class="container mx-auto px-4 max-w-3xl">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-sky-950 mb-10 text-center uppercase">What Our Users Say</h1>
-        <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 text-center">
-            <h3 class="text-2xl font-bold text-sky-900 mb-1">This is a fantastic Website</h3>
-            <p class="text-sky-600 font-medium text-sm mb-6">Shekhar Dhakal, Nepal</p>
-            <p class="text-slate-600 italic leading-relaxed">"Futnet Nepal makes it easy to find matches, book venues, and connect with other futsal players."</p>
+{% include "partials/page_hero.html" with page_title="User Reviews" page_eyebrow="Share your experience" page_subtitle="Tell us what you think about Futnet Nepal. Approved reviews appear on our home page." hero_image="images/cover3.jpg" hero_static=True %}
+
+<section class="py-16 md:py-20 bg-slate-100">
+    <div class="container mx-auto px-4 md:px-8 max-w-6xl">
+        <div class="grid lg:grid-cols-5 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm p-8 border border-slate-100">
+                    <h2 class="font-bold text-sky-950 text-lg mb-4">Leave a review</h2>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Your feedback helps other players discover venues and matches. We moderate submissions before publishing them on the home page.
+                    </p>
+                </div>
+            </div>
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm p-8 md:p-10 border border-slate-100">
+                <h2 class="font-bold text-sky-950 text-xl mb-2">Submit your review</h2>
+                <p class="text-sm text-slate-500 mb-6">All fields are required. Rating is 1–5 stars.</p>
+                <form method="post" action="{% url 'review' %}" class="space-y-5" novalidate>
+                    {% csrf_token %}
+                    {% include "partials/form_toast.html" %}
+                    <div class="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                        {% include "partials/form_field.html" with field=form.name %}
+                        {% include "partials/form_field.html" with field=form.email %}
+                        {% include "partials/form_field.html" with field=form.rating %}
+                        {% include "partials/form_field.html" with field=form.message field_class="sm:col-span-2" %}
+                    </div>
+                    <button type="submit" class="w-full sm:w-auto bg-sky-600 hover:bg-sky-500 text-white font-bold py-3.5 px-10 rounded-full transition-all shadow-lg shadow-sky-600/20">
+                        Submit Review
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </section>
+
+{% if approved_reviews %}
+<section class="py-16 bg-slate-50 border-t border-slate-200">
+    <div class="container mx-auto px-4 max-w-4xl">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-sky-950 mb-10 text-center uppercase tracking-wide">Published reviews</h2>
+        <div class="space-y-6">
+            {% for review in approved_reviews %}
+            <article class="bg-white rounded-2xl shadow-sm p-8 border border-slate-100">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <p class="font-bold text-sky-900">{{ review.name }}</p>
+                    {% include "partials/review_stars.html" with rating=review.rating %}
+                </div>
+                <p class="text-slate-600 italic leading-relaxed">"{{ review.message }}"</p>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
 {% endblock %}

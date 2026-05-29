@@ -18,10 +18,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 
+from futnetnepal.error_handlers import page_not_found, server_error
+
+handler404 = page_not_found
+handler500 = server_error
+
 urlpatterns = [
     path(
         'favicon.ico',
-        RedirectView.as_view(url=f'{settings.STATIC_URL}images/logo.png', permanent=True),
+        RedirectView.as_view(url=f'{settings.STATIC_URL}images/favicon.ico', permanent=True),
     ),
     path('iamadmin/', include('apps.dashboard.urls')),
     path('api/v1/', include('apps.api.urls')),

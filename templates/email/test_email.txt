@@ -1,0 +1,8 @@
+Email delivery test — {{ site_name }}
+
+This is an automated test. If you received this message, outbound email is configured correctly.
+
+SMTP host: {{ smtp_host }}
+
+© {{ copyright_year }} Futnet Nepal Pvt. Ltd. All rights reserved.
+{{ site_url }} · {{ info_email }}

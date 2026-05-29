@@ -8,7 +8,7 @@ class IsEmailVerified(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
         profile = getattr(request.user, 'profile', None)
-        if profile is None or not profile.email_verified:
+        if not request.user.is_email_verified:
             return False
         if profile.phone and not profile.phone_verified:
             return False

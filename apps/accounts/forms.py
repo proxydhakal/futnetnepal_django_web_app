@@ -1,20 +1,22 @@
 from django import forms
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import (
     PasswordChangeForm,
     PasswordResetForm,
     SetPasswordForm,
     UserCreationForm,
 )
-from django.contrib.auth.models import User
 
-from apps.accounts.models import Profile
+from apps.accounts.models import Profile, User
+from futnetnepal.forms import SecureForm, SecureModelForm
 from apps.accounts.phone_verification import PhoneVerificationError, normalize_phone
+
+UserModel = get_user_model()
 
 INPUT_CLASS = 'fn-input w-full mt-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 focus:bg-white'
 
 
-class LoginForm(forms.Form):
+class LoginForm(SecureForm):
     login = forms.CharField(
         label='Username or email',
         max_length=254,
@@ -57,7 +59,7 @@ class LoginForm(forms.Form):
                     'Invalid username/email or password. Please try again.',
                 )
             profile = getattr(self.user_cache, 'profile', None)
-            if profile is not None and not profile.email_verified:
+            if profile is not None and not self.user_cache.is_email_verified:
                 raise forms.ValidationError(
                     'Please verify your email before logging in. '
                     'Check your inbox or request a new verification link.',
@@ -74,7 +76,18 @@ class LoginForm(forms.Form):
         return self.user_cache
 
 
-class RegisterForm(UserCreationForm):
+class RegisterForm(SecureForm, UserCreationForm):
+    full_name = forms.CharField(
+        max_length=300,
+        required=True,
+        label='Full name',
+        widget=forms.TextInput(attrs={
+            'class': INPUT_CLASS,
+            'placeholder': 'Your full name',
+            'autocomplete': 'name',
+            'required': True,
+        }),
+    )
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={
@@ -98,8 +111,8 @@ class RegisterForm(UserCreationForm):
         }),
     )
 
-    class Meta:
-        model = User
+    class Meta(UserCreationForm.Meta):
+        model = UserModel
         fields = ('username', 'email', 'password1', 'password2')
         widgets = {
             'username': forms.TextInput(attrs={
@@ -113,9 +126,13 @@ class RegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].required = True
+        self.fields['username'].help_text = ''
         self.fields['password1'].required = True
         self.fields['password2'].required = True
+        self.fields['password1'].help_text = ''
         self.fields['password1'].widget.attrs.update({
+            'id': 'id_password1',
+            'data-password-hint': 'true',
             'class': INPUT_CLASS,
             'placeholder': 'Password',
             'autocomplete': 'new-password',
@@ -130,7 +147,7 @@ class RegisterForm(UserCreationForm):
 
     def clean_email(self):
         email = self.cleaned_data['email']
-        if User.objects.filter(email__iexact=email).exists():
+        if UserModel.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('This email is already registered.')
         return email.lower()
 
@@ -143,6 +160,8 @@ class RegisterForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
+        user.full_name = self.cleaned_data['full_name']
+        user.role = User.Role.USER
         if commit:
             user.save()
             profile = Profile.objects.get(user=user)
@@ -152,10 +171,15 @@ class RegisterForm(UserCreationForm):
         return user
 
 
-class UserProfileUpdateForm(forms.ModelForm):
+class UserProfileUpdateForm(SecureModelForm):
+    profile_image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'mt-1 block w-full text-sm text-slate-600'}),
+    )
+
     class Meta:
         model = Profile
-        fields = ['profile_image', 'cover_image', 'phone', 'address', 'dob']
+        fields = ['cover_image', 'phone', 'address', 'dob']
         widgets = {
             'phone': forms.TextInput(attrs={
                 'class': INPUT_CLASS,
@@ -165,7 +189,6 @@ class UserProfileUpdateForm(forms.ModelForm):
             }),
             'address': forms.TextInput(attrs={'class': INPUT_CLASS}),
             'dob': forms.DateInput(attrs={'class': INPUT_CLASS, 'type': 'date'}),
-            'profile_image': forms.FileInput(attrs={'class': 'mt-1 block w-full text-sm text-slate-600'}),
             'cover_image': forms.FileInput(attrs={'class': 'mt-1 block w-full text-sm text-slate-600'}),
         }
 
@@ -181,65 +204,45 @@ class UserProfileUpdateForm(forms.ModelForm):
     def save(self, commit=True):
         instance = self.instance
         old_phone = instance.phone if instance.pk else ''
-        profile = super().save(commit=commit)
-        if commit and profile.phone != old_phone:
-            profile.phone_verified = False
-            profile.phone_otp_hash = ''
-            profile.phone_otp_sent_at = None
-            profile.phone_otp_attempts = 0
-            profile.save(update_fields=[
-                'phone_verified', 'phone_otp_hash', 'phone_otp_sent_at', 'phone_otp_attempts',
-            ])
+        profile = super().save(commit=False)
+        if self.files.get('profile_image'):
+            profile.user.profile_image = self.files['profile_image']
+            profile.user.save(update_fields=['profile_image'])
+        if commit:
+            profile.save()
+            if profile.phone != old_phone:
+                profile.phone_verified = False
+                profile.phone_otp_hash = ''
+                profile.phone_otp_sent_at = None
+                profile.phone_otp_attempts = 0
+                profile.save(update_fields=[
+                    'phone_verified', 'phone_otp_hash', 'phone_otp_sent_at', 'phone_otp_attempts',
+                ])
         return profile
 
 
-def _split_full_name(full_name):
-    full_name = (full_name or '').strip()
-    if not full_name:
-        return '', ''
-    parts = full_name.split(None, 1)
-    return parts[0], parts[1] if len(parts) > 1 else ''
-
-
-class UserUpdateForm(forms.ModelForm):
-    full_name = forms.CharField(
-        max_length=300,
-        required=True,
-        label='Full name',
-        widget=forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Your full name'}),
-    )
-
+class UserUpdateForm(SecureModelForm):
     class Meta:
-        model = User
-        fields = ['username', 'email']
+        model = UserModel
+        fields = ['username', 'email', 'full_name']
         widgets = {
             'username': forms.TextInput(attrs={'class': INPUT_CLASS}),
             'email': forms.EmailInput(attrs={'class': INPUT_CLASS}),
+            'full_name': forms.TextInput(attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'Your full name',
+            }),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk:
-            self.fields['full_name'].initial = self.instance.get_full_name() or ''
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        first, last = _split_full_name(self.cleaned_data.get('full_name', ''))
-        user.first_name = first
-        user.last_name = last
-        if commit:
-            user.save()
-        return user
-
-
-class StyledPasswordChangeForm(PasswordChangeForm):
+class StyledPasswordChangeForm(SecureForm, PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = INPUT_CLASS
 
 
-class StyledPasswordResetForm(PasswordResetForm):
+class StyledPasswordResetForm(SecureForm, PasswordResetForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['email'].required = True
@@ -251,7 +254,7 @@ class StyledPasswordResetForm(PasswordResetForm):
         })
 
 
-class StyledSetPasswordForm(SetPasswordForm):
+class StyledSetPasswordForm(SecureForm, SetPasswordForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():

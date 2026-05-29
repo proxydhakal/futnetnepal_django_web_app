@@ -1,0 +1,23 @@
+{% extends "email/base_email.html" %}
+
+{% block email_title %}New newsletter subscriber{% endblock %}
+
+{% block email_eyebrow %}
+<p style="margin:0;font-size:13px;font-weight:600;color:#bae6fd;letter-spacing:0.04em;text-transform:uppercase;">Admin notification</p>
+{% endblock %}
+
+{% block email_body %}
+<h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#0c4a6e;">New newsletter subscriber</h1>
+<table role="presentation" style="border-collapse:collapse;width:100%;">
+    <tr>
+        <td style="padding:8px 12px;font-weight:600;border-bottom:1px solid #e2e8f0;color:#475569;">Name</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;">{{ name }}</td>
+    </tr>
+    <tr>
+        <td style="padding:8px 12px;font-weight:600;border-bottom:1px solid #e2e8f0;color:#475569;">Email</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;">
+            <a href="mailto:{{ email }}" style="color:#0284c7;">{{ email }}</a>
+        </td>
+    </tr>
+</table>
+{% endblock %}

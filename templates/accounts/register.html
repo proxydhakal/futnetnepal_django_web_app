@@ -4,39 +4,56 @@
 {% block header %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block main %}
-<div class="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md">
+<div class="fn-auth-shell">
+    <div class="w-full max-w-2xl mx-auto">
         {% include "partials/auth_brand.html" with auth_tagline="Join the Futnet Nepal community" %}
-        <div class="bg-white rounded-2xl shadow-xl p-8">
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-10">
             <h1 class="text-xl font-extrabold text-sky-950">Create account</h1>
             <p class="text-sm text-slate-500 mt-1">Verify your email and mobile number before logging in.</p>
-            <form method="post" action="{% url 'accounts:signup' %}" class="mt-6 space-y-3" novalidate>
+
+            <form method="post" action="{% url 'accounts:signup' %}" class="mt-6" novalidate
+                  x-data="signupPasswordHints('{% url 'accounts:password_check' %}')" x-init="init()">
                 {% csrf_token %}
-                {% include "partials/form_errors.html" %}
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="id_username">Username</label>
-                    {{ form.username }}
+                {% include "partials/form_toast.html" %}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+                    {% include "partials/form_field.html" with field=form.full_name hide_help=True %}
+                    {% include "partials/form_field.html" with field=form.username hide_help=True %}
+                    {% include "partials/form_field.html" with field=form.email hide_help=True %}
+                    {% include "partials/form_field.html" with field=form.phone hide_help=True %}
+                    <div class="fn-field{% if form.password1.errors %} fn-field--error{% endif %}">
+                        <label class="fn-label" for="id_password1">
+                            {{ form.password1.label }}
+                            <span class="text-red-500" aria-hidden="true"> *</span>
+                        </label>
+                        {{ form.password1 }}
+                        {% for error in form.password1.errors %}
+                        <p class="fn-field-error" role="alert">{{ error }}</p>
+                        {% endfor %}
+                        <ul x-show="showHints && passwordHints.length" x-cloak
+                            class="fn-password-hints mt-2 space-y-1.5" role="status" aria-live="polite">
+                            <template x-for="hint in passwordHints" :key="hint.id">
+                                <li :class="hintClass(hint.ok)" class="flex items-start gap-2 text-xs leading-snug">
+                                    <i class="fa-solid mt-0.5 shrink-0 text-[0.65rem]" :class="hintIcon(hint.ok)" aria-hidden="true"></i>
+                                    <span x-text="hint.text"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    {% include "partials/form_field.html" with field=form.password2 hide_help=True %}
                 </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="id_email">Email</label>
-                    {{ form.email }}
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="id_phone">Mobile number</label>
-                    {{ form.phone }}
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="id_password1">Password</label>
-                    {{ form.password1 }}
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="id_password2">Confirm password</label>
-                    {{ form.password2 }}
-                </div>
-                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl">Sign up</button>
+
+                <button type="submit"
+                        class="w-full mt-6 bg-rose-600 hover:bg-rose-500 text-white font-bold py-3.5 rounded-xl shadow-md shadow-rose-600/20 transition">
+                    Sign up
+                </button>
             </form>
         </div>
-        <p class="mt-6 text-center text-sm text-slate-600">Already have an account? <a href="{% url 'accounts:login' %}" class="font-bold text-sky-600">Log in</a></p>
+        <p class="mt-6 text-center text-sm text-slate-600">
+            Already have an account?
+            <a href="{% url 'accounts:login' %}" class="font-bold text-sky-600 hover:underline">Log in</a>
+        </p>
     </div>
 </div>
+<script src="{% static 'js/signup-password.js' %}?v=1"></script>
 {% endblock %}

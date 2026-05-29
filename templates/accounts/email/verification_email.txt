@@ -7,5 +7,5 @@ Verify your email by opening this link:
 
 If you did not create an account, you can ignore this email.
 
-— {{ site_name }}
-{{ site_url }}
+© {{ copyright_year }} Futnet Nepal Pvt. Ltd. All rights reserved.
+{{ site_url }} · {{ info_email }}

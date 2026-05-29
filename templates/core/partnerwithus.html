@@ -1,22 +1,48 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Partner With Us{% endblock %}
+{% block title %}{{ site_config.partner_hero_title|default:"Partner With Us" }}{% endblock %}
 {% block main %}
-{% include "partials/page_hero.html" with page_title="Partner With Us" page_eyebrow="Collaborate" page_subtitle="Grow with Nepal's futsal community — venues, sponsors, and organizers welcome." hero_image="images/partner-with-us-coverimage.png" hero_static=True %}
+{% if site_config.partner_image %}
+{% include "partials/page_hero.html" with page_title=site_config.partner_hero_title page_eyebrow=site_config.partner_hero_eyebrow page_subtitle=site_config.partner_hero_subtitle hero_image=site_config.partner_image.url hero_static=False %}
+{% else %}
+{% include "partials/page_hero.html" with page_title=site_config.partner_hero_title page_eyebrow=site_config.partner_hero_eyebrow page_subtitle=site_config.partner_hero_subtitle hero_image="images/partner-with-us-coverimage.png" hero_static=True %}
+{% endif %}
 
 <section class="py-16 md:py-20 bg-white">
-    <div class="container mx-auto px-4 md:px-8 max-w-6xl">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
-            <div class="order-2 lg:order-1 rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-200">
-                <img src="{% static 'images/partner-with-us-coverimage.png' %}" alt="Partner with Futnet Nepal" class="w-full aspect-[4/3] object-cover">
+    <div class="container mx-auto px-4 md:px-8 max-w-7xl">
+        <div class="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+            <div class="order-2 lg:order-1 w-full min-w-0 flex justify-center lg:justify-start" x-data="{ show: false }" x-intersect.once="show = true"
+                 :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'" style="transition: all 0.7s ease-out;">
+                <div class="fn-media-brand">
+                    {% if site_config.partner_image %}
+                    <img src="{{ site_config.partner_image.url }}" alt="{{ site_config.partner_hero_title }}" class="fn-media-natural rounded-3xl shadow-2xl ring-1 ring-slate-200">
+                    {% else %}
+                    <img src="{% static 'images/partner-with-us-coverimage.png' %}" alt="Partner with Futnet Nepal" class="fn-media-natural rounded-3xl shadow-2xl ring-1 ring-slate-200">
+                    {% endif %}
+                </div>
             </div>
-            <div class="order-1 lg:order-2 space-y-5 text-slate-600 leading-relaxed">
+            <div class="order-1 lg:order-2 space-y-5 text-slate-600 leading-relaxed lg:pt-4 fn-cms-content" x-data="{ show: false }" x-intersect.once="show = true"
+                 :class="show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'" style="transition: all 0.7s ease-out 0.15s;">
+                {% if site_config.partner_content %}
+                {{ site_config.partner_content|safe }}
+                {% else %}
                 <p class="text-lg">Join Futnet Nepal as a venue partner, sponsor, or community organizer. Reach futsal players across Nepal through our platform and turn your court or brand into a hub for the game.</p>
+                {% endif %}
+                {% if site_config.partner_bullets %}
+                <ul class="space-y-3 text-sm">
+                    {% for line in site_config.partner_bullets.splitlines %}
+                    {% if line.strip %}
+                    <li class="flex items-start gap-3">{% include "partials/fa_icon.html" with name="circle-check" class="fn-icon text-sky-600 mt-0.5" %} {{ line.strip }}</li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+                {% else %}
                 <ul class="space-y-3 text-sm">
                     <li class="flex items-start gap-3">{% include "partials/fa_icon.html" with name="circle-check" class="fn-icon text-sky-600 mt-0.5" %} List venues and manage visibility</li>
                     <li class="flex items-start gap-3">{% include "partials/fa_icon.html" with name="circle-check" class="fn-icon text-sky-600 mt-0.5" %} Sponsor matches and local leagues</li>
                     <li class="flex items-start gap-3">{% include "partials/fa_icon.html" with name="circle-check" class="fn-icon text-sky-600 mt-0.5" %} Co-host events with our player network</li>
                 </ul>
+                {% endif %}
                 <a href="{% url 'contact' %}" class="inline-flex bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full transition-all shadow-lg shadow-sky-600/25">Get in touch</a>
             </div>
         </div>
@@ -29,21 +55,18 @@
             <h2 class="text-2xl md:text-3xl font-extrabold text-sky-950">Partnership options</h2>
             <p class="mt-2 text-slate-500 max-w-xl mx-auto">Choose the path that fits your goals.</p>
         </div>
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border-t-4 border-sky-500">
-                <i class="fa-solid fa-building text-4xl text-sky-600" aria-hidden="true"></i>
-                <h3 class="mt-4 text-xl font-bold text-sky-950">Venue Partners</h3>
-                <p class="mt-3 text-sm text-slate-500 leading-relaxed">List your futsal court, showcase facilities, and connect with players booking slots.</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-sky-950">Venue partners</h3>
+                <p class="mt-2 text-sm text-slate-500">List courts, manage bookings, and reach active players.</p>
             </div>
-            <div class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border-t-4 border-rose-500">
-                <span class="text-4xl">🎯</span>
-                <h3 class="mt-4 text-xl font-bold text-sky-950">Event Sponsors</h3>
-                <p class="mt-3 text-sm text-slate-500 leading-relaxed">Promote your brand at matches and tournaments with nationwide visibility.</p>
+            <div class="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-sky-950">Sponsors</h3>
+                <p class="mt-2 text-sm text-slate-500">Support leagues and events with brand visibility.</p>
             </div>
-            <div class="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border-t-4 border-yellow-400">
-                <span class="text-4xl">👥</span>
-                <h3 class="mt-4 text-xl font-bold text-sky-950">Community Hosts</h3>
-                <p class="mt-3 text-sm text-slate-500 leading-relaxed">Organize leagues and recurring games with tools built for futsal groups.</p>
+            <div class="bg-white rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-sky-950">Organizers</h3>
+                <p class="mt-2 text-sm text-slate-500">Run community programs and grow local futsal culture.</p>
             </div>
         </div>
     </div>

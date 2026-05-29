@@ -4,24 +4,19 @@
 {% block header %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block main %}
-<div class="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md">
+<div class="fn-auth-shell">
+    <div class="w-full max-w-md mx-auto">
         {% include "partials/auth_brand.html" with auth_tagline="Connect with futsal players in Nepal" %}
-        <div class="bg-white rounded-2xl shadow-xl p-8">
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
             <h1 class="text-xl font-extrabold text-sky-950">Log in</h1>
-            {% include "partials/auth_messages.html" %}
             <form method="post" action="{% url 'accounts:login' %}" class="mt-6 space-y-4" novalidate>
                 {% csrf_token %}
-                {% include "partials/form_errors.html" %}
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="id_login">Username or email</label>
-                    {{ form.login }}
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-slate-700" for="id_password">Password</label>
-                    {{ form.password }}
-                </div>
-                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl transition-colors">Log in</button>
+                {% include "partials/form_toast.html" %}
+                {% include "partials/form_field.html" with field=form.login %}
+                {% include "partials/form_field.html" with field=form.password %}
+                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl transition-colors">
+                    Log in
+                </button>
             </form>
             <p class="mt-4 text-center text-sm">
                 <a href="{% url 'accounts:password_reset' %}" class="text-sky-600 font-semibold hover:underline">Forgot password?</a>
@@ -30,7 +25,10 @@
                 <a href="{% url 'accounts:verify_email_pending' %}" class="text-slate-500 hover:text-sky-600">Resend verification email</a>
             </p>
         </div>
-        <p class="mt-6 text-center text-sm text-slate-600">Don't have an account? <a href="{% url 'accounts:signup' %}" class="font-bold text-rose-600">Sign up</a></p>
+        <p class="mt-6 text-center text-sm text-slate-600">
+            Don't have an account?
+            <a href="{% url 'accounts:signup' %}" class="font-bold text-rose-600 hover:underline">Sign up</a>
+        </p>
     </div>
 </div>
 {% endblock %}

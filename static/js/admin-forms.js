@@ -10,6 +10,93 @@
     return 'admin_f_' + name.replace(/[^a-zA-Z0-9]/g, '_');
   }
 
+  function debounce(fn, ms) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), ms);
+    };
+  }
+
+  async function fetchSlug(text, options) {
+    const url = options.slugifyUrl || '/iamadmin/api/slugify/';
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': options.csrf || '',
+      },
+      body: JSON.stringify({
+        text: text || '',
+        model_key: options.modelKey || '',
+        instance_pk: options.editingId || null,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return '';
+    return data.slug || '';
+  }
+
+  function sourceTextForSlug(container, sourceName) {
+    const sourceId = fieldId(sourceName);
+    const el = container.querySelector('#' + sourceId);
+    if (!el) return '';
+    if (window.CKEDITOR?.instances[sourceId]) {
+      return CKEDITOR.instances[sourceId].getData().replace(/<[^>]+>/g, ' ').trim();
+    }
+    return (el.value || '').trim();
+  }
+
+  function bindAutoSlug(container, fieldDefs, options) {
+    const onChange = options.onChange || (() => {});
+    const slugifyOpts = {
+      slugifyUrl: options.slugifyUrl,
+      csrf: options.csrf,
+      modelKey: options.modelKey,
+      editingId: options.editingId,
+    };
+
+    Object.keys(fieldDefs).forEach((slugName) => {
+      const info = fieldDefs[slugName];
+      const sourceName = info.auto_slug_from;
+      if (!sourceName) return;
+
+      const slugEl = container.querySelector('#' + fieldId(slugName));
+      if (!slugEl) return;
+
+      const run = debounce(async () => {
+        const text = sourceTextForSlug(container, sourceName);
+        if (!text) {
+          slugEl.value = '';
+          onChange(slugName, '');
+          return;
+        }
+        slugEl.classList.add('admin-slug-loading');
+        const slug = await fetchSlug(text, slugifyOpts);
+        slugEl.classList.remove('admin-slug-loading');
+        if (slug) {
+          slugEl.value = slug;
+          onChange(slugName, slug);
+        }
+      }, 350);
+
+      const sourceEl = container.querySelector('#' + fieldId(sourceName));
+      if (sourceEl) {
+        sourceEl.addEventListener('input', run);
+        sourceEl.addEventListener('change', run);
+      }
+      const ck = window.CKEDITOR?.instances[fieldId(sourceName)];
+      if (ck) {
+        ck.on('change', run);
+        ck.on('blur', run);
+      }
+
+      if (!slugEl.value && sourceTextForSlug(container, sourceName)) {
+        run();
+      }
+    });
+  }
+
   function isSelectField(info) {
     return (
       info.type === 'ForeignKey' ||
@@ -33,9 +120,90 @@
     return String(value);
   }
 
+  function ckEditorConfig() {
+    return {
+      height: 280,
+      removePlugins: 'elementspath',
+      resize_enabled: true,
+      filebrowserUploadUrl: window.FN_CKEDITOR_UPLOAD_URL || '/ckeditor/upload/',
+      filebrowserImageUploadUrl: window.FN_CKEDITOR_UPLOAD_URL || '/ckeditor/upload/',
+      extraPlugins: 'uploadimage,image2',
+      toolbar: [
+        { name: 'clipboard', items: ['Undo', 'Redo'] },
+        { name: 'styles', items: ['Format'] },
+        { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'] },
+        { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'Blockquote'] },
+        { name: 'links', items: ['Link', 'Unlink'] },
+        { name: 'insert', items: ['Image', 'Table', 'HorizontalRule'] },
+        { name: 'tools', items: ['Maximize', 'Source'] },
+      ],
+    };
+  }
+
+  function destroyCkEditors(container) {
+    if (!window.CKEDITOR || !container) return;
+    container.querySelectorAll('textarea.admin-ckeditor-field').forEach((ta) => {
+      const instance = CKEDITOR.instances[ta.id];
+      if (instance) instance.destroy(true);
+    });
+  }
+
+  function initCkEditors(container) {
+    if (!window.CKEDITOR || !container) return;
+    if (window.FN_CKEDITOR_BASE) {
+      CKEDITOR.basePath = window.FN_CKEDITOR_BASE;
+    }
+    container.querySelectorAll('textarea.admin-ckeditor-field').forEach((ta) => {
+      if (CKEDITOR.instances[ta.id]) return;
+      const editor = CKEDITOR.replace(ta.id, ckEditorConfig());
+      editor.on('change', () => {
+        ta.value = editor.getData();
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      editor.on('instanceReady', () => {
+        ta.value = editor.getData();
+      });
+    });
+  }
+
   window.adminFormKit = {
+    clearFieldErrors(container) {
+      if (!container) return;
+      container.querySelectorAll('.admin-field-error').forEach((el) => el.remove());
+      container.querySelectorAll('.admin-field').forEach((wrap) => {
+        wrap.classList.remove('admin-field-has-error');
+      });
+    },
+
+    showFieldErrors(container, fieldErrors) {
+      if (!container || !fieldErrors) return;
+      this.clearFieldErrors(container);
+      Object.keys(fieldErrors).forEach((name) => {
+        const messages = fieldErrors[name];
+        const wrap = container.querySelector(`[data-field="${name}"]`);
+        if (!wrap || !messages || !messages.length) return;
+        wrap.classList.add('admin-field-has-error');
+        const err = document.createElement('p');
+        err.className = 'admin-field-error';
+        err.setAttribute('role', 'alert');
+        err.textContent = messages.join(' ');
+        wrap.appendChild(err);
+        const input = wrap.querySelector(`#${fieldId(name)}, .cke`);
+        if (input) {
+          input.setAttribute('aria-invalid', 'true');
+          input.setAttribute('aria-describedby', `err-${fieldId(name)}`);
+          err.id = `err-${fieldId(name)}`;
+        }
+      });
+      const first = container.querySelector('.admin-field-has-error');
+      if (first) {
+        first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    },
+
     destroy(container) {
       if (!container) return;
+      destroyCkEditors(container);
       container.querySelectorAll('input.admin-fp').forEach((el) => {
         if (el._flatpickr) el._flatpickr.destroy();
       });
@@ -55,7 +223,7 @@
 
       Object.keys(fieldDefs).forEach((name) => {
         const info = fieldDefs[name];
-        if (info.readonly && !editing) return;
+        if (info.readonly && !editing && !info.auto_slug_from) return;
 
         const wrap = document.createElement('div');
         wrap.className = 'admin-field';
@@ -92,11 +260,20 @@
           row.appendChild(input);
           row.appendChild(track);
           wrap.appendChild(row);
-        } else if (info.type === 'TextField' || info.type === 'RichTextField') {
+        } else if (info.type === 'RichTextField') {
+          const ta = document.createElement('textarea');
+          ta.id = id;
+          ta.className = 'admin-ckeditor-field';
+          ta.value = val || '';
+          ta.disabled = !!info.readonly;
+          ta.addEventListener('input', () => onChange(name, ta.value));
+          wrap.classList.add('admin-field-richtext');
+          wrap.appendChild(ta);
+        } else if (info.type === 'TextField') {
           const ta = document.createElement('textarea');
           ta.id = id;
           ta.className = 'admin-input admin-input-area';
-          ta.rows = info.type === 'RichTextField' ? 8 : 4;
+          ta.rows = 4;
           ta.value = val || '';
           ta.disabled = !!info.readonly;
           ta.addEventListener('input', () => onChange(name, ta.value));
@@ -212,9 +389,20 @@
           input.id = id;
           input.className = 'admin-input';
           input.value = val ?? '';
-          input.disabled = !!info.readonly;
-          input.addEventListener('input', () => onChange(name, input.value));
-          wrap.appendChild(input);
+          if (info.auto_slug_from) {
+            input.readOnly = true;
+            input.classList.add('admin-slug-field');
+            input.setAttribute('aria-readonly', 'true');
+            const hint = document.createElement('p');
+            hint.className = 'admin-field-hint text-xs text-slate-500 mt-1';
+            hint.textContent = 'Auto-generated from ' + labelize(info.auto_slug_from).toLowerCase();
+            wrap.appendChild(input);
+            wrap.appendChild(hint);
+          } else {
+            input.disabled = !!info.readonly;
+            input.addEventListener('input', () => onChange(name, input.value));
+            wrap.appendChild(input);
+          }
         }
 
         if (info.readonly) wrap.classList.add('admin-field-readonly');
@@ -223,11 +411,13 @@
 
       container.appendChild(frag);
       this.initWidgets(container, opts.dropdownParent);
+      bindAutoSlug(container, fieldDefs, opts);
     },
 
     initWidgets(container, dropdownParent) {
       if (!container) return;
-      const isDark = document.documentElement.classList.contains('dark');
+
+      initCkEditors(container);
 
       if (window.flatpickr) {
         container.querySelectorAll('input.admin-fp').forEach((el) => {
@@ -257,8 +447,8 @@
             config = { ...config, dateFormat: 'Y-m-d', altFormat: 'M j, Y' };
           }
           flatpickr(el, config);
-          if (isDark && el._flatpickr?.calendarContainer) {
-            el._flatpickr.calendarContainer.classList.add('admin-fp-dark');
+          if (el._flatpickr?.calendarContainer) {
+            el._flatpickr.calendarContainer.classList.add('admin-fp-light');
           }
         });
       }
@@ -281,6 +471,12 @@
       const data = {};
       if (!container) return data;
 
+      if (window.CKEDITOR) {
+        Object.keys(CKEDITOR.instances).forEach((key) => {
+          CKEDITOR.instances[key].updateElement();
+        });
+      }
+
       Object.keys(fieldDefs).forEach((name) => {
         const info = fieldDefs[name];
         const id = fieldId(name);
@@ -299,6 +495,9 @@
           data[name] = v ?? '';
         } else if (info.type === 'ImageField' || info.type === 'FileField') {
           return;
+        } else if (info.type === 'RichTextField') {
+          const inst = window.CKEDITOR?.instances[id];
+          data[name] = inst ? inst.getData() : el.value;
         } else {
           data[name] = el.value;
         }

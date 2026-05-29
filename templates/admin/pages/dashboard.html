@@ -4,8 +4,8 @@
 {{ dashboard_stats|json_script:"dashboard-stats-data" }}
 <div x-data="dashboardPage()" x-init="init()">
     <div class="mb-8">
-        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Here’s what’s happening across Futnet Nepal today.</p>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-sky-950 tracking-tight">Welcome back, {{ request.user.get_full_name|default:request.user.username }}</h1>
+        <p class="text-slate-500 mt-1">Here’s what’s happening across Futnet Nepal today.</p>
     </div>
 
     <!-- Stats — server-rendered so they always show; JS animates counts -->
@@ -15,18 +15,18 @@
              style="animation-delay: {{ forloop.counter0 }}0ms">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ card.label }}</p>
-                    <p class="mt-2 text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums stat-counter"
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-500">{{ card.label }}</p>
+                    <p class="mt-2 text-3xl font-extrabold text-slate-900 tabular-nums stat-counter"
                        data-target="{{ card.value }}">{{ card.value }}</p>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ card.sub }}</p>
+                    <p class="mt-1 text-sm text-slate-500">{{ card.sub }}</p>
                 </div>
                 <span class="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center text-lg
-                    {% if card.color == 'sky' %}bg-sky-500/15 text-sky-600 dark:text-sky-400
-                    {% elif card.color == 'emerald' %}bg-emerald-500/15 text-emerald-600 dark:text-emerald-400
-                    {% elif card.color == 'violet' %}bg-violet-500/15 text-violet-600 dark:text-violet-400
-                    {% elif card.color == 'amber' %}bg-amber-500/15 text-amber-600 dark:text-amber-400
-                    {% elif card.color == 'rose' %}bg-rose-500/15 text-rose-600 dark:text-rose-400
-                    {% else %}bg-slate-500/15 text-slate-600 dark:text-slate-400{% endif %}">
+                    {% if card.color == 'sky' %}bg-sky-500/15 text-sky-600
+                    {% elif card.color == 'emerald' %}bg-emerald-500/15 text-emerald-600
+                    {% elif card.color == 'violet' %}bg-violet-500/15 text-violet-600
+                    {% elif card.color == 'amber' %}bg-amber-500/15 text-amber-600
+                    {% elif card.color == 'rose' %}bg-rose-500/15 text-rose-600
+                    {% else %}bg-slate-500/15 text-slate-600{% endif %}">
                     {% if card.label == 'Users' %}<i class="fa-solid fa-users"></i>
                     {% elif card.label == 'Posts' %}<i class="fa-solid fa-futbol"></i>
                     {% elif card.label == 'Blogs' %}<i class="fa-solid fa-newspaper"></i>
@@ -41,32 +41,32 @@
 
     <!-- Quick summary strip -->
     <div class="admin-glass rounded-2xl px-5 py-4 mb-8 flex flex-wrap items-center gap-4 text-sm">
-        <span class="font-bold text-slate-700 dark:text-slate-200">Platform snapshot</span>
+        <span class="font-bold text-slate-700">Platform snapshot</span>
         <span class="text-slate-400">|</span>
-        <span class="text-slate-600 dark:text-slate-400"><strong class="text-sky-600 dark:text-sky-400">{{ dashboard_stats.registry_count }}</strong> models managed</span>
+        <span class="text-slate-600"><strong class="text-sky-600">{{ dashboard_stats.registry_count }}</strong> models managed</span>
         <span class="text-slate-400 hidden sm:inline">|</span>
-        <span class="text-slate-600 dark:text-slate-400 hidden sm:inline">Last updated <strong>{{ now|date:"M j, g:i A" }}</strong></span>
+        <span class="text-slate-600 hidden sm:inline">Last updated <strong>{{ now|date:"M j, g:i A" }}</strong></span>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div class="xl:col-span-2 admin-glass rounded-2xl p-5 md:p-6">
-            <h2 class="font-bold text-slate-900 dark:text-white mb-4">Growth & engagement</h2>
-            <canvas id="chartMain" height="120"></canvas>
+            <h2 class="font-bold text-slate-900 mb-4">Growth & engagement</h2>
+            <div class="admin-chart-wrap"><canvas id="chartMain"></canvas></div>
         </div>
         <div class="admin-glass rounded-2xl p-5 md:p-6">
-            <h2 class="font-bold text-slate-900 dark:text-white mb-4">Posts by status</h2>
-            <canvas id="chartPie" height="200"></canvas>
+            <h2 class="font-bold text-slate-900 mb-4">Posts by status</h2>
+            <div class="admin-chart-wrap"><canvas id="chartPie"></canvas></div>
         </div>
     </div>
 
     <div class="mt-6 admin-glass rounded-2xl overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-200/60 dark:border-slate-700/50 flex justify-between items-center">
-            <h2 class="font-bold text-slate-900 dark:text-white">Recent activity</h2>
+        <div class="px-5 py-4 border-b border-slate-200/60 flex justify-between items-center">
+            <h2 class="font-bold text-slate-900">Recent activity</h2>
             <a href="{% url 'dashboard:analytics' %}" class="text-sm font-semibold text-sky-600 hover:text-sky-500">View analytics →</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-slate-50/80 dark:bg-slate-800/40 text-xs uppercase text-slate-500">
+                <thead class="bg-slate-50/80 text-xs uppercase text-slate-500">
                     <tr>
                         <th class="text-left px-5 py-3 font-bold">Event</th>
                         <th class="text-left px-5 py-3 font-bold">Details</th>
@@ -75,11 +75,11 @@
                 </thead>
                 <tbody>
                     {% for item in recent_activity_items %}
-                    <tr class="admin-table-row border-t border-slate-100 dark:border-slate-800/80">
-                        <td class="px-5 py-3.5 font-medium text-slate-800 dark:text-slate-200">{{ item.title }}</td>
+                    <tr class="admin-table-row border-t border-slate-100">
+                        <td class="px-5 py-3.5 font-medium text-slate-800">{{ item.title }}</td>
                         <td class="px-5 py-3.5 text-slate-500">{{ item.meta }}</td>
                         <td class="px-5 py-3.5">
-                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300">{{ item.status }}</span>
+                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-500/10 text-sky-700">{{ item.status }}</span>
                         </td>
                     </tr>
                     {% empty %}
@@ -91,7 +91,7 @@
     </div>
 </div>
 {% endblock %}
-{% block extra_js %}
+{% block admin_extra_js %}
 <script>
 function dashboardPage() {
     const el = document.getElementById('dashboard-stats-data');
@@ -132,7 +132,12 @@ function dashboardPage() {
                     labels: data.labels || [],
                     datasets: [{ data: data.values || [], borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.4 }],
                 },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } },
+                },
             });
         },
         doughnut(id, data) {
@@ -141,8 +146,8 @@ function dashboardPage() {
             if (this.charts[id]) this.charts[id].destroy();
             this.charts[id] = new Chart(canvas, {
                 type: 'doughnut',
-                data: { labels: data.labels, datasets: [{ data: data.values, backgroundColor: ['#38bdf8','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] },
-                options: { responsive: true },
+                data: { labels: data.labels, datasets: [{ data: data.values, backgroundColor: ['#0284c7','#0ea5e9','#facc15','#10b981','#0369a1'] }] },
+                options: { responsive: true, maintainAspectRatio: false },
             });
         },
     };

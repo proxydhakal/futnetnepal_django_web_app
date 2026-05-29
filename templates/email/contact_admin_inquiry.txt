@@ -1,0 +1,11 @@
+New contact inquiry on Futnet Nepal
+
+Name: {{ fullname }}
+Email: {{ email }}
+Phone: {{ phone }}
+Subject: {{ subject }}
+
+Message:
+{{ message }}
+
+Respond in admin: {{ admin_contacts_url }}

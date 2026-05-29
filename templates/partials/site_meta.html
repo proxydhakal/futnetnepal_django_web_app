@@ -1,0 +1,5 @@
+{# Default SEO; override blocks meta_description / meta_keywords in child templates. #}
+{% with desc=meta_description|default:site_config.meta_description keywords=meta_keywords|default:site_config.meta_keywords %}
+{% if desc %}<meta name="description" content="{{ desc|striptags|truncatechars:320 }}">{% endif %}
+{% if keywords %}<meta name="keywords" content="{{ keywords }}">{% endif %}
+{% endwith %}

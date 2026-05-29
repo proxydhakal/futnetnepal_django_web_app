@@ -1,0 +1,15 @@
+Hi {{ display_name }},
+
+We have replied to your inquiry about: {{ subject }}
+
+Our response:
+{{ admin_response }}
+
+---
+Your original message:
+{{ message }}
+
+If you have further questions, reply to this email or contact us at {{ info_email }}.
+
+© {{ copyright_year }} Futnet Nepal Pvt. Ltd.
+{{ site_url }}

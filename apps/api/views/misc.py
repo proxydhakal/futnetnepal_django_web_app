@@ -1,5 +1,7 @@
-from django.contrib.auth.models import User
-from django.db.models import Q
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+from django.db.models import F, Q
 from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -168,6 +170,20 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
             return BlogDetailSerializer
         return BlogListSerializer
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        Blog.objects.filter(pk=instance.pk).update(count=F('count') + 1)
+        instance.refresh_from_db()
+        serializer = self.get_serializer(instance)
+        related = Blog.objects.exclude(pk=instance.pk).order_by('-count')[:2]
+        return Response({
+            'success': True,
+            'blog': serializer.data,
+            'related_blogs': BlogListSerializer(
+                related, many=True, context={'request': request},
+            ).data,
+        })
+
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all().order_by('title')
@@ -189,14 +205,16 @@ class SearchAPIView(APIView):
             Q(name__icontains=q) | Q(address__icontains=q),
         )[:5]
         users = User.objects.filter(
-            Q(username__icontains=q) | Q(first_name__icontains=q)
-            | Q(last_name__icontains=q) | Q(email__icontains=q),
+            Q(username__icontains=q) | Q(full_name__icontains=q) | Q(email__icontains=q),
         ).exclude(pk=request.user.pk)[:5]
+        blogs = Blog.objects.filter(
+            Q(title__icontains=q) | Q(content__icontains=q),
+        ).select_related('category', 'author')[:5]
         return Response({
             'success': True,
             'posts': [
                 {
-                    'id': p.id,
+                    'id': str(p.id),
                     'slug': p.slug,
                     'title': (p.message[:60] + '...') if len(p.message) > 60 else p.message,
                     'subtitle': f'{p.venue} · {p.author.username if p.author else "Unknown"}',
@@ -205,6 +223,7 @@ class SearchAPIView(APIView):
             ],
             'venues': VenueSerializer(venues, many=True, context={'request': request}).data,
             'users': UserBriefSerializer(users, many=True, context={'request': request}).data,
+            'blogs': BlogListSerializer(blogs, many=True, context={'request': request}).data,
         })
 
 

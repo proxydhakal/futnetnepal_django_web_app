@@ -1,0 +1,44 @@
+{# Shared 404/500 content. Pass: error_code, title, message; optional path, with_header, show_contact, show_back #}
+<section class="{% if with_header %}fn-header-offset {% endif %}min-h-[70vh] flex items-center justify-center px-4 py-16 bg-slate-50">
+    <div class="w-full max-w-lg">
+        <div class="bg-white rounded-2xl shadow-xl border border-sky-100 overflow-hidden">
+            <div class="h-1.5 bg-gradient-to-r from-sky-900 via-sky-600 to-amber-400" aria-hidden="true"></div>
+            <div class="p-8 md:p-12 text-center">
+                <p class="text-7xl md:text-8xl font-black leading-none bg-gradient-to-br from-sky-600 to-sky-950 bg-clip-text text-transparent" aria-hidden="true">
+                    {{ error_code }}
+                </p>
+                <h1 class="mt-4 text-2xl md:text-3xl font-extrabold text-sky-950">{{ title }}</h1>
+                <p class="mt-3 text-slate-600 leading-relaxed">{{ message }}</p>
+                {% if path %}
+                <p class="mt-4 text-xs font-mono text-slate-400 break-all bg-slate-50 rounded-lg px-3 py-2 border border-slate-100" title="Requested path">
+                    {{ path }}
+                </p>
+                {% endif %}
+                <div class="mt-8 flex flex-col sm:flex-row flex-wrap gap-3 justify-center">
+                    <a href="{% url 'index' %}"
+                       class="inline-flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full transition-colors shadow-lg shadow-sky-600/20">
+                        <i class="fa-solid fa-house text-sm" aria-hidden="true"></i>
+                        Go home
+                    </a>
+                    {% if show_contact %}
+                    <a href="{% url 'contact' %}"
+                       class="inline-flex items-center justify-center gap-2 bg-white hover:bg-sky-50 text-sky-700 font-bold py-3 px-8 rounded-full border-2 border-sky-200 transition-colors">
+                        <i class="fa-solid fa-envelope text-sm" aria-hidden="true"></i>
+                        Contact us
+                    </a>
+                    {% endif %}
+                    {% if show_back %}
+                    <button type="button" onclick="history.back()"
+                            class="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-8 rounded-full transition-colors">
+                        <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i>
+                        Go back
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <p class="mt-6 text-center text-sm text-slate-500">
+            &copy; {% now "Y" %} {{ site_name|default:"Futnet Nepal" }}
+        </p>
+    </div>
+</section>

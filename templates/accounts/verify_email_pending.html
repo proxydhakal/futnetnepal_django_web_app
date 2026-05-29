@@ -3,10 +3,10 @@
 {% block header %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block main %}
-<div class="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md">
+<div class="fn-auth-shell">
+    <div class="w-full max-w-md mx-auto">
         {% include "partials/auth_brand.html" with auth_tagline="Confirm your email to continue" %}
-        <div class="bg-white rounded-2xl shadow-xl p-8">
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
             <h1 class="text-xl font-extrabold text-sky-950">Verify your email</h1>
             <p class="mt-2 text-sm text-slate-600">
                 You need to verify your email before using the dashboard.

@@ -20,7 +20,7 @@ class EmailVerificationMiddleware:
     def __call__(self, request):
         if request.user.is_authenticated:
             profile = getattr(request.user, 'profile', None)
-            if profile is not None and not profile.email_verified:
+            if not request.user.is_email_verified:
                 path = request.path
                 if not any(path.startswith(p) for p in self.ALLOWED_PREFIXES):
                     return redirect(reverse('accounts:verify_email_pending'))

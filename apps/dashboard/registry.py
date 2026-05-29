@@ -12,6 +12,74 @@ SKIP_APP_LABELS = frozenset({
 # Optional per-model blocklist (empty = register everything else)
 SKIP_MODELS = frozenset()
 
+# System-managed audit columns (never editable in admin forms)
+AUDIT_READONLY_FIELDS = frozenset({
+    'created_at', 'updated_at', 'deleted_at',
+    'created_by', 'updated_by', 'deleted_by',
+    'is_deleted',
+})
+
+# Never show in create/edit modals (id is in the table row / URL only)
+CRUD_FORM_HIDDEN_FIELDS = frozenset({
+    'id',
+})
+
+# Tuned CRUD/list config for key models (custom user, profile, etc.)
+MODEL_ADMIN_OVERRIDES = {
+    'accounts.user': {
+        'list_display': [
+            'username', 'email', 'full_name', 'role', 'status',
+            'is_email_verified', 'is_active', 'is_staff', 'created_at',
+        ],
+        'search_fields': ['username', 'email', 'full_name'],
+        'list_filter': ['role', 'status', 'is_email_verified', 'is_active', 'is_staff'],
+        'exclude_fields': ['password', 'last_login', 'groups', 'user_permissions'],
+        'readonly_fields': [
+            'created_at', 'updated_at', 'last_login', 'is_superuser',
+            'is_deleted', 'deleted_at', 'created_by', 'updated_by', 'deleted_by',
+        ],
+    },
+    'accounts.profile': {
+        'list_display': ['user', 'phone', 'phone_verified', 'address', 'dob'],
+        'search_fields': ['user__username', 'user__email', 'phone'],
+        'list_filter': ['phone_verified'],
+        'exclude_fields': [
+            'email_verification_token', 'email_verification_sent_at',
+            'email_otp_hash', 'email_otp_attempts',
+            'phone_otp_hash', 'phone_otp_sent_at', 'phone_otp_attempts',
+        ],
+        'readonly_fields': ['user'],
+    },
+    'core.userreview': {
+        'list_display': ['name', 'email', 'rating', 'is_approved', 'created_at'],
+        'search_fields': ['name', 'email', 'message'],
+        'list_filter': ['is_approved', 'rating'],
+    },
+    'core.contact': {
+        'list_display': ['fullname', 'email', 'subject', 'status', 'created_at'],
+        'search_fields': ['fullname', 'email', 'message', 'admin_response'],
+        'list_filter': ['status', 'subject'],
+        'readonly_fields': [
+            'fullname', 'email', 'phone', 'subject', 'message',
+            'status', 'responded_at', 'responded_by',
+        ],
+    },
+    'core.siteconfiguration': {
+        'list_display': ['site_title', 'contact_email', 'updated_at'],
+        'search_fields': ['site_title', 'contact_email'],
+        'list_filter': [],
+        'readonly_fields': ['updated_at'],
+    },
+    'core.cmspage': {
+        'list_display': [
+            'title', 'slug', 'is_published', 'show_in_navbar',
+            'show_in_footer', 'sort_order', 'created_at',
+        ],
+        'search_fields': ['title', 'slug', 'meta_keywords'],
+        'list_filter': ['is_published', 'show_in_navbar', 'show_in_footer'],
+    },
+}
+
 
 def _project_app_labels():
     """App labels from this project (apps.* packages)."""
@@ -110,6 +178,9 @@ def _build_meta(model) -> ModelAdminMeta | None:
 
     readonly = []
     exclude = []
+    for name in AUDIT_READONLY_FIELDS:
+        if name in {f.name for f in concrete}:
+            readonly.append(name)
     for f in concrete:
         if getattr(f, 'auto_created', False) or isinstance(f, models.AutoField):
             readonly.append(f.name)
@@ -118,13 +189,22 @@ def _build_meta(model) -> ModelAdminMeta | None:
         if isinstance(f, models.DateTimeField) and getattr(f, 'auto_now_add', False):
             readonly.append(f.name)
 
-    if model_name == 'user':
-        exclude = ['password', 'last_login']
-        readonly.extend(['date_joined'])
-    elif model_name == 'session':
+    if model_name == 'session':
         readonly.append('session_data')
 
     key = f'{app_label}.{model_name}'
+    overrides = MODEL_ADMIN_OVERRIDES.get(key, {})
+    if overrides.get('list_display'):
+        list_display = overrides['list_display']
+    if overrides.get('search_fields') is not None:
+        search_fields = overrides['search_fields']
+    if overrides.get('list_filter') is not None:
+        list_filter = overrides['list_filter']
+    if overrides.get('exclude_fields'):
+        exclude = sorted(set(exclude) | set(overrides['exclude_fields']))
+    if overrides.get('readonly_fields'):
+        readonly = sorted(set(readonly) | set(overrides['readonly_fields']))
+
     return ModelAdminMeta(
         key=key,
         app_label=app_label,
@@ -172,7 +252,7 @@ SIDEBAR_SECTIONS = [
         'id': 'access',
         'label': 'Users & access',
         'icon': 'fa-users',
-        'model_keys': ['auth.user', 'accounts.profile', 'auth.group', 'auth.permission'],
+        'model_keys': ['accounts.user', 'accounts.profile', 'auth.group', 'auth.permission'],
     },
     {
         'id': 'content',
@@ -201,10 +281,18 @@ SIDEBAR_SECTIONS = [
         'model_keys': ['core.directconversation', 'core.eventchatmessage'],
     },
     {
+        'id': 'website',
+        'label': 'Website',
+        'icon': 'fa-globe',
+        'model_keys': ['core.siteconfiguration', 'core.cmspage'],
+    },
+    {
         'id': 'support',
         'label': 'Support',
         'icon': 'fa-envelope',
-        'model_keys': ['core.contact'],
+        'model_keys': [
+            'core.contact', 'core.userreview', 'core.newslettersubscription',
+        ],
     },
     {
         'id': 'system',

@@ -10,13 +10,13 @@
             <div class="w-12 h-12 rounded-2xl bg-red-500/15 text-red-600 flex items-center justify-center text-xl mb-4">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </div>
-            <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Sign out?</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+            <h2 class="text-xl font-extrabold text-slate-900">Sign out?</h2>
+            <p class="text-sm text-slate-500 mt-2 leading-relaxed">
                 You’ll need to sign in again to access the Futnet admin panel.
             </p>
             <div class="flex flex-col-reverse sm:flex-row gap-3 mt-6">
                 <button type="button" @click="logoutOpen = false"
-                        class="flex-1 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-600 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                        class="flex-1 px-5 py-3 rounded-xl border border-slate-200 font-semibold text-slate-700 hover:bg-slate-50 transition">
                     Cancel
                 </button>
                 <form method="post" action="{% url 'dashboard:logout' %}" class="flex-1">

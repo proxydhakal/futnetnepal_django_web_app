@@ -13,12 +13,15 @@ from apps.dashboard.registry import get_model_meta, get_registry
 from apps.dashboard.services import (
     analytics_stats,
     dashboard_stats,
+    enrich_edit_field_choices,
     get_field_choices,
     list_rows,
     recent_activity,
     save_instance,
     serialize_instance,
 )
+from apps.dashboard.slug_fields import generate_unique_slug
+from futnetnepal.input_validation import sanitize_plain_text
 
 
 class StaffLoginView(View):
@@ -34,7 +37,9 @@ class StaffLoginView(View):
         if form.is_valid():
             user = form.get_user()
             if not (user.is_staff or user.is_superuser):
-                form.add_error(None, 'Staff access only.')
+                form.add_error(None, 'Staff access only. Super Admin or staff role required.')
+            elif getattr(user, 'status', 'ACTIVE') != 'ACTIVE':
+                form.add_error(None, 'This account is not active.')
             else:
                 login(request, user)
                 return redirect(request.GET.get('next') or 'dashboard:home')
@@ -96,7 +101,7 @@ class UsersManagementView(StaffRequiredMixin, View):
     template_name = 'admin/pages/users.html'
 
     def get(self, request):
-        return _admin_page(request, self.template_name, 'users', active_model='auth.user')
+        return _admin_page(request, self.template_name, 'users', active_model='accounts.user')
 
 
 class TransactionsView(StaffRequiredMixin, View):
@@ -156,7 +161,8 @@ class ModelDetailAPIView(StaffRequiredMixin, View):
         meta = get_model_meta(model_key)
         obj = get_object_or_404(meta.model, pk=pk)
         data = serialize_instance(meta, obj, for_edit=True)
-        data['fields'] = get_field_choices(meta)
+        field_choices = get_field_choices(meta, for_edit=True)
+        data['fields'] = enrich_edit_field_choices(meta, obj, field_choices)
         return JsonResponse(data)
 
 
@@ -167,6 +173,36 @@ def _parse_body(request):
         except json.JSONDecodeError:
             return {}
     return request.POST.dict()
+
+
+class SlugifyAPIView(StaffRequiredMixin, View):
+    """Return a unique slug for admin CRUD (debounced from title/name/message)."""
+
+    def post(self, request):
+        data = _parse_body(request)
+        text = data.get('text', '')
+        try:
+            text = sanitize_plain_text(str(text), max_length=500, field_label='Title')
+        except Exception as exc:
+            return JsonResponse({'slug': '', 'error': str(exc)}, status=400)
+
+        model_key = (data.get('model_key') or '').strip()
+        instance_pk = data.get('instance_pk') or None
+        if instance_pk in ('', None):
+            instance_pk = None
+
+        if model_key:
+            try:
+                meta = get_model_meta(model_key)
+            except LookupError:
+                return JsonResponse({'error': 'Unknown model'}, status=400)
+            slug = generate_unique_slug(text, meta.model, instance_pk=instance_pk)
+        else:
+            from django.utils.text import slugify
+
+            slug = slugify(text)[:220] or 'item'
+
+        return JsonResponse({'slug': slug})
 
 
 class ModelCreateAPIView(StaffRequiredMixin, View):

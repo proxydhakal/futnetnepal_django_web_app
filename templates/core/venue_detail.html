@@ -34,21 +34,23 @@
                 <div class="fn-card p-6" id="bookingModal">
                     <h2 class="text-lg font-bold text-sky-950">Book this venue</h2>
                     <p class="text-sm text-sky-700/70 mt-1">Submit a request — we'll confirm your slot.</p>
-                    <form id="bookingForm" @submit.prevent="submitBooking" class="mt-5 space-y-4">
+                    <form id="bookingForm" @submit.prevent="submitBooking" class="mt-5 space-y-4" novalidate>
                         {% csrf_token %}
-                        <div>
-                            <label class="text-sm font-semibold text-sky-900">Date</label>
+                        <div class="fn-field">
+                            <label class="fn-label" for="id_booking_date">Date</label>
                             {{ booking_form.booking_date }}
+                            <p class="fn-field-error hidden" data-field-error="booking_date" role="alert"></p>
                         </div>
-                        <div>
-                            <label class="text-sm font-semibold text-sky-900">Preferred time</label>
+                        <div class="fn-field">
+                            <label class="fn-label" for="id_preferred_time">Preferred time</label>
                             {{ booking_form.preferred_time }}
+                            <p class="fn-field-error hidden" data-field-error="preferred_time" role="alert"></p>
                         </div>
-                        <div>
-                            <label class="text-sm font-semibold text-sky-900">Notes</label>
+                        <div class="fn-field">
+                            <label class="fn-label" for="id_notes">Notes</label>
                             {{ booking_form.notes }}
+                            <p class="fn-field-error hidden" data-field-error="notes" role="alert"></p>
                         </div>
-                        <p class="text-sm text-rose-600 hidden" id="bookingError"></p>
                         <button type="submit" :disabled="saving" class="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-60 text-white font-bold py-3 rounded-xl shadow-md shadow-sky-600/20">
                             <span x-text="saving ? 'Submitting...' : 'Request booking'"></span>
                         </button>
@@ -83,7 +85,8 @@ function venueBooking() {
         saving: false,
         submitBooking() {
             this.saving = true;
-            document.getElementById('bookingError').classList.add('hidden');
+            const form = document.getElementById('bookingForm');
+            if (typeof fnApplyFormErrors === 'function') fnApplyFormErrors(form, null);
             fetch('{% url "venue_book" venue.slug %}', {
                 method: 'POST',
                 body: new FormData(document.getElementById('bookingForm')),
@@ -104,13 +107,19 @@ function venueBooking() {
                         } else {
                             setTimeout(() => location.reload(), 800);
                         }
+                    } else if (d.errors && typeof fnApplyFormErrors === 'function') {
+                        fnApplyFormErrors(form, d.errors);
                     } else {
-                        const err = document.getElementById('bookingError');
-                        err.textContent = d.errors ? Object.values(d.errors).flat().join(' ') : 'Booking failed.';
-                        err.classList.remove('hidden');
+                        window.dispatchEvent(new CustomEvent('toast', {
+                            detail: { text: 'Booking failed. Please try again.', type: 'error' },
+                        }));
                     }
                 })
-                .catch(() => alert('Booking failed. Please try again.'))
+                .catch(() => {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { text: 'Booking failed. Please try again.', type: 'error' },
+                    }));
+                })
                 .finally(() => { this.saving = false; });
         },
     };

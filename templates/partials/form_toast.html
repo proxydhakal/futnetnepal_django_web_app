@@ -1,0 +1,21 @@
+{# Form validation errors → toast notifications. #}
+{% if form.errors %}
+<script>
+(function () {
+  if (!window.fnToast) return;
+  {% for field, error_list in form.errors.items %}
+    {% for error in error_list %}
+      {% if field == "__all__" %}
+  window.fnToast("{{ error|escapejs }}", "error");
+      {% else %}
+        {% for bf in form %}
+          {% if bf.name == field %}
+  window.fnToast("{{ bf.label|escapejs }}: {{ error|escapejs }}", "error");
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+})();
+</script>
+{% endif %}

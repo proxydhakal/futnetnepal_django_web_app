@@ -3,28 +3,40 @@
 {% block admin_content %}
 <div x-data="analyticsPage()" x-init="load()">
     <div class="mb-8">
-        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">Analytics</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Deep dive into users, posts, bookings, and engagement.</p>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900">Analytics</h1>
+        <p class="text-slate-500 mt-1">Deep dive into users, posts, bookings, and engagement.</p>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" x-show="data">
         <template x-for="(val, key) in data?.engagement || {}" :key="key">
             <div class="admin-glass rounded-2xl p-4 text-center hover:scale-[1.02] transition-transform">
-                <p class="text-2xl font-extrabold text-sky-600 dark:text-sky-400" x-text="val"></p>
+                <p class="text-2xl font-extrabold text-sky-600" x-text="val"></p>
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mt-1" x-text="key.replace('_',' ')"></p>
             </div>
         </template>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="admin-glass rounded-2xl p-6"><h2 class="font-bold mb-4">User signups</h2><canvas id="aUsers"></canvas></div>
-        <div class="admin-glass rounded-2xl p-6"><h2 class="font-bold mb-4">Posts trend</h2><canvas id="aPosts"></canvas></div>
-        <div class="admin-glass rounded-2xl p-6"><h2 class="font-bold mb-4">Bookings</h2><canvas id="aBookings"></canvas></div>
-        <div class="admin-glass rounded-2xl p-6"><h2 class="font-bold mb-4">Booking status</h2><canvas id="aBookStatus"></canvas></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
+        <div class="admin-glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4 text-slate-900">User signups</h2>
+            <div class="admin-chart-wrap"><canvas id="aUsers"></canvas></div>
+        </div>
+        <div class="admin-glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4 text-slate-900">Posts trend</h2>
+            <div class="admin-chart-wrap"><canvas id="aPosts"></canvas></div>
+        </div>
+        <div class="admin-glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4 text-slate-900">Bookings</h2>
+            <div class="admin-chart-wrap"><canvas id="aBookings"></canvas></div>
+        </div>
+        <div class="admin-glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4 text-slate-900">Booking status</h2>
+            <div class="admin-chart-wrap"><canvas id="aBookStatus"></canvas></div>
+        </div>
     </div>
 </div>
 {% endblock %}
-{% block extra_js %}
+{% block admin_extra_js %}
 <script>
 function analyticsPage() {
     return {
@@ -56,7 +68,11 @@ function analyticsPage() {
                         tension: 0.35,
                     }],
                 },
-                options: { responsive: true, plugins: { legend: { display: type === 'doughnut' } } },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: type === 'doughnut' } },
+                },
             };
             if (this.charts[id]) this.charts[id].destroy();
             this.charts[id] = new Chart(el, cfg);

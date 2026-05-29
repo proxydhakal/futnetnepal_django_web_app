@@ -9,9 +9,18 @@ from django.views.generic import TemplateView,CreateView,ListView
 from apps.core.models import (
     Time, Location, Post, Venue, VenueBooking,
     PostComment, PostInterest, PostReaction,
-    Notification,
+    Notification, UserReview,
 )
-from apps.core.forms import UserPostForm, ContactForm, VenueBookingForm
+from apps.core.forms import (
+    UserPostForm,
+    ContactForm,
+    VenueBookingForm,
+    NewsletterSubscriptionForm,
+    UserReviewForm,
+)
+from apps.core.newsletter import send_newsletter_subscription_emails
+from apps.core.contact_inquiry import send_contact_inquiry_received_emails
+from apps.core.reviews import send_new_review_admin_email
 from apps.core.engagement import posts_with_engagement, build_comment_tree
 from apps.core.notifications import (
     notify_interest, notify_like, notify_comment,
@@ -24,15 +33,16 @@ from apps.core.realtime import (
 from apps.accounts.models import Profile
 from django.db.models import F
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET, require_POST
-from django.contrib.auth.models import User
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 from django.db.models import Q
 from datetime import datetime
 # Create your views here.
@@ -52,7 +62,7 @@ def global_search(request):
     )[:5]
 
     users = User.objects.filter(
-        Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(email__icontains=q)
+        Q(username__icontains=q) | Q(full_name__icontains=q) | Q(email__icontains=q)
     ).exclude(pk=request.user.pk)[:5]
 
     return JsonResponse({
@@ -80,12 +90,20 @@ def global_search(request):
     })
 
 
+def _approved_reviews(limit=None):
+    qs = UserReview.objects.filter(is_approved=True).order_by('-created_at')
+    if limit is not None:
+        return qs[:limit]
+    return qs
+
+
 def index(request):
-    template_name='core/index.html'
+    template_name = 'core/index.html'
     if request.user.is_authenticated:
         return redirect('/home/')
-    else:
-        return render(request, template_name)
+    return render(request, template_name, {
+        'approved_reviews': _approved_reviews(limit=6),
+    })
     
 
 
@@ -99,6 +117,23 @@ def partnerwithus(request):
     return render(request, template_name)
 
 
+class CMSPageView(View):
+    """Public dynamic page (policies, legal, etc.)."""
+
+    def get(self, request, slug):
+        from apps.core.models import CMSPage
+
+        page = CMSPage.objects.filter(
+            slug=slug,
+            is_published=True,
+            is_deleted=False,
+        ).first()
+        if page is None:
+            from django.http import Http404
+            raise Http404('Page not found')
+        return render(request, 'core/cms_page.html', {'page': page})
+
+
 class ContactView(View):
     template_name = 'core/contact.html'
 
@@ -110,26 +145,115 @@ class ContactView(View):
         form = ContactForm(request.POST)
         if form.is_valid():
             contact = form.save()
-            contact.save()  
-            email = form.cleaned_data['email']
-            email_context = {
-                'email': email,  
-            }
-            email_message = render_to_string('email/contact_template.html', email_context)
-            email_subject = 'Thank You for Your Message'
-            email_from = settings.EMAIL_HOST_USER
-            email_to = [email]
-            msg = EmailMultiAlternatives(email_subject, email_message, email_from, email_to)
-            msg.attach_alternative(email_message, "text/html")
-            msg.send()
+            try:
+                send_contact_inquiry_received_emails(contact)
+            except Exception:
+                contact.hard_delete()
+                messages.error(
+                    request,
+                    'We could not submit your message right now. Please try again later.',
+                )
+                return render(request, self.template_name, {'form': form})
             messages.success(request, 'Message submitted successfully.')
             return redirect('contact')
         else:
             return render(request, self.template_name, {'form': form})
 
-def review(request):
-    template_name='core/review.html'
-    return render(request, template_name)
+
+def _safe_redirect_target(request):
+    next_url = (request.POST.get('next') or '').strip()
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    referer = request.META.get('HTTP_REFERER', '')
+    if referer and url_has_allowed_host_and_scheme(
+        referer,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return referer
+    return reverse('index')
+
+
+class NewsletterSubscribeView(View):
+    http_method_names = ['post']
+
+    def post(self, request, *args, **kwargs):
+        form = NewsletterSubscriptionForm(request.POST)
+        redirect_to = _safe_redirect_target(request)
+        if not form.is_valid():
+            first_error = next(iter(form.errors.values()), None)
+            detail = first_error[0] if first_error else 'Please check your name and email.'
+            messages.error(request, detail)
+            return redirect(redirect_to)
+
+        subscription = form.save()
+        try:
+            send_newsletter_subscription_emails(subscription)
+        except Exception:
+            subscription.hard_delete()
+            messages.error(
+                request,
+                'We could not complete your subscription right now. Please try again later.',
+            )
+            return redirect(redirect_to)
+
+        messages.success(
+            request,
+            'Thanks for subscribing! Check your inbox for a confirmation email.',
+        )
+        return redirect(redirect_to)
+
+
+class ReviewView(View):
+    template_name = 'core/review.html'
+
+    def _initial_form_data(self, request):
+        if not request.user.is_authenticated:
+            return None
+        user = request.user
+        return {
+            'name': user.get_full_name() or user.username,
+            'email': user.email or '',
+        }
+
+    def get(self, request, *args, **kwargs):
+        form = UserReviewForm(initial=self._initial_form_data(request))
+        return render(request, self.template_name, {
+            'form': form,
+            'approved_reviews': _approved_reviews(),
+        })
+
+    def post(self, request, *args, **kwargs):
+        form = UserReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.is_approved = False
+            review.save()
+            try:
+                send_new_review_admin_email(review)
+            except Exception:
+                review.hard_delete()
+                messages.error(
+                    request,
+                    'We could not submit your review right now. Please try again later.',
+                )
+                return render(request, self.template_name, {
+                    'form': form,
+                    'approved_reviews': _approved_reviews(),
+                })
+            messages.success(
+                request,
+                'Thank you! Your review was submitted and will appear on the site after our team approves it.',
+            )
+            return redirect('review')
+        return render(request, self.template_name, {
+            'form': form,
+            'approved_reviews': _approved_reviews(),
+        })
 
 
 def _home_context(request, form=None):
@@ -293,7 +417,17 @@ def post_toggle_reaction(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if is_event_locked(post):
         return social_engagement_denied_response()
-    reaction_type = request.POST.get('reaction_type', PostReaction.REACTION_LIKE)
+    from futnetnepal.input_validation import sanitize_choice
+
+    allowed = {c[0] for c in PostReaction.REACTION_CHOICES}
+    try:
+        reaction_type = sanitize_choice(
+            request.POST.get('reaction_type', PostReaction.REACTION_LIKE),
+            allowed,
+            field_label='Reaction',
+        )
+    except Exception:
+        reaction_type = PostReaction.REACTION_LIKE
     reaction, created = PostReaction.objects.get_or_create(
         post=post, user=request.user, reaction_type=reaction_type,
     )
@@ -322,9 +456,19 @@ def post_add_comment(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if is_event_locked(post):
         return social_engagement_denied_response()
-    body = (request.POST.get('body') or '').strip()
-    if not body:
-        return JsonResponse({'success': False, 'error': 'Comment cannot be empty.'}, status=400)
+    from django.core.exceptions import ValidationError as DjangoValidationError
+    from futnetnepal.input_validation import sanitize_plain_text
+
+    try:
+        body = sanitize_plain_text(
+            request.POST.get('body') or '',
+            max_length=2000,
+            multiline=True,
+            min_length=1,
+            field_label='Comment',
+        )
+    except DjangoValidationError as exc:
+        return JsonResponse({'success': False, 'error': exc.messages[0]}, status=400)
     parent_id = request.POST.get('parent_id')
     parent = None
     if parent_id:

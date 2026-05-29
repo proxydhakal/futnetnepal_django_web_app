@@ -1,4 +1,4 @@
-# Production deployment (Django + MySQL)
+# Production deployment (Django 5.2 LTS + MySQL via PyMySQL)
 
 ## 1. Server packages (Ubuntu/Debian)
 

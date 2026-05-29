@@ -6,11 +6,11 @@
      data-csrf="{{ csrf_token }}">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ meta.verbose_name_plural|capfirst }}</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ meta.key }}</p>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ meta.verbose_name_plural|capfirst }}</h1>
+            <p class="text-sm text-slate-500 mt-0.5">{{ meta.key }}</p>
         </div>
         <button type="button" @click="openCreate()"
-                class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-violet-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-xl transition">
+                class="admin-btn-primary inline-flex items-center gap-2 text-sm px-5 py-2.5 rounded-xl transition">
             <i class="fa-solid fa-plus"></i> Add {{ meta.verbose_name }}
         </button>
     </div>
@@ -40,7 +40,7 @@
     <div class="admin-glass rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
-                <thead class="bg-slate-50/80 dark:bg-slate-800/40 border-b border-slate-200/50 dark:border-slate-700/50 text-xs uppercase text-slate-500">
+                <thead class="bg-slate-50/80 border-b border-slate-200/50 text-xs uppercase text-slate-500">
                     <tr>
                         <th class="px-4 py-3 font-bold">ID</th>
                         <template x-for="col in columns" :key="col">
@@ -53,7 +53,7 @@
                     <tr x-show="loading"><td :colspan="columns.length + 2" class="px-4 py-8 text-center text-slate-400">Loading…</td></tr>
                     <tr x-show="!loading && rows.length === 0"><td :colspan="columns.length + 2" class="px-4 py-8 text-center text-slate-400">No records found.</td></tr>
                     <template x-for="row in rows" :key="row.id">
-                        <tr class="admin-table-row border-t border-slate-100 dark:border-slate-800/80">
+                        <tr class="admin-table-row border-t border-slate-100">
                             <td class="px-4 py-3 font-mono text-slate-500" x-text="row.id"></td>
                             <template x-for="col in columns" :key="col">
                                 <td class="px-4 py-3 max-w-xs truncate" x-text="row[col]"></td>
@@ -67,14 +67,14 @@
                 </tbody>
             </table>
         </div>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-t border-slate-200/50 dark:border-slate-700/50 text-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-t border-slate-200/50 text-sm">
             <p class="text-slate-500"><span x-text="total"></span> total</p>
             <div class="flex gap-2 justify-center sm:justify-end">
                 <button type="button" :disabled="!has_previous" @click="load(page - 1)"
-                        class="min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 disabled:opacity-40 font-semibold touch-manipulation">Prev</button>
-                <span class="min-h-[44px] flex items-center px-2 text-slate-600 dark:text-slate-400">Page <span x-text="page"></span> / <span x-text="pages"></span></span>
+                        class="min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 disabled:opacity-40 font-semibold touch-manipulation">Prev</button>
+                <span class="min-h-[44px] flex items-center px-2 text-slate-600">Page <span x-text="page"></span> / <span x-text="pages"></span></span>
                 <button type="button" :disabled="!has_next" @click="load(page + 1)"
-                        class="min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 disabled:opacity-40 font-semibold touch-manipulation">Next</button>
+                        class="min-h-[44px] px-4 py-2 rounded-xl border border-slate-200 disabled:opacity-40 font-semibold touch-manipulation">Next</button>
             </div>
         </div>
     </div>
@@ -86,23 +86,28 @@
         <div id="adminCrudModal"
              class="admin-modal-panel admin-glass-strong rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[90vh] flex flex-col animate-slide-up"
              @click.outside="closeModal()">
-            <div class="admin-shell-header border-b border-slate-200/50 dark:border-slate-700/50 px-4 sm:px-6 flex justify-between items-center shrink-0">
+            <div class="admin-shell-header border-b border-slate-200/50 px-4 sm:px-6 flex justify-between items-center shrink-0">
                 <div>
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white" x-text="editingId ? 'Edit {{ meta.verbose_name }}' : 'New {{ meta.verbose_name }}'"></h3>
+                    <h3 class="font-bold text-lg text-slate-900" x-text="editingId ? 'Edit {{ meta.verbose_name }}' : 'New {{ meta.verbose_name }}'"></h3>
                     <p class="text-xs text-slate-500 hidden sm:block">Premium fields · search selects · date & time pickers</p>
                 </div>
-                <button type="button" @click="closeModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xl" aria-label="Close">&times;</button>
+                <button type="button" @click="closeModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 text-xl" aria-label="Close">&times;</button>
             </div>
             <form @submit.prevent="save()" class="flex flex-col flex-1 min-h-0">
                 <div id="adminCrudFormBody" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 min-h-[12rem]"></div>
-                <div x-show="formError" class="mx-4 sm:mx-6 mb-2 rounded-xl bg-red-500/10 text-red-600 dark:text-red-300 text-sm px-4 py-3 border border-red-500/20" x-text="formError"></div>
-                <div class="shrink-0 flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
+                <div x-show="formError" x-cloak
+                     class="mx-4 sm:mx-6 mb-2 rounded-xl bg-red-50 text-red-700 text-sm px-4 py-3 border border-red-200 flex gap-2 items-start"
+                     role="alert">
+                    <i class="fa-solid fa-circle-exclamation mt-0.5 shrink-0"></i>
+                    <span x-text="formError"></span>
+                </div>
+                <div class="shrink-0 flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 border-t border-slate-200/50 bg-slate-50/50">
                     <button type="button" @click="closeModal()"
-                            class="flex-1 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-600 font-semibold text-slate-600 dark:text-slate-300">
+                            class="flex-1 px-5 py-3 rounded-xl border border-slate-200 font-semibold text-slate-600">
                         Cancel
                     </button>
                     <button type="submit" :disabled="saving"
-                            class="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-violet-600 text-white font-bold shadow-lg disabled:opacity-50">
+                            class="admin-btn-primary flex-1 px-5 py-3 rounded-xl disabled:opacity-50">
                         <span x-text="saving ? 'Saving…' : 'Save changes'"></span>
                     </button>
                 </div>
@@ -117,7 +122,7 @@
             <div class="w-12 h-12 rounded-2xl bg-red-500/15 text-red-600 flex items-center justify-center text-xl mb-4">
                 <i class="fa-solid fa-trash"></i>
             </div>
-            <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">Delete this record?</h3>
+            <h3 class="text-lg font-extrabold text-slate-900">Delete this record?</h3>
             <p class="text-sm text-slate-500 mt-2">This action cannot be undone.</p>
             <div class="flex flex-col-reverse sm:flex-row gap-3 mt-6">
                 <button type="button" @click="deleteOpen = false"
@@ -164,18 +169,85 @@ function modelCrud(modelKey, _ignored) {
         form: {},
         files: {},
         formError: '',
+        fieldErrors: {},
         saving: false,
         csrf: document.querySelector('[data-csrf]')?.dataset.csrf || '',
-        init() { this.load(1); },
+        init() {
+            this.load(1);
+            const editId = new URLSearchParams(window.location.search).get('edit');
+            if (editId) {
+                this.$nextTick(() => this.openEdit(editId));
+            }
+        },
         mountForm() {
             const el = document.getElementById('adminCrudFormBody');
             if (!window.adminFormKit || !el) return;
             adminFormKit.render(el, this.fieldDefs, this.form, {
                 editing: !!this.editingId,
+                editingId: this.editingId,
+                modelKey: this.modelKey,
+                csrf: this.csrf,
+                slugifyUrl: '/iamadmin/api/slugify/',
                 dropdownParent: '#adminCrudModal',
-                onChange: (name, val) => { this.form[name] = val; },
+                onChange: (name, val) => {
+                    this.form[name] = val;
+                    this.clearFieldError(name);
+                },
                 onFile: (name, file) => { this.files[name] = file; },
             });
+            if (Object.keys(this.fieldErrors).length) {
+                adminFormKit.showFieldErrors(el, this.fieldErrors);
+            }
+        },
+        clearFieldError(name) {
+            const el = document.getElementById('adminCrudFormBody');
+            if (!el || !window.adminFormKit) return;
+            const wrap = el.querySelector(`[data-field="${name}"]`);
+            if (!wrap) return;
+            wrap.classList.remove('admin-field-has-error');
+            wrap.querySelectorAll('.admin-field-error').forEach((n) => n.remove());
+            if (!el.querySelector('.admin-field-has-error')) {
+                this.formError = '';
+            }
+        },
+        clearAllFormErrors() {
+            this.formError = '';
+            this.fieldErrors = {};
+            const el = document.getElementById('adminCrudFormBody');
+            if (el && window.adminFormKit) adminFormKit.clearFieldErrors(el);
+        },
+        applyServerErrors(errors) {
+            if (!errors) {
+                this.formError = 'Something went wrong. Please try again.';
+                return;
+            }
+            let fieldErrors = errors.field_errors || {};
+            let nonField = errors.non_field_errors || [];
+            if (!errors.field_errors && !errors.non_field_errors && typeof errors === 'object') {
+                fieldErrors = {};
+                nonField = [];
+                Object.keys(errors).forEach((k) => {
+                    const v = errors[k];
+                    if (k === '__all__') {
+                        nonField = Array.isArray(v) ? v.map(String) : [String(v)];
+                    } else if (Array.isArray(v)) {
+                        fieldErrors[k] = v.map(String);
+                    } else if (typeof v === 'string') {
+                        fieldErrors[k] = [v];
+                    }
+                });
+            }
+            this.fieldErrors = fieldErrors;
+            const el = document.getElementById('adminCrudFormBody');
+            if (el && window.adminFormKit) {
+                adminFormKit.showFieldErrors(el, fieldErrors);
+            }
+            this.formError = errors.message
+                || (nonField.length ? nonField.join(' ') : '')
+                || (Object.keys(fieldErrors).length ? 'Please fix the highlighted fields.' : 'Could not save.');
+            window.dispatchEvent(new CustomEvent('admin-toast', {
+                detail: { message: this.formError, type: 'error' },
+            }));
         },
         scheduleMountForm() {
             this.modalOpen = true;
@@ -194,6 +266,7 @@ function modelCrud(modelKey, _ignored) {
             if (el && window.adminFormKit) {
                 adminFormKit.destroy(el);
             }
+            this.clearAllFormErrors();
             this.modalOpen = false;
         },
         listUrl(page) {
@@ -228,7 +301,7 @@ function modelCrud(modelKey, _ignored) {
             this.editingId = null;
             this.form = this.emptyForm();
             this.files = {};
-            this.formError = '';
+            this.clearAllFormErrors();
             this.scheduleMountForm();
         },
         async openEdit(id) {
@@ -238,9 +311,11 @@ function modelCrud(modelKey, _ignored) {
             this.form = { ...data };
             delete this.form.fields;
             delete this.form.__str__;
+            delete this.form.id;
+            delete this.form.password;
             this.editingId = id;
             this.files = {};
-            this.formError = '';
+            this.clearAllFormErrors();
             this.scheduleMountForm();
         },
         onFile(name, ev) {
@@ -249,7 +324,7 @@ function modelCrud(modelKey, _ignored) {
         },
         async save() {
             this.saving = true;
-            this.formError = '';
+            this.clearAllFormErrors();
             if (window.adminFormKit) {
                 const el = document.getElementById('adminCrudFormBody');
                 if (el) Object.assign(this.form, adminFormKit.collect(el, this.fieldDefs));
@@ -278,10 +353,27 @@ function modelCrud(modelKey, _ignored) {
                     body: JSON.stringify(this.form),
                 });
             }
-            const data = await res.json();
+            let data = {};
+            try {
+                data = await res.json();
+            } catch (e) {
+                data = {};
+            }
             this.saving = false;
-            if (!data.success) {
-                this.formError = typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors);
+            if (!res.ok || !data.success) {
+                if (data.errors) {
+                    this.applyServerErrors(data.errors);
+                } else if (res.status >= 500) {
+                    this.formError = 'Server error while saving. Please try again or contact support.';
+                    window.dispatchEvent(new CustomEvent('admin-toast', {
+                        detail: { message: this.formError, type: 'error' },
+                    }));
+                } else {
+                    this.formError = data.message || 'Could not save. Please check your input.';
+                    window.dispatchEvent(new CustomEvent('admin-toast', {
+                        detail: { message: this.formError, type: 'error' },
+                    }));
+                }
                 return;
             }
             this.closeModal();

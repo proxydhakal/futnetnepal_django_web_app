@@ -1,16 +1,16 @@
 {% load static %}
-<section class="relative pt-32 pb-10 md:pb-12 bg-sky-950 overflow-hidden">
+<section class="relative fn-page-hero bg-sky-950 overflow-hidden">
     {% if hero_image %}
     <img src="{% if hero_static %}{% static hero_image %}{% else %}{{ hero_image }}{% endif %}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-25" aria-hidden="true">
     {% endif %}
     <div class="absolute inset-0 bg-gradient-to-r from-sky-950 via-sky-900/90 to-sky-800/75"></div>
-    <div class="container mx-auto px-4 md:px-8 relative z-10">
+    <div class="container mx-auto px-4 md:px-8 relative z-10 text-center md:text-left">
         {% if page_eyebrow %}
         <p class="text-rose-400 font-bold tracking-wider uppercase text-xs mb-2">{{ page_eyebrow }}</p>
         {% endif %}
-        <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight max-w-3xl">{{ page_title }}</h1>
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight max-w-3xl mx-auto md:mx-0">{{ page_title }}</h1>
         {% if page_subtitle %}
-        <p class="mt-4 text-sky-100/90 text-base md:text-lg max-w-2xl leading-relaxed">{{ page_subtitle }}</p>
+        <p class="mt-4 text-sky-100/90 text-base md:text-lg max-w-2xl leading-relaxed mx-auto md:mx-0">{{ page_subtitle }}</p>
         {% endif %}
     </div>
 </section>

@@ -2,34 +2,27 @@
 {% block title %}Settings{% endblock %}
 {% block admin_content %}
 <div class="max-w-3xl">
-    <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Settings</h1>
-    <p class="text-slate-500 dark:text-slate-400 mb-8">Appearance and environment overview.</p>
+    <h1 class="text-2xl font-extrabold text-sky-950 mb-2">Settings</h1>
+    <p class="text-slate-500 mb-8">Platform configuration and environment overview.</p>
 
     <div class="space-y-6">
-        <section class="admin-glass rounded-2xl p-6">
-            <h2 class="font-bold text-lg mb-4">Appearance</h2>
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="font-semibold">Dark mode</p>
-                    <p class="text-sm text-slate-500">Toggle elegant dark theme across the admin panel.</p>
-                </div>
-                <button type="button" @click="$dispatch('admin-toggle-dark')"
-                        class="relative w-14 h-8 rounded-full bg-slate-200 dark:bg-slate-700 transition">
-                    <span class="absolute top-1 left-1 w-6 h-6 rounded-full bg-white dark:translate-x-6 shadow transition-transform"></span>
-                </button>
-            </div>
+        <section class="admin-glass rounded-2xl p-6 border-l-4 border-l-yellow-400">
+            <h2 class="font-bold text-lg text-sky-950 mb-2">Appearance</h2>
+            <p class="text-sm text-slate-600">
+                The admin panel uses the same light Futnet theme as the public site — sky blue, white, and yellow accents.
+            </p>
         </section>
 
         <section class="admin-glass rounded-2xl p-6">
-            <h2 class="font-bold text-lg mb-4">Environment</h2>
+            <h2 class="font-bold text-lg text-sky-950 mb-4">Environment</h2>
             <dl class="space-y-3 text-sm">
-                <div class="flex justify-between py-2 border-b border-slate-200/50 dark:border-slate-700/50">
+                <div class="flex justify-between py-2 border-b border-sky-100">
                     <dt class="text-slate-500">Debug mode</dt>
                     <dd class="font-mono font-semibold">{{ site_settings.debug|yesno:"ON,OFF" }}</dd>
                 </div>
-                <div class="flex justify-between py-2 border-b border-slate-200/50 dark:border-slate-700/50">
+                <div class="flex justify-between py-2 border-b border-sky-100">
                     <dt class="text-slate-500">Site URL</dt>
-                    <dd class="font-mono text-sky-600 dark:text-sky-400">{{ site_settings.site_url }}</dd>
+                    <dd class="font-mono text-sky-600">{{ site_settings.site_url }}</dd>
                 </div>
                 <div class="flex justify-between py-2">
                     <dt class="text-slate-500">Allowed hosts</dt>
@@ -39,7 +32,7 @@
         </section>
 
         <section class="admin-glass rounded-2xl p-6">
-            <h2 class="font-bold text-lg mb-2">Data management</h2>
+            <h2 class="font-bold text-lg text-sky-950 mb-2">Data management</h2>
             <p class="text-sm text-slate-500 mb-4">Use the sidebar to access full CRUD for all {{ registry|length }} registered models.</p>
             <a href="{% url 'dashboard:home' %}" class="text-sky-600 font-semibold hover:underline">← Back to dashboard</a>
         </section>

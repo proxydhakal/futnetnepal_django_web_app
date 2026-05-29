@@ -1,17 +1,21 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
+{% block body_class %}overflow-hidden{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
 {% endblock %}
 
 {% block body %}
-<div class="flex min-h-screen min-h-[100dvh] admin-shell" x-data="{ sidebarOpen: false, sidebarCollapsed: false }">
+<div class="admin-shell"
+     x-data="{ sidebarOpen: false, sidebarCollapsed: false }"
+     :class="{ 'admin-shell--collapsed': sidebarCollapsed }">
     <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"
          class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden" x-cloak></div>
 
-    <aside class="fixed lg:static inset-y-0 left-0 z-50 flex flex-col transform transition-transform duration-300 lg:translate-x-0 admin-sidebar-panel"
+    <aside class="admin-sidebar-panel fixed inset-y-0 left-0 z-50 flex h-full max-h-[100dvh] flex-col transform transition-[width,transform] duration-300 lg:translate-x-0"
            :class="[
              sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
              sidebarCollapsed ? 'w-20' : 'w-64'
@@ -19,9 +23,9 @@
         {% include "admin/partials/sidebar.html" %}
     </aside>
 
-    <div class="flex-1 flex flex-col min-w-0 w-full lg:ml-0">
+    <div class="admin-main-column transition-[margin,width] duration-300 min-h-0">
         {% include "admin/partials/navbar.html" %}
-        <main class="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden overflow-y-auto admin-page-enter">
+        <main class="admin-main-scroll p-4 md:p-6 lg:p-8 admin-page-enter min-h-0">
             {% block admin_content %}{% endblock %}
         </main>
     </div>
@@ -31,8 +35,13 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+<script>
+    window.FN_CKEDITOR_BASE = "{% static 'ckeditor/ckeditor/' %}";
+    window.FN_CKEDITOR_UPLOAD_URL = "{% url 'ckeditor_upload' %}";
+</script>
 <script src="{% static 'js/fn-select2.bundle.js' %}?v=npm1"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-<script src="{% static 'js/admin-forms.js' %}?v=2"></script>
+<script src="{% static 'js/admin-forms.js' %}?v=5"></script>
 {% block admin_extra_js %}{% endblock %}
 {% endblock %}

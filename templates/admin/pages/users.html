@@ -4,46 +4,63 @@
 <div x-data="usersPage()" x-init="load()">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white">Users management</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage accounts, profiles, and verification status.</p>
+            <h1 class="text-2xl font-extrabold text-slate-900">Users management</h1>
+            <p class="text-slate-500 text-sm mt-1">User accounts (roles: User, Vendor, Super Admin) and verification status.</p>
         </div>
-        <a href="{% url 'dashboard:model_list' 'auth.user' %}"
-           class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-violet-500 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-xl transition">
-            <i class="fa-solid fa-plus"></i> Full CRUD
+        <a href="{% url 'dashboard:model_list' 'accounts.user' %}"
+           class="admin-btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl transition">
+            <i class="fa-solid fa-plus"></i> Add user
         </a>
     </div>
 
     <div class="admin-glass rounded-2xl p-4 mb-4 flex flex-wrap gap-3">
-        <input type="search" x-model="q" @input.debounce.400ms="load(1)" placeholder="Search users…"
-               class="flex-1 min-w-[200px] px-4 py-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border-0 text-sm outline-none focus:ring-2 focus:ring-sky-500/30">
+        <input type="search" x-model="q" @input.debounce.400ms="load(1)" placeholder="Search username, email, or full name…"
+               class="flex-1 min-w-[200px] px-4 py-2.5 rounded-xl bg-slate-100/80 border-0 text-sm outline-none focus:ring-2 focus:ring-sky-500/30">
     </div>
 
     <div class="admin-glass rounded-2xl overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-slate-50/80 dark:bg-slate-800/40 text-xs uppercase text-slate-500">
-                <tr>
-                    <th class="px-5 py-3 text-left font-bold">ID</th>
-                    <th class="px-5 py-3 text-left font-bold">Username</th>
-                    <th class="px-5 py-3 text-left font-bold">Email</th>
-                    <th class="px-5 py-3 text-left font-bold">Staff</th>
-                    <th class="px-5 py-3 text-right font-bold">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="row in rows" :key="row.id">
-                    <tr class="admin-table-row border-t border-slate-100 dark:border-slate-800/80">
-                        <td class="px-5 py-3 font-mono text-slate-500" x-text="row.id"></td>
-                        <td class="px-5 py-3 font-semibold" x-text="row.username"></td>
-                        <td class="px-5 py-3" x-text="row.email"></td>
-                        <td class="px-5 py-3" x-text="row.is_staff"></td>
-                        <td class="px-5 py-3 text-right">
-                            <a href="{% url 'dashboard:model_list' 'auth.user' %}" class="text-sky-600 font-semibold hover:underline">Manage</a>
-                        </td>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50/80 text-xs uppercase text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3 text-left font-bold">ID</th>
+                        <th class="px-5 py-3 text-left font-bold">Username</th>
+                        <th class="px-5 py-3 text-left font-bold">Full name</th>
+                        <th class="px-5 py-3 text-left font-bold">Email</th>
+                        <th class="px-5 py-3 text-left font-bold">Role</th>
+                        <th class="px-5 py-3 text-left font-bold">Status</th>
+                        <th class="px-5 py-3 text-left font-bold">Email ✓</th>
+                        <th class="px-5 py-3 text-left font-bold">Staff</th>
+                        <th class="px-5 py-3 text-right font-bold">Actions</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
-        <div class="px-5 py-3 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-between text-sm text-slate-500">
+                </thead>
+                <tbody>
+                    <template x-for="row in rows" :key="row.id">
+                        <tr class="admin-table-row border-t border-slate-100">
+                            <td class="px-5 py-3 font-mono text-slate-500" x-text="row.id"></td>
+                            <td class="px-5 py-3 font-semibold" x-text="row.username"></td>
+                            <td class="px-5 py-3" x-text="row.full_name || '—'"></td>
+                            <td class="px-5 py-3" x-text="row.email"></td>
+                            <td class="px-5 py-3">
+                                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-bold"
+                                      :class="roleClass(row.role)"
+                                      x-text="row.role"></span>
+                            </td>
+                            <td class="px-5 py-3" x-text="row.status"></td>
+                            <td class="px-5 py-3" x-text="row.is_email_verified"></td>
+                            <td class="px-5 py-3" x-text="row.is_staff"></td>
+                            <td class="px-5 py-3 text-right">
+                                <a :href="'/iamadmin/accounts.user/?edit=' + row.id" class="text-sky-600 font-semibold hover:underline">Edit</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr x-show="!rows.length">
+                        <td colspan="9" class="px-5 py-10 text-center text-slate-400">No users found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="px-5 py-3 border-t border-slate-200/50 flex justify-between text-sm text-slate-500">
             <span x-text="total + ' users'"></span>
             <div class="flex gap-2">
                 <button @click="load(page-1)" :disabled="!has_previous" class="px-3 py-1 rounded-lg border disabled:opacity-40">Prev</button>
@@ -51,17 +68,27 @@
             </div>
         </div>
     </div>
+
+    <p class="mt-4 text-sm text-slate-500">
+        <a href="{% url 'dashboard:model_list' 'accounts.profile' %}" class="text-sky-600 font-semibold hover:underline">Manage profiles</a>
+        (phone, cover image, OTP) separately.
+    </p>
 </div>
 {% endblock %}
-{% block extra_js %}
+{% block admin_extra_js %}
 <script>
 function usersPage() {
     return {
         rows: [], q: '', page: 1, total: 0, has_next: false, has_previous: false,
+        roleClass(role) {
+            if (role === 'Super Admin') return 'bg-violet-500/15 text-violet-700';
+            if (role === 'Vendor') return 'bg-amber-500/15 text-amber-700';
+            return 'bg-sky-500/15 text-sky-700';
+        },
         async load(page) {
             this.page = page || 1;
             const p = new URLSearchParams({ page: this.page, q: this.q });
-            const d = await fetch('/iamadmin/api/auth.user/list/?' + p).then(r => r.json());
+            const d = await fetch('/iamadmin/api/accounts.user/list/?' + p).then(r => r.json());
             this.rows = d.rows; this.total = d.total;
             this.has_next = d.has_next; this.has_previous = d.has_previous;
         },

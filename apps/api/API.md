@@ -79,7 +79,7 @@ Set `AAKASH_SMS_AUTH_TOKEN` in `.env`. Signup requires `phone` on register; logi
 | GET | `conversations/` | Inbox threads |
 | GET | `conversations/<id>/` | Messages (`?after_id=`) |
 | POST | `conversations/<id>/send/` | `{ "body": "..." }` |
-| POST | `conversations/open/` | `{ "post_id", "username"? }` |
+| POST | `conversations/open/` | `{ "post_id": "<uuid>", "username"? }` |
 | POST | `conversations/<id>/confirm-attendance/` | Guest confirms |
 | POST | `conversations/<id>/decline-attendance/` | Guest declines |
 | POST | `conversations/<id>/confirm-match/` | Host confirm (in chat) |
@@ -90,15 +90,35 @@ Set `AAKASH_SMS_AUTH_TOKEN` in `.env`. Signup requires `phone` on register; logi
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `blogs/` | List (`?category=`) |
-| GET | `blogs/<slug>/` | Detail |
+| GET | `blogs/<slug>/` | Detail (increments view count; includes `related_blogs`) |
 | GET | `blog-categories/` | Categories |
+
+## Site content (public, mirrors web pages)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `site/` | No | `SiteConfiguration` branding, about/partner/home copy, contact & social links, YouTube embed URLs |
+| GET | `public/home/` | No | Approved reviews for landing (`?limit=6`, max 24) |
+| GET | `cms-pages/` | No | Published CMS pages (`?navbar=1`, `?footer=1`) |
+| GET | `cms-pages/<slug>/` | No | Single CMS page (policies, legal, etc.) |
+| POST | `newsletter/subscribe/` | No | `{ "name", "email" }` — confirmation + admin emails |
+| GET | `reviews/` | No | Approved user reviews (`?limit=`) |
+| POST | `reviews/` | No | `{ "name", "email", "rating": 1-5, "message" }` — pending approval |
+
+## Password
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `auth/password/change/` | Yes | Change password |
+| POST | `auth/password/reset/` | No | Request reset email |
+| POST | `auth/password/reset/confirm/` | No | Confirm reset with token |
 
 ## Other
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `search/?q=term` | Yes | Posts, venues, users |
-| POST | `contact/` | No | Public contact form |
+| GET | `search/?q=term` | Yes | Posts, venues, users, blogs |
+| POST | `contact/` | No | `{ "fullname", "email", "phone", "subject", "message" }` — same subjects as web; sends admin + user emails |
 
 ## WebSockets (existing)
 

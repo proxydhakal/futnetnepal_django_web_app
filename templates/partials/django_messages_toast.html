@@ -1,0 +1,14 @@
+{# Django messages framework → fnToast (after redirect / PRG). #}
+{% if messages %}
+<script>
+(function () {
+  if (!window.fnToast) return;
+  {% for message in messages %}
+  window.fnToast(
+    "{{ message|escapejs }}",
+    "{% if 'error' in message.tags or 'danger' in message.tags %}error{% elif 'warning' in message.tags %}warning{% elif 'info' in message.tags %}info{% else %}success{% endif %}"
+  );
+  {% endfor %}
+})();
+</script>
+{% endif %}

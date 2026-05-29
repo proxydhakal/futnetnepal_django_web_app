@@ -65,35 +65,34 @@
                                     <div class="sm:col-span-2">
                                         <label class="text-sm font-semibold text-slate-700">Full name</label>
                                         <input type="text" name="full_name" x-model="user.full_name" class="fn-input" required>
-                                        <p class="text-xs text-rose-600 mt-1" x-text="errors.user_full_name"></p>
+                                        <p class="fn-field-error" x-show="errors.user_full_name" x-text="errors.user_full_name" role="alert"></p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-slate-700">Username</label>
                                         <input type="text" name="username" x-model="user.username" class="fn-input" required>
-                                        <p class="text-xs text-rose-600 mt-1" x-text="errors.user_username"></p>
+                                        <p class="fn-field-error" x-show="errors.user_username" x-text="errors.user_username" role="alert"></p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-slate-700">Email</label>
                                         <input type="email" name="email" x-model="user.email" class="fn-input" required>
-                                        <p class="text-xs text-rose-600 mt-1" x-text="errors.user_email"></p>
+                                        <p class="fn-field-error" x-show="errors.user_email" x-text="errors.user_email" role="alert"></p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-slate-700">Phone</label>
                                         <input type="text" name="phone" x-model="profile.phone" maxlength="10" inputmode="numeric" placeholder="9840123456" class="fn-input">
-                                        <p class="text-xs text-rose-600 mt-1" x-text="errors.profile_phone"></p>
+                                        <p class="fn-field-error" x-show="errors.profile_phone" x-text="errors.profile_phone" role="alert"></p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-slate-700">Date of birth</label>
                                         <input type="date" name="dob" x-model="profile.dob" class="fn-input">
-                                        <p class="text-xs text-rose-600 mt-1" x-text="errors.profile_dob"></p>
+                                        <p class="fn-field-error" x-show="errors.profile_dob" x-text="errors.profile_dob" role="alert"></p>
                                     </div>
                                     <div class="sm:col-span-2">
                                         <label class="text-sm font-semibold text-slate-700">Address</label>
                                         <input type="text" name="address" x-model="profile.address" class="fn-input">
-                                        <p class="text-xs text-rose-600 mt-1" x-text="errors.profile_address"></p>
+                                        <p class="fn-field-error" x-show="errors.profile_address" x-text="errors.profile_address" role="alert"></p>
                                     </div>
                                 </div>
-                                <p class="mt-3 text-sm text-rose-600" x-show="saveError" x-text="saveError"></p>
                                 <div class="mt-5 flex flex-wrap gap-3">
                                     <button type="submit" :disabled="saving" class="bg-sky-600 hover:bg-sky-500 disabled:opacity-60 text-white font-bold py-2.5 px-8 rounded-full text-sm">
                                         <span x-text="saving ? 'Saving...' : 'Save changes'"></span>
@@ -120,8 +119,7 @@
                             <span x-text="phoneVerifying ? '…' : 'Verify'"></span>
                         </button>
                     </div>
-                    <p class="text-xs text-rose-600 mt-2" x-text="phoneVerifyError" x-show="phoneVerifyError"></p>
-                    <p class="text-xs text-emerald-600 mt-2" x-text="phoneVerifySuccess" x-show="phoneVerifySuccess"></p>
+                    <p class="fn-field-error mt-2" x-show="otpCode && phoneVerifyError" x-text="phoneVerifyError" role="alert"></p>
                 </div>
 
                 {% include "partials/profile_stats.html" %}
@@ -227,10 +225,14 @@ function profilePage() {
                     window.dispatchEvent(new CustomEvent('toast', { detail: { text: data.message, type: 'success' } }));
                 } else {
                     this.errors = data.errors || {};
-                    this.saveError = 'Please fix the errors below.';
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { text: 'Please fix the errors highlighted below.', type: 'error' }
+                    }));
                 }
             } catch (e) {
-                this.saveError = 'Something went wrong. Please try again.';
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { text: 'Something went wrong. Please try again.', type: 'error' }
+                }));
             }
             this.saving = false;
         },
@@ -251,12 +253,15 @@ function profilePage() {
                 });
                 const data = await res.json();
                 if (data.success) {
-                    this.phoneVerifySuccess = data.message + (data.dev_code ? ' (Dev: ' + data.dev_code + ')' : '');
+                    const msg = data.message + (data.dev_code ? ' (Dev: ' + data.dev_code + ')' : '');
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { text: msg, type: 'success' } }));
                 } else {
-                    this.phoneVerifyError = data.error || 'Could not send code.';
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { text: data.error || 'Could not send code.', type: 'error' }
+                    }));
                 }
             } catch (e) {
-                this.phoneVerifyError = 'Network error.';
+                window.dispatchEvent(new CustomEvent('toast', { detail: { text: 'Network error.', type: 'error' } }));
             }
             this.phoneSending = false;
         },
@@ -276,12 +281,13 @@ function profilePage() {
                 const data = await res.json();
                 if (data.success) {
                     this.phoneVerified = true;
-                    this.phoneVerifySuccess = data.message;
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { text: data.message, type: 'success' } }));
                 } else {
-                    this.phoneVerifyError = data.error || 'Verification failed.';
+                    const msg = data.error || 'Verification failed.';
+                    this.phoneVerifyError = msg;
                 }
             } catch (e) {
-                this.phoneVerifyError = 'Network error.';
+                window.dispatchEvent(new CustomEvent('toast', { detail: { text: 'Network error.', type: 'error' } }));
             }
             this.phoneVerifying = false;
         },

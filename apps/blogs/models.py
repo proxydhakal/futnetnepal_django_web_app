@@ -1,57 +1,50 @@
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
-from django.contrib.auth.models import User
 from django.utils.text import slugify
 from ckeditor_uploader.fields import RichTextUploadingField
 
-class Category(models.Model):
+from futnetnepal.models import TimestampedSoftDeleteModel
+
+
+class Category(TimestampedSoftDeleteModel):
     title = models.CharField(max_length=30, unique=True)
-   
+
     class Meta:
-        ordering =['title']
-        verbose_name_plural = "categories"        
-                                                
+        ordering = ['title']
+        verbose_name_plural = 'categories'
 
-    def __str__(self):                          
-        return self.title                         
-class Tag(models.Model):
-    t_name = models.CharField(max_length=30,unique=True)
-    # blog = models.ForeignKey(
-    #     Blog,
-    #     on_delete=models.CASCADE,
-    #     related_name="tags",
-    #     related_query_name="tag",
-    # )
+    def __str__(self):
+        return self.title
+
+
+class Tag(TimestampedSoftDeleteModel):
+    t_name = models.CharField(max_length=30, unique=True)
+
     class Meta:
-        ordering =['t_name']
-        verbose_name_plural = "tags"        
-                                                
+        ordering = ['t_name']
+        verbose_name_plural = 'tags'
 
-    def __str__(self):                          
-        return self.t_name                         
+    def __str__(self):
+        return self.t_name
 
 
-class Blog(models.Model):
-   
-    title =models.CharField(max_length=255)
+class Blog(TimestampedSoftDeleteModel):
+    title = models.CharField(max_length=255)
     content = RichTextUploadingField()
     count = models.IntegerField(default=0)
-    category =models.ForeignKey(Category,on_delete=models.SET_NULL, null=True)
-    cover_image =models.ImageField(upload_to='media/blog',null=True)
-    author = models.ForeignKey(User,on_delete=models.SET_NULL, null=True)
-    tags=models.ManyToManyField(Tag)
-    slug =  models.SlugField(null=True, max_length=255, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    cover_image = models.ImageField(upload_to='media/blog', null=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    tags = models.ManyToManyField(Tag)
+    slug = models.SlugField(null=True, max_length=255, blank=True)
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
-        super(Blog, self).save(*args, **kwargs)
-
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         category_slug = self.category.title if self.category else 'general'
@@ -59,5 +52,3 @@ class Blog(models.Model):
             'blog_detail',
             kwargs={'slug': self.slug, 'category': category_slug},
         )
-
-    

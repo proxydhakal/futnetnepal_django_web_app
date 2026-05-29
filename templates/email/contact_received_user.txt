@@ -1,0 +1,15 @@
+Hi {{ display_name }},
+
+Thank you for contacting {{ site_name }}.
+
+We received your inquiry about: {{ subject }}
+
+Your message:
+{{ message }}
+
+We will get back to you as soon as possible, usually within 1–2 business days.
+
+If your inquiry is urgent, contact us at {{ info_email }}.
+
+© {{ copyright_year }} Futnet Nepal Pvt. Ltd.
+{{ site_url }}

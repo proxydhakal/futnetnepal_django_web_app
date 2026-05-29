@@ -6,37 +6,41 @@
             <h2 class="text-lg font-bold">Edit Event</h2>
             <button type="button" @click="closeEdit()" class="text-white/80 hover:text-white text-xl">&times;</button>
         </div>
-        <form id="editForm" @submit.prevent="submitEdit" class="p-6 space-y-4 bg-white">
+        <form id="editForm" @submit.prevent="submitEdit" class="p-6 space-y-4 bg-white" novalidate>
             {% csrf_token %}
             <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label class="text-sm font-semibold text-sky-900">Location</label>
+                <div class="fn-field">
+                    <label class="fn-label" for="edit_location">Location</label>
                     <select name="location" id="edit_location" class="fn-input fn-select2">
                         {% for loc in locations %}<option value="{{ loc.id }}">{{ loc.name }}</option>{% endfor %}
                     </select>
+                    <p class="fn-field-error hidden" data-field-error="location" role="alert"></p>
                 </div>
-                <div>
-                    <label class="text-sm font-semibold text-sky-900">Venue</label>
+                <div class="fn-field">
+                    <label class="fn-label" for="edit_venue">Venue</label>
                     <select name="venue" id="edit_venue" class="fn-input fn-select2">
                         {% for v in venues %}<option value="{{ v.id }}">{{ v.name }}</option>{% endfor %}
                     </select>
+                    <p class="fn-field-error hidden" data-field-error="venue" role="alert"></p>
                 </div>
-                <div>
-                    <label class="text-sm font-semibold text-sky-900">Date</label>
+                <div class="fn-field">
+                    <label class="fn-label" for="edit_date">Date</label>
                     <input type="date" name="date" id="edit_date" class="fn-input">
+                    <p class="fn-field-error hidden" data-field-error="date" role="alert"></p>
                 </div>
-                <div>
-                    <label class="text-sm font-semibold text-sky-900">Time</label>
+                <div class="fn-field">
+                    <label class="fn-label" for="edit_time">Time</label>
                     <select name="time" id="edit_time" class="fn-input fn-select2">
                         {% for t in timess %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
                     </select>
+                    <p class="fn-field-error hidden" data-field-error="time" role="alert"></p>
                 </div>
             </div>
-            <div>
-                <label class="text-sm font-semibold text-sky-900">Message</label>
+            <div class="fn-field">
+                <label class="fn-label" for="edit_message">Message</label>
                 <textarea name="message" id="edit_message" rows="3" class="fn-input"></textarea>
+                <p class="fn-field-error hidden" data-field-error="message" role="alert"></p>
             </div>
-            <p class="text-sm text-rose-600 hidden" id="editFormError"></p>
             <button type="submit" :disabled="saving" class="w-full bg-sky-600 hover:bg-sky-500 disabled:opacity-60 text-white font-bold py-3 rounded-xl shadow-md shadow-sky-600/20">
                 <span x-text="saving ? 'Saving...' : 'Save changes'"></span>
             </button>

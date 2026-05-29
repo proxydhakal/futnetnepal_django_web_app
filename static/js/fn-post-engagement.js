@@ -1,3 +1,29 @@
+/** Inline field errors + toast for __all__ / unknown keys. */
+function fnApplyFormErrors(formEl, errors) {
+    if (!formEl) return;
+    formEl.querySelectorAll('[data-field-error]').forEach((el) => {
+        el.textContent = '';
+        el.classList.add('hidden');
+        el.closest('.fn-field')?.classList.remove('fn-field--error');
+    });
+    if (!errors || typeof errors !== 'object') return;
+    Object.entries(errors).forEach(([field, msgs]) => {
+        const text = Array.isArray(msgs) ? msgs.join(' ') : String(msgs);
+        if (field === '__all__') {
+            window.dispatchEvent(new CustomEvent('toast', { detail: { text, type: 'error' } }));
+            return;
+        }
+        const slot = formEl.querySelector(`[data-field-error="${field}"]`);
+        if (slot) {
+            slot.textContent = text;
+            slot.classList.remove('hidden');
+            slot.closest('.fn-field')?.classList.add('fn-field--error');
+        } else {
+            window.dispatchEvent(new CustomEvent('toast', { detail: { text, type: 'error' } }));
+        }
+    });
+}
+
 function postEngagement(postId, postSlug, hostUsername, interested, liked, interestCount, likeCount, commentCount, canChat, isHost, eventLocked) {
     return {
         postId,
@@ -166,10 +192,11 @@ function postEditModal() {
         },
         submitEdit() {
             this.saving = true;
-            document.getElementById('editFormError').classList.add('hidden');
+            const form = document.getElementById('editForm');
+            fnApplyFormErrors(form, null);
             fetch('/update_post/' + this.editingPostId + '/', {
                 method: 'POST',
-                body: new FormData(document.getElementById('editForm')),
+                body: new FormData(form),
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
             })
                 .then(r => r.json().then(d => ({ ok: r.ok, d })))
@@ -177,13 +204,19 @@ function postEditModal() {
                     if (ok && d.success) {
                         window.dispatchEvent(new CustomEvent('toast', { detail: { text: d.message || 'Event updated.', type: 'success' } }));
                         setTimeout(() => location.reload(), 600);
+                    } else if (d.errors) {
+                        fnApplyFormErrors(form, d.errors);
                     } else {
-                        const err = document.getElementById('editFormError');
-                        err.textContent = d.error || 'Please check the form and try again.';
-                        err.classList.remove('hidden');
+                        window.dispatchEvent(new CustomEvent('toast', {
+                            detail: { text: d.error || 'Please check the form and try again.', type: 'error' },
+                        }));
                     }
                 })
-                .catch(() => alert('Update failed. Please try again.'))
+                .catch(() => {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { text: 'Update failed. Please try again.', type: 'error' },
+                    }));
+                })
                 .finally(() => { this.saving = false; });
         },
     };
@@ -244,10 +277,16 @@ function postDeleteModal() {
                         this.deletingPostSlug = null;
                         this.deletingPreview = '';
                     } else {
-                        this.deleteError = d.error || 'Could not delete this match.';
+                        window.dispatchEvent(new CustomEvent('toast', {
+                            detail: { text: d.error || 'Could not delete this match.', type: 'error' },
+                        }));
                     }
                 })
-                .catch(() => { this.deleteError = 'Delete failed. Please try again.'; })
+                .catch(() => {
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { text: 'Delete failed. Please try again.', type: 'error' },
+                    }));
+                })
                 .finally(() => { this.deleting = false; });
         },
     };

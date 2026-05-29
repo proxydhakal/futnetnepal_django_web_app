@@ -1,0 +1,23 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block extra_head %}
+{% if page.meta_description %}<meta name="description" content="{{ page.meta_description|striptags|truncatechars:320 }}">{% endif %}
+{% if page.meta_keywords %}<meta name="keywords" content="{{ page.meta_keywords }}">{% endif %}
+{% endblock %}
+
+{% block main %}
+{% if page.hero_image %}
+{% include "partials/page_hero.html" with page_title=page.title page_subtitle=page.meta_description|truncatechars:160 hero_image=page.hero_image.url hero_static=False %}
+{% else %}
+{% include "partials/page_hero.html" with page_title=page.title page_subtitle=page.meta_description|truncatechars:160 hero_image="images/cover2.jpg" hero_static=True %}
+{% endif %}
+
+<section class="py-16 md:py-20 bg-white">
+    <div class="container mx-auto px-4 md:px-8 max-w-4xl">
+        <article class="prose prose-slate prose-lg max-w-none fn-cms-content">
+            {{ page.content|safe }}
+        </article>
+    </div>
+</section>
+{% endblock %}

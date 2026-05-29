@@ -138,9 +138,19 @@ def dm_chat_send(request, conversation_id):
         return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
     if is_event_locked(conv.post):
         return event_locked_response()
-    body = (request.POST.get('body') or '').strip()
-    if not body:
-        return JsonResponse({'success': False, 'error': 'Message cannot be empty.'}, status=400)
+    from django.core.exceptions import ValidationError as DjangoValidationError
+    from futnetnepal.input_validation import sanitize_plain_text
+
+    try:
+        body = sanitize_plain_text(
+            request.POST.get('body') or '',
+            max_length=1000,
+            multiline=True,
+            min_length=1,
+            field_label='Message',
+        )
+    except DjangoValidationError as exc:
+        return JsonResponse({'success': False, 'error': exc.messages[0]}, status=400)
     data = _send_dm_and_broadcast(conv, request.user, body)
     data['is_mine'] = True
     return JsonResponse({

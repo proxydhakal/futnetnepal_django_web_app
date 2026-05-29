@@ -1,4 +1,6 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -111,7 +113,7 @@ class VerificationStatusAPIView(APIView):
             'success': True,
             'email': user.email,
             'phone': profile.phone,
-            'email_verified': profile.email_verified,
+            'email_verified': user.is_email_verified,
             'phone_verified': profile.phone_verified,
         })
 
@@ -134,7 +136,7 @@ class VerifyEmailAPIView(APIView):
                     {'success': False, 'error': 'Invalid or expired verification link.'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            already = profile.email_verified
+            already = profile.user.is_email_verified
             if not already:
                 profile.mark_email_verified()
             return Response({
@@ -149,14 +151,14 @@ class VerifyEmailAPIView(APIView):
 
         try:
             profile = profile_for_email(email)
-            already = profile.email_verified
+            already = profile.user.is_email_verified
             if not already:
                 verify_email_code(profile, code)
             profile.refresh_from_db()
             return Response({
                 'success': True,
                 'already_verified': already,
-                'email_verified': profile.email_verified,
+                'email_verified': profile.user.is_email_verified,
                 'phone_verified': profile.phone_verified,
                 'message': 'Email verified. Continue to phone verification.',
             })
@@ -188,7 +190,7 @@ class PhoneSendOtpAPIView(APIView):
                     {'success': False, 'error': 'Email is required.'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            if not profile.email_verified:
+            if not profile.user.is_email_verified:
                 return Response(
                     {'success': False, 'error': 'Verify your email before verifying your phone.'},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -257,7 +259,7 @@ class ResendVerificationAPIView(APIView):
                 'message': 'If an account exists, a verification email has been sent.',
             })
         profile = Profile.objects.get(user=user)
-        if profile.email_verified:
+        if user.is_email_verified:
             return Response({
                 'success': True,
                 'message': 'This email is already verified.',
@@ -305,12 +307,15 @@ class PasswordResetRequestAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         form = StyledPasswordResetForm(data={'email': serializer.validated_data['email']})
         if form.is_valid():
+            from futnetnepal.email import base_email_context
+
             form.save(
                 request=request,
                 use_https=request.is_secure(),
                 email_template_name='accounts/email/password_reset_email.txt',
                 subject_template_name='accounts/email/password_reset_subject.txt',
                 html_email_template_name='accounts/email/password_reset_email.html',
+                extra_email_context=base_email_context(),
             )
         return Response({
             'success': True,

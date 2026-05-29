@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 import logging
@@ -9,22 +9,36 @@ from apps.accounts.email_utils import send_verification_email_code, send_verific
 logger = logging.getLogger(__name__)
 from apps.accounts.email_verification import EmailVerificationError, issue_email_code, verify_email_code
 from apps.accounts.forms import RegisterForm, UserProfileUpdateForm, UserUpdateForm
+from apps.api.secure_serializers import SecureInputSerializerMixin
 from apps.accounts.models import Profile
 from apps.accounts.phone_verification import PhoneVerificationError, issue_phone_otp
 from apps.accounts.stats import user_profile_stats
 from apps.blogs.models import Blog, Category, Tag
-from apps.core.forms import ContactForm, UserPostForm, VenueBookingForm
+User = get_user_model()
+
 from apps.core.models import (
+    CMSPage,
     Contact,
     DirectConversation,
     EventChatMessage,
     Location,
+    NewsletterSubscription,
     Notification,
     Post,
+    SiteConfiguration,
     Time,
+    UserReview,
     Venue,
     VenueBooking,
 )
+from apps.core.forms import (
+    ContactForm,
+    NewsletterSubscriptionForm,
+    UserPostForm,
+    UserReviewForm,
+    VenueBookingForm,
+)
+from futnetnepal.youtube import youtube_embed_url
 
 
 def _validate_django_form(form):
@@ -54,13 +68,13 @@ class UserBriefSerializer(serializers.ModelSerializer):
         return obj.get_full_name() or obj.username
 
     def get_avatar_url(self, obj):
-        profile = getattr(obj, 'profile', None)
-        if profile and profile.profile_image:
-            return absolute_media_url(self.context.get('request'), profile.profile_image)
+        if obj.profile_image:
+            return absolute_media_url(self.context.get('request'), obj.profile_image)
         return None
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    email_verified = serializers.SerializerMethodField()
     profile_image_url = serializers.SerializerMethodField()
     cover_image_url = serializers.SerializerMethodField()
 
@@ -72,8 +86,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('email_verified', 'phone_verified')
 
+    def get_email_verified(self, obj):
+        return obj.user.is_email_verified
+
     def get_profile_image_url(self, obj):
-        return absolute_media_url(self.context.get('request'), obj.profile_image)
+        return absolute_media_url(self.context.get('request'), obj.user.profile_image)
 
     def get_cover_image_url(self, obj):
         return absolute_media_url(self.context.get('request'), obj.cover_image)
@@ -86,10 +103,10 @@ class UserMeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'email', 'first_name', 'last_name',
+            'id', 'username', 'email', 'full_name', 'role', 'is_email_verified',
             'profile', 'stats',
         )
-        read_only_fields = ('id', 'username', 'email')
+        read_only_fields = ('id', 'username', 'email', 'role', 'is_email_verified')
 
     def get_stats(self, obj):
         return user_profile_stats(obj)
@@ -99,7 +116,6 @@ class UserProfileUpdateSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150, required=False)
     email = serializers.EmailField(required=False)
     full_name = serializers.CharField(max_length=300, required=False, allow_blank=True)
-    first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     phone = serializers.CharField(max_length=10, required=False, allow_blank=True)
     address = serializers.CharField(max_length=255, required=False, allow_blank=True)
     dob = serializers.DateField(required=False, allow_null=True)
@@ -110,7 +126,7 @@ class UserProfileUpdateSerializer(serializers.Serializer):
         user = instance
         profile = user.profile
         user_data = {}
-        for key in ('username', 'email', 'full_name', 'first_name'):
+        for key in ('username', 'email', 'full_name'):
             if key in validated_data:
                 user_data[key] = validated_data[key]
         if user_data:
@@ -135,6 +151,7 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.Serializer):
+    full_name = serializers.CharField(max_length=300)
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     phone = serializers.CharField(max_length=10)
@@ -162,7 +179,9 @@ class RegisterSerializer(serializers.Serializer):
         return user
 
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(SecureInputSerializerMixin, serializers.Serializer):
+    SECURE_STRING_FIELDS = {'login': 'login'}
+
     login = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
@@ -176,7 +195,7 @@ class LoginSerializer(serializers.Serializer):
         if user is None:
             raise serializers.ValidationError('Invalid username/email or password.')
         profile = getattr(user, 'profile', None)
-        if profile is not None and not profile.email_verified:
+        if not user.is_email_verified:
             raise serializers.ValidationError(
                 'Please verify your email before logging in.',
                 code='email_unverified',
@@ -190,7 +209,9 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
-class VerifyEmailSerializer(serializers.Serializer):
+class VerifyEmailSerializer(SecureInputSerializerMixin, serializers.Serializer):
+    SECURE_STRING_FIELDS = {'token': 'token', 'code': 'otp'}
+
     token = serializers.CharField(required=False, allow_blank=True)
     code = serializers.CharField(required=False, allow_blank=True, max_length=6)
     email = serializers.EmailField(required=False, allow_blank=True)
@@ -342,7 +363,9 @@ class PostSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class PostCommentCreateSerializer(serializers.Serializer):
+class PostCommentCreateSerializer(SecureInputSerializerMixin, serializers.Serializer):
+    SECURE_STRING_FIELDS = {'body': 'multiline'}
+
     body = serializers.CharField(max_length=2000)
     parent_id = serializers.IntegerField(required=False, allow_null=True)
 
@@ -413,7 +436,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.Serializer):
     conversation_id = serializers.IntegerField()
-    post_id = serializers.IntegerField()
+    post_id = serializers.UUIDField()
     post_slug = serializers.CharField()
     other_user = UserBriefSerializer()
     title = serializers.CharField()
@@ -435,12 +458,16 @@ class ChatMessageSerializer(serializers.Serializer):
     is_mine = serializers.BooleanField()
 
 
-class ChatSendSerializer(serializers.Serializer):
+class ChatSendSerializer(SecureInputSerializerMixin, serializers.Serializer):
+    SECURE_STRING_FIELDS = {'body': 'multiline'}
+
     body = serializers.CharField(max_length=1000)
 
 
-class OpenConversationSerializer(serializers.Serializer):
-    post_id = serializers.IntegerField()
+class OpenConversationSerializer(SecureInputSerializerMixin, serializers.Serializer):
+    SECURE_STRING_FIELDS = {'username': 'username'}
+
+    post_id = serializers.UUIDField()
     username = serializers.CharField(required=False, allow_blank=True)
 
 
@@ -481,21 +508,39 @@ class BlogDetailSerializer(BlogListSerializer):
 
 
 class ContactSerializer(serializers.ModelSerializer):
+    subject = serializers.ChoiceField(choices=Contact.SUBJECT_CHOICES)
+
     class Meta:
         model = Contact
-        fields = ('fullname', 'phone', 'email', 'message')
+        fields = ('fullname', 'phone', 'email', 'subject', 'message')
 
     def validate(self, attrs):
-        form = ContactForm(data=attrs)
+        payload = dict(attrs)
+        if 'phone' in payload and payload['phone'] is not None:
+            payload['phone'] = str(payload['phone']).strip()
+        form = ContactForm(data=payload)
         if not form.is_valid():
             raise serializers.ValidationError(form.errors)
-        return attrs
+        return form.cleaned_data
 
     def create(self, validated_data):
-        return Contact.objects.create(**validated_data)
+        from apps.core.contact_inquiry import send_contact_inquiry_received_emails
+
+        contact = Contact.objects.create(**validated_data)
+        try:
+            send_contact_inquiry_received_emails(contact)
+        except Exception as exc:
+            contact.hard_delete()
+            logger.exception('Contact inquiry emails failed for %s', contact.pk)
+            raise serializers.ValidationError(
+                'We could not submit your message right now. Please try again later.',
+            ) from exc
+        return contact
 
 
-class SearchQuerySerializer(serializers.Serializer):
+class SearchQuerySerializer(SecureInputSerializerMixin, serializers.Serializer):
+    SECURE_STRING_FIELDS = {'q': 'plain'}
+
     q = serializers.CharField(min_length=2, max_length=100)
 
 
@@ -517,6 +562,176 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
+
+class SiteConfigurationPublicSerializer(serializers.ModelSerializer):
+    logo_url = serializers.SerializerMethodField()
+    favicon_url = serializers.SerializerMethodField()
+    about_image_url = serializers.SerializerMethodField()
+    partner_image_url = serializers.SerializerMethodField()
+    about_youtube_embed = serializers.SerializerMethodField()
+    home_youtube_embed = serializers.SerializerMethodField()
+    partner_bullets = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SiteConfiguration
+        fields = (
+            'site_title',
+            'logo_url',
+            'favicon_url',
+            'meta_description',
+            'meta_keywords',
+            'about_hero_eyebrow',
+            'about_hero_title',
+            'about_hero_subtitle',
+            'about_content',
+            'about_image_url',
+            'about_youtube_url',
+            'about_youtube_embed',
+            'about_cta_label',
+            'partner_hero_eyebrow',
+            'partner_hero_title',
+            'partner_hero_subtitle',
+            'partner_content',
+            'partner_bullets',
+            'partner_image_url',
+            'home_welcome_eyebrow',
+            'home_welcome_title',
+            'home_welcome_content',
+            'home_youtube_url',
+            'home_youtube_embed',
+            'company_name',
+            'contact_address',
+            'contact_email',
+            'contact_phone',
+            'contact_website',
+            'facebook_url',
+            'twitter_url',
+            'instagram_url',
+            'youtube_social_url',
+            'linkedin_url',
+            'updated_at',
+        )
+
+    def get_logo_url(self, obj):
+        return absolute_media_url(self.context.get('request'), obj.logo)
+
+    def get_favicon_url(self, obj):
+        return absolute_media_url(self.context.get('request'), obj.favicon)
+
+    def get_about_image_url(self, obj):
+        return absolute_media_url(self.context.get('request'), obj.about_image)
+
+    def get_partner_image_url(self, obj):
+        return absolute_media_url(self.context.get('request'), obj.partner_image)
+
+    def get_about_youtube_embed(self, obj):
+        return youtube_embed_url(obj.about_youtube_url)
+
+    def get_home_youtube_embed(self, obj):
+        return youtube_embed_url(obj.home_youtube_url)
+
+    def get_partner_bullets(self, obj):
+        if not obj.partner_bullets:
+            return []
+        return [line.strip() for line in obj.partner_bullets.splitlines() if line.strip()]
+
+
+class CMSPageListSerializer(serializers.ModelSerializer):
+    hero_image_url = serializers.SerializerMethodField()
+    absolute_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CMSPage
+        fields = (
+            'id', 'title', 'slug', 'hero_image_url',
+            'meta_description', 'show_in_navbar', 'show_in_footer',
+            'sort_order', 'absolute_url',
+        )
+
+    def get_hero_image_url(self, obj):
+        return absolute_media_url(self.context.get('request'), obj.hero_image)
+
+    def get_absolute_url(self, obj):
+        request = self.context.get('request')
+        path = obj.get_absolute_url()
+        if request:
+            return request.build_absolute_uri(path)
+        return path
+
+
+class CMSPageDetailSerializer(CMSPageListSerializer):
+    content = serializers.CharField(read_only=True)
+
+    class Meta(CMSPageListSerializer.Meta):
+        fields = CMSPageListSerializer.Meta.fields + (
+            'content', 'meta_keywords',
+        )
+
+
+class NewsletterSubscribeSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    email = serializers.EmailField(max_length=254)
+
+    def validate(self, attrs):
+        form = NewsletterSubscriptionForm(data=attrs)
+        if not form.is_valid():
+            raise serializers.ValidationError(form.errors)
+        return form.cleaned_data
+
+    def create(self, validated_data):
+        from apps.core.newsletter import send_newsletter_subscription_emails
+
+        subscription = NewsletterSubscription.objects.create(**validated_data)
+        try:
+            send_newsletter_subscription_emails(subscription)
+        except Exception as exc:
+            subscription.hard_delete()
+            logger.exception('Newsletter emails failed for %s', subscription.email)
+            raise serializers.ValidationError(
+                'We could not complete your subscription right now. Please try again later.',
+            ) from exc
+        return subscription
+
+
+class UserReviewPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserReview
+        fields = ('id', 'name', 'rating', 'message', 'created_at')
+
+
+class UserReviewCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    email = serializers.EmailField(max_length=254)
+    rating = serializers.IntegerField(min_value=1, max_value=5)
+    message = serializers.CharField(max_length=5000)
+
+    def validate(self, attrs):
+        form = UserReviewForm(data=attrs)
+        if not form.is_valid():
+            raise serializers.ValidationError(form.errors)
+        return form.cleaned_data
+
+    def create(self, validated_data):
+        from apps.core.reviews import send_new_review_admin_email
+
+        review = UserReview(
+            name=validated_data['name'],
+            email=validated_data['email'],
+            rating=validated_data['rating'],
+            message=validated_data['message'],
+            is_approved=False,
+        )
+        review.save()
+        try:
+            send_new_review_admin_email(review)
+        except Exception as exc:
+            review.hard_delete()
+            logger.exception('Review admin email failed for %s', review.pk)
+            raise serializers.ValidationError(
+                'We could not submit your review right now. Please try again later.',
+            ) from exc
+        return review
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):

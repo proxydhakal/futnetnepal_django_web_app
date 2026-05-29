@@ -15,6 +15,13 @@ from apps.api.views.auth import (
     TokenRefreshAPIView,
     VerifyEmailAPIView,
 )
+from apps.api.views.content import (
+    CMSPageViewSet,
+    NewsletterSubscribeAPIView,
+    PublicHomeAPIView,
+    SiteConfigurationAPIView,
+    UserReviewAPIView,
+)
 from apps.api.views.messages import ConversationViewSet, OpenConversationAPIView
 from apps.api.views.misc import (
     BlogViewSet,
@@ -43,6 +50,7 @@ router.register(r'notifications', NotificationViewSet, basename='api-notificatio
 router.register(r'conversations', ConversationViewSet, basename='api-conversation')
 router.register(r'blogs', BlogViewSet, basename='api-blog')
 router.register(r'blog-categories', CategoryViewSet, basename='api-blog-category')
+router.register(r'cms-pages', CMSPageViewSet, basename='api-cms-page')
 
 urlpatterns = [
     path('auth/register/', RegisterAPIView.as_view(), name='api-register'),
@@ -60,6 +68,10 @@ urlpatterns = [
     path('profile/stats/', ProfileStatsAPIView.as_view(), name='api-profile-stats'),
     path('search/', SearchAPIView.as_view(), name='api-search'),
     path('contact/', ContactAPIView.as_view(), name='api-contact'),
+    path('site/', SiteConfigurationAPIView.as_view(), name='api-site'),
+    path('public/home/', PublicHomeAPIView.as_view(), name='api-public-home'),
+    path('newsletter/subscribe/', NewsletterSubscribeAPIView.as_view(), name='api-newsletter'),
+    path('reviews/', UserReviewAPIView.as_view(), name='api-reviews'),
     path('conversations/open/', OpenConversationAPIView.as_view(), name='api-conversation-open'),
     path(
         'notifications/<int:notification_id>/read/',

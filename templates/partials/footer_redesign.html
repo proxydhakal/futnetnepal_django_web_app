@@ -6,11 +6,14 @@
                 <div class="absolute -right-20 -top-20 w-64 h-64 bg-sky-500 rounded-full blur-3xl opacity-50"></div>
                 <h2 class="text-2xl md:text-4xl font-extrabold mb-3 relative z-10">Subscribe to Our Newsletter</h2>
                 <p class="text-sky-100 mb-10 relative z-10">Join our mailing list to get news and updates</p>
-                <form class="flex flex-col md:flex-row gap-4 w-full relative z-10">
-                    <input type="text" placeholder="First Name" class="flex-1 px-6 py-4 rounded-full text-slate-800 bg-white focus:outline-none focus:ring-4 focus:ring-yellow-400/50">
-                    <input type="text" placeholder="Last Name" class="flex-1 px-6 py-4 rounded-full text-slate-800 bg-white focus:outline-none focus:ring-4 focus:ring-yellow-400/50">
-                    <input type="email" placeholder="Email" class="flex-1 px-6 py-4 rounded-full text-slate-800 bg-white focus:outline-none focus:ring-4 focus:ring-yellow-400/50">
-                    <button type="button" class="bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-extrabold py-4 px-10 rounded-full transition-all duration-300">SUBSCRIBE</button>
+                <form method="post" action="{% url 'newsletter_subscribe' %}" class="flex flex-col md:flex-row gap-4 w-full relative z-10">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="text" name="name" placeholder="Your name" required maxlength="255" autocomplete="name"
+                           class="flex-1 px-6 py-4 rounded-full text-slate-800 bg-white focus:outline-none focus:ring-4 focus:ring-yellow-400/50">
+                    <input type="email" name="email" placeholder="Email" required maxlength="254" autocomplete="email"
+                           class="flex-1 px-6 py-4 rounded-full text-slate-800 bg-white focus:outline-none focus:ring-4 focus:ring-yellow-400/50">
+                    <button type="submit" class="bg-yellow-400 hover:bg-yellow-300 text-sky-950 font-extrabold py-4 px-10 rounded-full transition-all duration-300">SUBSCRIBE</button>
                 </form>
             </div>
         </div>
@@ -35,17 +38,32 @@
                 <li><a href="{% url 'partnerwithus' %}" class="hover:text-yellow-400 hover:translate-x-1 inline-block transition-all">Partner With Us</a></li>
                 <li><a href="{% url 'contact' %}" class="hover:text-yellow-400 hover:translate-x-1 inline-block transition-all">Contact Us</a></li>
                 <li><a href="{% url 'review' %}" class="hover:text-yellow-400 hover:translate-x-1 inline-block transition-all">Reviews</a></li>
+                {% for p in footer_cms_pages %}
+                <li><a href="{{ p.get_absolute_url }}" class="hover:text-yellow-400 hover:translate-x-1 inline-block transition-all">{{ p.title }}</a></li>
+                {% endfor %}
             </ul>
         </div>
         <div class="lg:col-span-2">
             <h4 class="text-white text-lg font-bold mb-6 flex items-center gap-2">
                 <span class="w-1.5 h-6 bg-sky-500 rounded-full inline-block"></span>
-                Futnet Nepal Pvt. Ltd
+                {{ site_config.company_name|default:"Futnet Nepal Pvt. Ltd." }}
             </h4>
             <ul class="space-y-4 text-sm">
-                <li class="flex items-start gap-4">{% include "partials/fa_icon.html" with name="location-dot" class="fn-icon text-yellow-400 mt-0.5" %} Balaju, Kathmandu, Nepal</li>
-                <li class="flex items-start gap-4">{% include "partials/fa_icon.html" with name="phone" class="fn-icon text-yellow-400 mt-0.5" %} +977 9840177381</li>
-                <li class="flex items-start gap-4">{% include "partials/fa_icon.html" with name="envelope" class="fn-icon text-yellow-400 mt-0.5" %} info@futnetnepal.com</li>
+                {% if site_config.contact_address %}
+                <li class="flex items-start gap-4">{% include "partials/fa_icon.html" with name="location-dot" class="fn-icon text-yellow-400 mt-0.5" %} {{ site_config.contact_address }}</li>
+                {% endif %}
+                {% if site_config.contact_phone %}
+                <li class="flex items-start gap-4">{% include "partials/fa_icon.html" with name="phone" class="fn-icon text-yellow-400 mt-0.5" %} {{ site_config.contact_phone }}</li>
+                {% endif %}
+                {% if site_config.contact_email %}
+                <li class="flex items-start gap-4">{% include "partials/fa_icon.html" with name="envelope" class="fn-icon text-yellow-400 mt-0.5" %} {{ site_config.contact_email }}</li>
+                {% endif %}
+                {% if site_config.contact_website %}
+                <li class="flex items-start gap-4">
+                    <i class="fa-solid fa-globe fn-icon text-yellow-400 mt-0.5" aria-hidden="true"></i>
+                    <a href="{{ site_config.contact_website }}" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-400">{{ site_config.contact_website }}</a>
+                </li>
+                {% endif %}
             </ul>
             <p class="mt-6 text-sm font-semibold text-white">Follow us</p>
             <div class="mt-3">

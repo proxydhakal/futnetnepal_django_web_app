@@ -1,9 +1,9 @@
 {% load static %}
-<div class="text-center mb-6">
+<div class="fn-auth-brand">
     <a href="{% url 'index' %}" class="inline-block">
-        <img src="{% static 'images/logo.png' %}" alt="Futnet Nepal" class="h-14 md:h-16 w-auto mx-auto">
+        <img src="{% static 'images/logo.png' %}" alt="Futnet Nepal">
     </a>
     {% if auth_tagline %}
-    <p class="text-slate-500 text-sm mt-3">{{ auth_tagline }}</p>
+    <p class="text-slate-500 text-sm mt-2 px-1">{{ auth_tagline }}</p>
     {% endif %}
 </div>

@@ -3,9 +3,8 @@
 {% block header %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block main %}
-<div class="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12"
-     x-data="verifyAccountPage()" x-init="init()">
-    <div class="w-full max-w-lg">
+<div class="fn-auth-shell" x-data="verifyAccountPage()" x-init="init()">
+    <div class="w-full max-w-lg mx-auto">
         {% include "partials/auth_brand.html" with auth_tagline="Verify your email and phone to activate your account" %}
         <div class="bg-white rounded-2xl shadow-xl p-8 space-y-6">
             {% csrf_token %}
@@ -67,8 +66,7 @@
                             class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-50">
                         <span x-text="phoneVerifying ? 'Verifying…' : 'Verify phone'"></span>
                     </button>
-                    <p class="text-xs text-rose-600" x-text="phoneError" x-show="phoneError"></p>
-                    <p class="text-xs text-emerald-600" x-text="phoneSuccess" x-show="phoneSuccess"></p>
+                    <p class="fn-field-error" x-show="otpCode && phoneError" x-text="phoneError" role="alert"></p>
                 </div>
             </section>
 
@@ -111,7 +109,9 @@ function verifyAccountPage() {
                     this.phone = data.phone || this.phone;
                     if (this.emailVerified) {
                         this.step = 1;
-                        this.phoneSuccess = 'Email verified! Now verify your phone.';
+                        const msg = 'Email verified! Now verify your phone.';
+                        this.phoneSuccess = msg;
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { text: msg, type: 'success' } }));
                     }
                 }
             } catch (e) {}
@@ -129,9 +129,18 @@ function verifyAccountPage() {
                     method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 });
                 const data = await res.json();
-                if (!data.success) this.phoneError = data.error || 'Could not send code.';
-                else this.phoneSuccess = data.message + (data.dev_code ? ' (Dev: ' + data.dev_code + ')' : '');
-            } catch (e) { this.phoneError = 'Network error.'; }
+                if (!data.success) {
+                    this.phoneError = data.error || 'Could not send code.';
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { text: this.phoneError, type: 'error' } }));
+                } else {
+                    const msg = data.message + (data.dev_code ? ' (Dev: ' + data.dev_code + ')' : '');
+                    this.phoneSuccess = msg;
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { text: msg, type: 'success' } }));
+                }
+            } catch (e) {
+                this.phoneError = 'Network error.';
+                window.dispatchEvent(new CustomEvent('toast', { detail: { text: this.phoneError, type: 'error' } }));
+            }
             this.phoneSending = false;
         },
         async verifyOtp() {
@@ -148,9 +157,18 @@ function verifyAccountPage() {
                     method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 });
                 const data = await res.json();
-                if (!data.success) this.phoneError = data.error || 'Verification failed.';
-                else { this.phoneVerified = true; this.phoneSuccess = data.message; }
-            } catch (e) { this.phoneError = 'Network error.'; }
+                if (!data.success) {
+                    this.phoneError = data.error || 'Verification failed.';
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { text: this.phoneError, type: 'error' } }));
+                } else {
+                    this.phoneVerified = true;
+                    this.phoneSuccess = data.message;
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { text: data.message, type: 'success' } }));
+                }
+            } catch (e) {
+                this.phoneError = 'Network error.';
+                window.dispatchEvent(new CustomEvent('toast', { detail: { text: this.phoneError, type: 'error' } }));
+            }
             this.phoneVerifying = false;
         },
     };

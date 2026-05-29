@@ -3,8 +3,9 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
@@ -25,6 +26,17 @@ from apps.accounts.forms import (
     UserUpdateForm,
 )
 from apps.accounts.models import Profile
+
+User = get_user_model()
+from apps.accounts.password_hints import password_is_valid, password_suggestions, user_for_password_check
+from futnetnepal.input_validation import (
+    reject_password_unsafe_chars,
+    sanitize_email,
+    sanitize_otp_code,
+    sanitize_person_name,
+    sanitize_phone_digits,
+    sanitize_username,
+)
 from apps.accounts.stats import user_profile_stats
 from apps.core.engagement import posts_with_engagement
 from apps.core.models import Location, Time, Venue
@@ -52,7 +64,7 @@ class LoginView(View):
 
     def get(self, request):
         if request.user.is_authenticated:
-            if request.user.profile.email_verified and (
+            if request.user.is_email_verified and (
                 not request.user.profile.phone or request.user.profile.phone_verified
             ):
                 return redirect(settings.LOGIN_REDIRECT_URL)
@@ -61,7 +73,7 @@ class LoginView(View):
 
     def post(self, request):
         if request.user.is_authenticated:
-            if request.user.profile.email_verified:
+            if request.user.is_email_verified:
                 return redirect(settings.LOGIN_REDIRECT_URL)
             return redirect('accounts:verify_email_pending')
         form = LoginForm(request, data=request.POST)
@@ -71,7 +83,7 @@ class LoginView(View):
             next_url = request.GET.get('next') or settings.LOGIN_REDIRECT_URL
             return redirect(next_url)
         user = getattr(form, 'user_cache', None)
-        if user is not None and hasattr(user, 'profile') and not user.profile.email_verified:
+        if user is not None and not user.is_email_verified:
             request.session['pending_verify_email'] = user.email
             request.session['pending_verify_phone'] = user.profile.phone or ''
             messages.warning(
@@ -93,14 +105,14 @@ class RegisterView(View):
 
     def get(self, request):
         if request.user.is_authenticated:
-            if request.user.profile.email_verified:
+            if request.user.is_email_verified:
                 return redirect(settings.LOGIN_REDIRECT_URL)
             return redirect('accounts:verify_email_pending')
         return render(request, self.template_name, {'form': RegisterForm()})
 
     def post(self, request):
         if request.user.is_authenticated:
-            if request.user.profile.email_verified:
+            if request.user.is_email_verified:
                 return redirect(settings.LOGIN_REDIRECT_URL)
             return redirect('accounts:verify_email_pending')
         form = RegisterForm(request.POST)
@@ -126,6 +138,26 @@ class RegisterView(View):
         return render(request, self.template_name, {'form': form})
 
 
+class PasswordCheckView(View):
+    """AJAX checklist while typing password on signup."""
+
+    def post(self, request):
+        password = request.POST.get('password', '')
+        try:
+            reject_password_unsafe_chars(password)
+            username = sanitize_username(request.POST.get('username', '') or 'ab')
+            email = sanitize_email(request.POST.get('email', '') or 'a@b.co')
+            full_name = sanitize_person_name(request.POST.get('full_name', '') or 'Ab')
+        except Exception as exc:
+            return JsonResponse({'suggestions': [], 'valid': False, 'error': str(exc)}, status=400)
+        user = user_for_password_check(username=username, email=email, full_name=full_name)
+        suggestions = password_suggestions(password, user=user)
+        return JsonResponse({
+            'suggestions': suggestions,
+            'valid': password_is_valid(password, user=user),
+        })
+
+
 class SignupEmailSentView(TemplateView):
     template_name = 'accounts/signup_email_sent.html'
 
@@ -149,26 +181,32 @@ class VerifyAccountView(View):
         return render(request, self.template_name, {
             'email': email,
             'phone': phone,
-            'email_verified': profile.email_verified if profile else False,
+            'email_verified': user.is_email_verified if user else False,
             'phone_verified': profile.phone_verified if profile else False,
         })
 
 
 class PhoneSendOtpView(View):
     def post(self, request):
-        email = (request.POST.get('email') or '').strip().lower()
-        phone = request.POST.get('phone') or ''
+        email = (request.POST.get('email') or '').strip()
+        phone = (request.POST.get('phone') or '').strip()
         if request.user.is_authenticated:
             email = request.user.email
             if not phone:
                 phone = request.user.profile.phone
+        try:
+            email = sanitize_email(email) if email else ''
+            if phone:
+                phone = sanitize_phone_digits(phone)
+        except Exception as exc:
+            return JsonResponse({'success': False, 'error': str(exc)}, status=400)
         try:
             profile = profile_for_email(email) if email else None
             if profile is None and request.user.is_authenticated:
                 profile = Profile.objects.get(user=request.user)
             if profile is None:
                 return JsonResponse({'success': False, 'error': 'Email is required.'}, status=400)
-            if not profile.email_verified:
+            if not profile.user.is_email_verified:
                 return JsonResponse(
                     {'success': False, 'error': 'Verify your email before verifying your phone.'},
                     status=400,
@@ -189,13 +227,20 @@ class PhoneSendOtpView(View):
 
 class PhoneVerifyOtpView(View):
     def post(self, request):
-        email = (request.POST.get('email') or '').strip().lower()
-        phone = request.POST.get('phone') or ''
-        code = request.POST.get('code') or ''
+        email = (request.POST.get('email') or '').strip()
+        phone = (request.POST.get('phone') or '').strip()
+        code = (request.POST.get('code') or '').strip()
         if request.user.is_authenticated:
             email = request.user.email
             if not phone:
                 phone = request.user.profile.phone
+        try:
+            email = sanitize_email(email) if email else ''
+            if phone:
+                phone = sanitize_phone_digits(phone)
+            code = sanitize_otp_code(code)
+        except Exception as exc:
+            return JsonResponse({'success': False, 'error': str(exc)}, status=400)
         try:
             profile = profile_for_email(email) if email else None
             if profile is None and request.user.is_authenticated:
@@ -225,7 +270,11 @@ class VerifyEmailPendingView(View):
 
 class ResendVerificationView(View):
     def post(self, request):
-        email = (request.POST.get('email') or '').strip().lower()
+        try:
+            email = sanitize_email(request.POST.get('email') or '')
+        except Exception as exc:
+            messages.error(request, str(exc))
+            return redirect('accounts:verify_account')
         if request.user.is_authenticated:
             email = request.user.email
         if not email:
@@ -239,7 +288,7 @@ class ResendVerificationView(View):
             )
             return redirect('accounts:verify_account')
         profile = Profile.objects.get(user=user)
-        if profile.email_verified:
+        if user.is_email_verified:
             messages.info(request, 'This email is already verified. You can log in.')
             return redirect('accounts:login')
         try:
@@ -263,7 +312,7 @@ class VerifyEmailView(View):
         profile = Profile.objects.filter(email_verification_token=token).first()
         if profile is None:
             return render(request, self.template_invalid)
-        if profile.email_verified:
+        if user.is_email_verified:
             return render(request, self.template_success, {'already_verified': True})
         profile.mark_email_verified()
         request.session.pop('pending_verify_email', None)
@@ -341,3 +390,13 @@ class EditProfile(LoginRequiredMixin, View):
 
 class PasswordChangeDoneView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/password_change_done.html'
+
+
+class BrandedPasswordResetView(auth_views.PasswordResetView):
+    """Password reset emails use the shared HTML layout (logo + copyright footer)."""
+
+    def setup(self, request, *args, **kwargs):
+        from futnetnepal.email import base_email_context
+
+        self.extra_email_context = base_email_context()
+        super().setup(request, *args, **kwargs)
