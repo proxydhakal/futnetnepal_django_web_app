@@ -163,7 +163,10 @@ else:
     if _db_engine == 'mysql':
         _db_engine = 'django.db.backends.mysql'
 
-    _db_options = {'charset': 'utf8mb4'}
+    _db_options = {
+        'charset': 'utf8mb4',
+        'use_unicode': True,
+    }
     if 'mysql' in _db_engine:
         _db_options['init_command'] = "SET sql_mode='STRICT_TRANS_TABLES'"
 
