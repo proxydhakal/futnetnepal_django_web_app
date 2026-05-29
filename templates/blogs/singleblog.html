@@ -1,4 +1,5 @@
 {% extends "partials/base.html" %}
+{% load blog_extras %}
 {% block title %}{{ single_blogs.title }}{% endblock %}
 {% block main %}
 {% include "partials/page_hero.html" with page_title=single_blogs.title page_eyebrow=single_blogs.created_at|date:"F j, Y" page_subtitle=single_blogs.author hero_image=single_blogs.cover_image.url hero_static=False %}
@@ -13,7 +14,7 @@
                     {% endif %}
                     <div class="p-8 md:p-10">
                         <div class="fn-blog-content text-slate-700 leading-relaxed space-y-4 text-base md:text-lg">
-                            {{ single_blogs.content|safe }}
+                            {{ single_blogs.content|safe_blog_html }}
                         </div>
                         {% if single_blogs.tags.all %}
                         <div class="mt-10 pt-8 border-t border-slate-200">

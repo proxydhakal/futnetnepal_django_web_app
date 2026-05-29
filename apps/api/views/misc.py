@@ -162,7 +162,10 @@ class BlogViewSet(viewsets.ReadOnlyModelViewSet):
         qs = Blog.objects.select_related('category', 'author').prefetch_related('tags')
         category = self.request.query_params.get('category')
         if category:
-            qs = qs.filter(category__title__iexact=category)
+            if str(category).isdigit():
+                qs = qs.filter(category_id=int(category))
+            else:
+                qs = qs.filter(category__title__iexact=category)
         return qs.order_by('-created_at')
 
     def get_serializer_class(self):

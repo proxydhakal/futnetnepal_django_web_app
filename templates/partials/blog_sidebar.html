@@ -4,15 +4,15 @@
         <ul class="space-y-2">
             <li>
                 <a href="{% url 'blog' %}"
-                   class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if not category_name %}bg-sky-50 text-sky-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-sky-600{% endif %}">
+                   class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if not category_id %}bg-sky-50 text-sky-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-sky-600{% endif %}">
                     All posts
                 </a>
             </li>
             {% for cat in categories %}
             {% if cat.title %}
             <li>
-                <a href="{% url 'blog-cat' cat.title %}"
-                   class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if category_name == cat.title %}bg-sky-50 text-sky-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-sky-600{% endif %}">
+                <a href="{% url 'blog-cat' cat.pk %}"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if category_id == cat.pk %}bg-sky-50 text-sky-700{% else %}text-slate-600 hover:bg-slate-50 hover:text-sky-600{% endif %}">
                     {{ cat.title }}
                 </a>
             </li>

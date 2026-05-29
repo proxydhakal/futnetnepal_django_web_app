@@ -47,8 +47,4 @@ class Blog(TimestampedSoftDeleteModel):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        category_slug = self.category.title if self.category else 'general'
-        return reverse(
-            'blog_detail',
-            kwargs={'slug': self.slug, 'category': category_slug},
-        )
+        return reverse('blog_detail', kwargs={'slug': self.slug})
