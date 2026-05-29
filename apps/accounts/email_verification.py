@@ -1,3 +1,4 @@
+import logging
 import random
 
 from django.conf import settings
@@ -5,6 +6,8 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
 
 from apps.accounts.models import Profile
+
+logger = logging.getLogger(__name__)
 
 
 class EmailVerificationError(Exception):
@@ -28,7 +31,7 @@ def _can_resend_email(profile: Profile) -> None:
 
 
 def issue_email_code(profile: Profile) -> str:
-    """Generate 6-digit email code (mobile). Returns plaintext code in DEBUG only."""
+    """Generate 6-digit email code (mobile). Always returns plaintext for email delivery."""
     _can_resend_email(profile)
     code = f'{random.randint(0, 999999):06d}'
     profile.email_otp_hash = make_password(code)
@@ -38,9 +41,8 @@ def issue_email_code(profile: Profile) -> str:
         'email_otp_hash', 'email_verification_sent_at', 'email_otp_attempts',
     ])
     if settings.DEBUG:
-        import logging
-        logging.getLogger(__name__).warning('DEV email code for %s: %s', profile.user.email, code)
-    return code if settings.DEBUG else ''
+        logger.warning('DEV email code for %s: %s', profile.user.email, code)
+    return code
 
 
 def verify_email_code(profile: Profile, code: str) -> None:
