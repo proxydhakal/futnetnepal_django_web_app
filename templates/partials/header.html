@@ -28,8 +28,8 @@
     </div>
     {% endif %}
 
-    <div class="container mx-auto px-3 sm:px-4 md:px-8 flex items-center gap-2 sm:gap-5 border-b border-slate-100 {% if request.user.is_authenticated %}py-2 md:py-3{% else %}py-2 sm:py-3 md:py-4{% endif %}">
-        <a href="{% if request.user.is_authenticated %}{% url 'home' %}{% else %}{% url 'index' %}{% endif %}" class="shrink-0">
+    <div class="fn-site-nav-row container mx-auto px-3 sm:px-4 md:px-8 flex items-center gap-2 sm:gap-4 border-b border-slate-100 {% if request.user.is_authenticated %}py-2 md:py-3{% else %}py-2 sm:py-3 md:py-4{% endif %}">
+        <a href="{% if request.user.is_authenticated %}{% url 'home' %}{% else %}{% url 'index' %}{% endif %}" class="shrink-0 min-w-0">
             {% if request.user.is_authenticated %}
             {% include "partials/site_logo.html" with logo_class="h-9 sm:h-10 md:h-11 w-auto" %}
             {% else %}
@@ -38,8 +38,8 @@
         </a>
 
         {% if request.user.is_authenticated %}
-        <!-- Global search (logged in) -->
-        <div class="flex-1 max-w-2xl mx-auto relative" @click.outside="searchOpen = false">
+        <!-- Global search (logged in, tablet+) -->
+        <div class="hidden md:flex flex-1 max-w-2xl min-w-0 mx-2 lg:mx-4 relative" @click.outside="searchOpen = false">
             <div class="flex items-center rounded-full bg-slate-100 hover:bg-slate-200/80 transition-colors px-4 py-2.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200">
                 {% include "partials/fa_icon.html" with name="magnifying-glass" class="fn-icon-lg text-slate-400" %}
                 <input type="search" x-model="query" @input.debounce.300ms="runSearch()" @focus="searchOpen = true"
@@ -78,64 +78,6 @@
             </div>
         </div>
 
-        <a href="{% url 'messages' %}" class="relative shrink-0 p-2 rounded-full hover:bg-slate-100 transition-colors" title="Messages">
-            {% include "partials/fa_icon.html" with name="comments" class="fn-icon-xl text-slate-600" %}
-        </a>
-
-        <!-- Notifications -->
-        <div class="relative shrink-0" @click.outside="notifOpen = false">
-            <button type="button" @click="notifOpen = !notifOpen; if (notifOpen) loadNotifications()" class="relative p-2 rounded-full hover:bg-slate-100 transition-colors" aria-label="Notifications">
-                {% include "partials/fa_icon.html" with name="bell" class="fn-icon-xl text-slate-600" %}
-                <span x-show="wsConnected" class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" title="Live"></span>
-                <span x-show="unreadCount > 0" x-cloak class="absolute -top-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center" x-text="unreadCount > 9 ? '9+' : unreadCount"></span>
-            </button>
-            <div x-show="notifOpen" x-cloak x-transition class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 max-h-[28rem] flex flex-col">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                    <h3 class="font-bold text-sky-950">Notifications</h3>
-                    <button type="button" @click="markAllRead()" class="text-xs font-bold text-sky-600 hover:underline" x-show="unreadCount > 0">Mark all read</button>
-                </div>
-                <div class="overflow-y-auto flex-1">
-                    <template x-if="notifications.length === 0">
-                        <p class="p-6 text-sm text-slate-500 text-center">No notifications yet</p>
-                    </template>
-                    <template x-for="n in notifications" :key="n.id">
-                        <a :href="n.url || '#'" @click="markRead(n)" class="block px-4 py-3 hover:bg-sky-50 border-b border-slate-50 text-sm" :class="!n.is_read && 'bg-sky-50/80'">
-                            <p class="font-semibold text-slate-800" x-text="n.message"></p>
-                            <p class="text-xs text-slate-500 mt-0.5"><span x-text="n.actor"></span> · <span x-text="n.created_at"></span></p>
-                        </a>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Profile dropdown -->
-        <div class="relative shrink-0" @click.outside="menuOpen = false">
-            <button type="button" @click="menuOpen = !menuOpen" class="flex items-center gap-2 rounded-full hover:bg-slate-100 p-1 pr-2 transition-colors">
-                {% if userprofiledata %}
-                <img src="{{ userprofiledata.profile_image.url }}" alt="" class="h-10 w-10 rounded-full object-cover ring-2 ring-sky-200">
-                {% else %}
-                <span class="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-white text-sm font-bold">{{ request.user.username|slice:":1"|upper }}</span>
-                {% endif %}
-                <i class="fa-solid fa-chevron-down fn-icon-lg text-slate-500 hidden sm:inline-block transition-transform" :class="menuOpen && 'rotate-180'" aria-hidden="true"></i>
-            </button>
-            <div x-show="menuOpen" x-cloak x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
-                <div class="px-4 py-3 border-b border-slate-100">
-                    <p class="font-bold text-slate-900 truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
-                    <p class="text-xs text-slate-500 truncate">@{{ request.user.username }}</p>
-                </div>
-                <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
-                    {% include "partials/fa_icon.html" with name="user" class="fn-icon text-slate-500" %} Profile
-                </a>
-                <a href="{% url 'accounts:password_change' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
-                    {% include "partials/fa_icon.html" with name="gear" class="fn-icon text-slate-500" %} Settings
-                </a>
-                <hr class="my-1 border-slate-100">
-                <button type="button" @click="menuOpen = false; showLogoutModal = true" class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50">
-                    {% include "partials/fa_icon.html" with name="right-from-bracket" class="fn-icon text-rose-500" %} Log out
-                </button>
-            </div>
-        </div>
-
         {% else %}
         <!-- Public nav links -->
         <nav class="hidden lg:flex gap-8 text-sm font-bold text-slate-700 flex-1 justify-center tracking-wide">
@@ -147,22 +89,121 @@
             <a href="{% url 'venuelist' %}" class="hover:text-sky-600 py-1">VENUES</a>
             {% include "partials/cms_nav_links.html" %}
         </nav>
-        <div class="hidden lg:flex items-center gap-3 shrink-0">
-            <a href="{% url 'accounts:login' %}" class="border-2 border-sky-600 text-sky-600 px-6 py-2.5 rounded-full font-bold text-sm hover:bg-sky-600 hover:text-white transition-all">LOGIN</a>
-            <a href="{% url 'accounts:signup' %}" class="bg-rose-600 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-rose-500 shadow-md shadow-rose-600/20">SIGN UP</a>
-        </div>
         {% endif %}
 
-        <button type="button" class="lg:hidden p-2.5 rounded-lg hover:bg-slate-100 shrink-0" @click="mobileOpen = !mobileOpen" aria-label="Menu">
-            {% include "partials/fa_icon.html" with name="bars" class="fn-icon-xl text-slate-700" %}
-        </button>
+        <div class="fn-site-nav-actions flex items-center gap-0.5 sm:gap-1 shrink-0 ml-auto">
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'messages' %}" class="relative p-2 rounded-full hover:bg-slate-100 transition-colors" title="Messages">
+                {% include "partials/fa_icon.html" with name="comments" class="fn-icon-xl text-slate-600" %}
+            </a>
+
+            <div class="relative" @click.outside="notifOpen = false">
+                <button type="button" @click="notifOpen = !notifOpen; if (notifOpen) loadNotifications()" class="relative p-2 rounded-full hover:bg-slate-100 transition-colors" aria-label="Notifications">
+                    {% include "partials/fa_icon.html" with name="bell" class="fn-icon-xl text-slate-600" %}
+                    <span x-show="wsConnected" class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" title="Live"></span>
+                    <span x-show="unreadCount > 0" x-cloak class="absolute -top-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center" x-text="unreadCount > 9 ? '9+' : unreadCount"></span>
+                </button>
+                <div x-show="notifOpen" x-cloak x-transition class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 max-h-[28rem] flex flex-col">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                        <h3 class="font-bold text-sky-950">Notifications</h3>
+                        <button type="button" @click="markAllRead()" class="text-xs font-bold text-sky-600 hover:underline" x-show="unreadCount > 0">Mark all read</button>
+                    </div>
+                    <div class="overflow-y-auto flex-1">
+                        <template x-if="notifications.length === 0">
+                            <p class="p-6 text-sm text-slate-500 text-center">No notifications yet</p>
+                        </template>
+                        <template x-for="n in notifications" :key="n.id">
+                            <a :href="n.url || '#'" @click="markRead(n)" class="block px-4 py-3 hover:bg-sky-50 border-b border-slate-50 text-sm" :class="!n.is_read && 'bg-sky-50/80'">
+                                <p class="font-semibold text-slate-800" x-text="n.message"></p>
+                                <p class="text-xs text-slate-500 mt-0.5"><span x-text="n.actor"></span> · <span x-text="n.created_at"></span></p>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative hidden sm:block" @click.outside="menuOpen = false">
+                <button type="button" @click="menuOpen = !menuOpen" class="flex items-center gap-2 rounded-full hover:bg-slate-100 p-1 pr-2 transition-colors">
+                    {% if userprofiledata %}
+                    <img src="{{ userprofiledata.profile_image.url }}" alt="" class="h-9 w-9 md:h-10 md:w-10 rounded-full object-cover ring-2 ring-sky-200">
+                    {% else %}
+                    <span class="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full bg-sky-600 text-white text-sm font-bold">{{ request.user.username|slice:":1"|upper }}</span>
+                    {% endif %}
+                    <i class="fa-solid fa-chevron-down fn-icon-lg text-slate-500 hidden md:inline-block transition-transform" :class="menuOpen && 'rotate-180'" aria-hidden="true"></i>
+                </button>
+                <div x-show="menuOpen" x-cloak x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
+                    <div class="px-4 py-3 border-b border-slate-100">
+                        <p class="font-bold text-slate-900 truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
+                        <p class="text-xs text-slate-500 truncate">@{{ request.user.username }}</p>
+                    </div>
+                    <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+                        {% include "partials/fa_icon.html" with name="user" class="fn-icon text-slate-500" %} Profile
+                    </a>
+                    <a href="{% url 'accounts:password_change' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+                        {% include "partials/fa_icon.html" with name="gear" class="fn-icon text-slate-500" %} Settings
+                    </a>
+                    <hr class="my-1 border-slate-100">
+                    <button type="button" @click="menuOpen = false; showLogoutModal = true" class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50">
+                        {% include "partials/fa_icon.html" with name="right-from-bracket" class="fn-icon text-rose-500" %} Log out
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="hidden lg:flex items-center gap-3">
+                <a href="{% url 'accounts:login' %}" class="border-2 border-sky-600 text-sky-600 px-6 py-2.5 rounded-full font-bold text-sm hover:bg-sky-600 hover:text-white transition-all">LOGIN</a>
+                <a href="{% url 'accounts:signup' %}" class="bg-rose-600 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-rose-500 shadow-md shadow-rose-600/20">SIGN UP</a>
+            </div>
+            {% endif %}
+
+            <button type="button" class="lg:hidden p-2.5 rounded-lg hover:bg-slate-100" @click="mobileOpen = !mobileOpen" :aria-expanded="mobileOpen" aria-controls="fn-mobile-nav" aria-label="Open menu">
+                {% include "partials/fa_icon.html" with name="bars" class="fn-icon-xl text-slate-700" %}
+            </button>
+        </div>
     </div>
 
     <!-- Mobile menu -->
-    <div x-show="mobileOpen" x-cloak class="lg:hidden border-t border-slate-100 bg-white px-4 py-5 shadow-lg">
+    <div id="fn-mobile-nav" x-show="mobileOpen" x-cloak class="lg:hidden border-t border-slate-100 bg-white px-4 py-5 shadow-lg">
         {% if request.user.is_authenticated %}
+        <div class="md:hidden mb-4 relative" @click.outside="searchOpen = false">
+            <div class="flex items-center rounded-full bg-slate-100 px-4 py-2.5 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200">
+                {% include "partials/fa_icon.html" with name="magnifying-glass" class="fn-icon-lg text-slate-400" %}
+                <input type="search" x-model="query" @input.debounce.300ms="runSearch()" @focus="searchOpen = true"
+                       placeholder="Search Futnet Nepal..."
+                       class="w-full ml-2 bg-transparent text-sm outline-none placeholder:text-slate-500">
+            </div>
+            <div x-show="searchOpen && (query.length >= 2 || loading)" x-cloak
+                 class="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 max-h-72 overflow-y-auto z-50">
+                <template x-if="loading">
+                    <p class="p-4 text-sm text-slate-500 text-center">Searching...</p>
+                </template>
+                <template x-if="!loading && query.length >= 2 && results.posts.length === 0 && results.venues.length === 0 && results.users.length === 0">
+                    <p class="p-4 text-sm text-slate-500 text-center">No results found</p>
+                </template>
+                <template x-if="results.posts.length">
+                    <div class="px-4 pt-3 pb-1 text-xs font-bold text-slate-400 uppercase">Events</div>
+                    <template x-for="item in results.posts" :key="'mp'+item.id">
+                        <a :href="item.url" class="block px-4 py-2.5 hover:bg-slate-50 text-sm">
+                            <span class="font-semibold text-slate-800" x-text="item.title"></span>
+                        </a>
+                    </template>
+                </template>
+                <template x-if="results.venues.length">
+                    <div class="px-4 pt-3 pb-1 text-xs font-bold text-slate-400 uppercase">Venues</div>
+                    <template x-for="item in results.venues" :key="'mv'+item.id">
+                        <a :href="item.url" class="block px-4 py-2.5 hover:bg-slate-50 text-sm font-medium text-slate-800" x-text="item.title"></a>
+                    </template>
+                </template>
+                <template x-if="results.users.length">
+                    <div class="px-4 pt-3 pb-1 text-xs font-bold text-slate-400 uppercase">People</div>
+                    <template x-for="item in results.users" :key="'mu'+item.id">
+                        <a :href="item.url" class="block px-4 py-2.5 hover:bg-slate-50 text-sm font-medium text-slate-800" x-text="item.title"></a>
+                    </template>
+                </template>
+            </div>
+        </div>
         <a href="{% url 'home' %}" class="block py-3 text-base font-semibold">Home Feed</a>
-        <a href="{% url 'accounts:profile' %}" class="block py-3 text-base font-semibold">Profile</a>
+        <a href="{% url 'accounts:profile' %}" class="block py-3 text-base font-semibold sm:hidden">Profile</a>
+        <a href="{% url 'accounts:password_change' %}" class="block py-3 text-base sm:hidden">Settings</a>
         <a href="{% url 'venuelist' %}" class="block py-3 text-base">Venues</a>
         <button type="button" @click="showLogoutModal = true; mobileOpen = false" class="block w-full text-left py-3 text-base text-rose-600 font-semibold">Log out</button>
         {% else %}

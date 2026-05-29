@@ -85,6 +85,15 @@
     padding-bottom: 0.25rem;
   }
 
+  /* Main nav: logo left, actions + menu button right on mobile */
+  .fn-site-nav-row {
+    width: 100%;
+  }
+
+  .fn-site-nav-actions {
+    margin-left: auto;
+  }
+
   @media (min-width: 640px) {
     .fn-site-topbar {
       font-size: 0.75rem;

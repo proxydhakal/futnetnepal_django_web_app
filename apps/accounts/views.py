@@ -174,6 +174,7 @@ class VerifyAccountView(View):
             email = request.user.email
             phone = request.user.profile.phone or phone
         profile = None
+        user = None
         if email:
             user = User.objects.filter(email__iexact=email).first()
             if user:
@@ -312,6 +313,7 @@ class VerifyEmailView(View):
         profile = Profile.objects.filter(email_verification_token=token).first()
         if profile is None:
             return render(request, self.template_invalid)
+        user = profile.user
         if user.is_email_verified:
             return render(request, self.template_success, {'already_verified': True})
         profile.mark_email_verified()
